@@ -1,26 +1,59 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Background Colors */
+  --color-bg-primary: #0B0F1A;
+  --color-bg-secondary: #111827;
+
+  /* Accent Colors */
+  --color-accent: #8B5CF6;
+  --color-accent-blue: #3B82F6;
+
+  /* Text Colors */
+  --color-text-primary: #F9FAFB;
+  --color-text-muted: #9CA3AF;
+
+  /* Border Color */
+  --color-border: #1F2937;
+
+  /* Font */
+  --font-sans: var(--font-inter);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: #0B0F1A;
+  color: #F9FAFB;
+  font-family: var(--font-inter), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Hover utility classes */
+.btn-accent:hover {
+  filter: brightness(1.08);
+}
+
+.btn-outline:hover {
+  color: #F9FAFB !important;
+  border-color: #9CA3AF !important;
+}
+
+.nav-link:hover {
+  color: #F9FAFB !important;
+}
+
+.footer-link:hover {
+  color: #F9FAFB !important;
+}
+
+.card-hover:hover {
+  border-color: rgba(139, 92, 246, 0.4) !important;
 }
