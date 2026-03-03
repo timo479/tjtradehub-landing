@@ -94,7 +94,7 @@ export default function PricingSection() {
 
           {/* CTA */}
           <a
-            href="#"
+            href="/register"
             className="btn-accent block w-full text-center px-6 py-4 font-semibold text-base transition-all duration-200 mb-4"
             style={{
               backgroundColor: "#8B5CF6",

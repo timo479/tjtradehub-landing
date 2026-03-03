@@ -53,7 +53,7 @@ export default function FinalCTA() {
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="#pricing"
+            href="/register"
             className="btn-accent inline-flex items-center justify-center px-8 py-4 text-base font-semibold transition-all duration-200"
             style={{
               backgroundColor: "#8B5CF6",
