@@ -24,7 +24,7 @@ export default function Home() {
       </main>
       <footer
         style={{
-          backgroundColor: "#0B0F1A",
+          backgroundColor: "#000000",
           borderTop: "1px solid #1F2937",
         }}
       >

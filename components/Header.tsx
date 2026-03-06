@@ -9,7 +9,7 @@ export default function Header() {
 
   return (
     <header
-      style={{ backgroundColor: "#0B0F1A", borderBottom: "1px solid #1F2937" }}
+      style={{ backgroundColor: "#000000", borderBottom: "1px solid #1F2937" }}
       className="fixed top-0 left-0 right-0 z-50 h-20"
     >
       <div
@@ -108,7 +108,7 @@ export default function Header() {
         <div
           className="md:hidden px-6 pb-4 flex flex-col gap-4"
           style={{
-            backgroundColor: "#0B0F1A",
+            backgroundColor: "#000000",
             borderTop: "1px solid #1F2937",
           }}
         >

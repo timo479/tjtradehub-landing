@@ -105,7 +105,7 @@ export default function MT5Section() {
               <div
                 className="rounded-2xl p-8"
                 style={{
-                  backgroundColor: "#0B0F1A",
+                  backgroundColor: "#000000",
                   border: "1px solid #1F2937",
                 }}
               >

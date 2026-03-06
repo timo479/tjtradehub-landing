@@ -1,9 +1,10 @@
 @import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap');
 
 @theme inline {
   /* Background Colors */
-  --color-bg-primary: #0B0F1A;
-  --color-bg-secondary: #111827;
+  --color-bg-primary: #000000;
+  --color-bg-secondary: #0a0a0a;
 
   /* Accent Colors */
   --color-accent: #8B5CF6;
@@ -29,7 +30,7 @@ html {
 }
 
 body {
-  background-color: #0B0F1A;
+  background-color: #000000;
   color: #F9FAFB;
   font-family: var(--font-inter), sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -56,4 +57,19 @@ body {
 
 .card-hover:hover {
   border-color: rgba(139, 92, 246, 0.4) !important;
+}
+
+@keyframes rotate3d {
+  0%   { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+.logo-rotate {
+  animation: rotate3d 10s linear infinite;
+  transform-style: preserve-3d;
+}
+
+.logo-layer {
+  position: absolute;
+  top: 0; left: 0;
 }

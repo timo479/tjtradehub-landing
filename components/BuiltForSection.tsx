@@ -9,7 +9,7 @@ export default function BuiltForSection() {
   return (
     <section
       style={{
-        backgroundColor: "#0B0F1A",
+        backgroundColor: "#000000",
         paddingTop: "120px",
         paddingBottom: "120px",
       }}

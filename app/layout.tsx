@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import CursorTrail from "@/components/CursorTrail";
 import "./globals.css";
 
 const inter = Inter({
@@ -8,6 +9,7 @@ const inter = Inter({
   variable: "--font-inter",
   display: "swap",
 });
+
 
 export const metadata: Metadata = {
   title: "TJ TradeHub – Structured Trading Requires Structured Tracking",
@@ -28,6 +30,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body>
+        <CursorTrail />
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>

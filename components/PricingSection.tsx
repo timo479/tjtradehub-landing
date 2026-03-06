@@ -50,7 +50,7 @@ export default function PricingSection() {
           className="w-full rounded-3xl p-8 md:p-10"
           style={{
             maxWidth: "420px",
-            backgroundColor: "#0B0F1A",
+            backgroundColor: "#000000",
             border: "1px solid rgba(139, 92, 246, 0.3)",
           }}
         >

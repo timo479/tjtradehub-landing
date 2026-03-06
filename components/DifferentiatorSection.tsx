@@ -108,7 +108,7 @@ export default function DifferentiatorSection() {
               key={i}
               className="card-hover rounded-2xl p-8 flex flex-col gap-5 transition-all duration-200"
               style={{
-                backgroundColor: "#0B0F1A",
+                backgroundColor: "#000000",
                 border: "1px solid #1F2937",
               }}
             >

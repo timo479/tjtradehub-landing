@@ -3,7 +3,7 @@ export default function AboutSection() {
     <section
       id="about"
       style={{
-        backgroundColor: "#0B0F1A",
+        backgroundColor: "#000000",
         paddingTop: "120px",
         paddingBottom: "120px",
       }}

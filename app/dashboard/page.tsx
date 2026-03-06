@@ -1,6 +1,8 @@
 import { auth } from "@/lib/auth";
 import { getDaysRemaining, isTrialActive } from "@/lib/trial";
+import { db } from "@/lib/db";
 import Link from "next/link";
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
 
@@ -10,7 +12,6 @@ export const metadata = {
 
 export default async function DashboardPage() {
   const session = await auth();
-
   if (!session?.user) redirect("/login");
 
   const { name, trialEndsAt, subscriptionStatus } = session.user;
@@ -18,62 +19,117 @@ export default async function DashboardPage() {
   const daysLeft = getDaysRemaining({ trial_ends_at: trialEndsAt });
   const isSubscribed = subscriptionStatus === "active";
 
+  // Fetch trades
+  const { data: trades } = await db
+    .from("trades")
+    .select("profit_loss, discipline_score, trade_date")
+    .eq("user_id", session.user.id);
+
+  const allTrades = trades ?? [];
+
+  // This month
+  const now = new Date();
+  const monthTrades = allTrades.filter((t) => {
+    const d = new Date(t.trade_date);
+    return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+  });
+
+  const totalPnl = allTrades.reduce((s, t) => s + (t.profit_loss ?? 0), 0);
+  const wins = allTrades.filter((t) => t.profit_loss > 0).length;
+  const winRate = allTrades.length ? Math.round((wins / allTrades.length) * 100) : null;
+  const disciplineTrades = allTrades.filter((t) => t.discipline_score != null);
+  const avgDiscipline = disciplineTrades.length
+    ? (disciplineTrades.reduce((s, t) => s + t.discipline_score!, 0) / disciplineTrades.length).toFixed(1)
+    : null;
+
+  const cards = [
+    {
+      label: "Trades diesen Monat",
+      value: monthTrades.length > 0 ? monthTrades.length.toString() : "0",
+      sub: allTrades.length > 0 ? `${allTrades.length} gesamt` : "noch keine Trades",
+      color: "#F9FAFB",
+    },
+    {
+      label: "Ø Discipline Score",
+      value: avgDiscipline ? `${avgDiscipline}/10` : "—",
+      sub: avgDiscipline ? "über alle Trades" : "Trades erfassen um zu berechnen",
+      color: avgDiscipline ? (parseFloat(avgDiscipline) >= 7 ? "#8B5CF6" : "#ef4444") : "#6B7280",
+    },
+    {
+      label: "Win Rate",
+      value: winRate !== null ? `${winRate}%` : "—",
+      sub: winRate !== null ? `${wins} von ${allTrades.length} Trades` : "Trades erfassen um zu berechnen",
+      color: winRate !== null ? (winRate >= 50 ? "#22c55e" : "#ef4444") : "#6B7280",
+    },
+    {
+      label: "Total P&L",
+      value: allTrades.length ? `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} CHF` : "—",
+      sub: allTrades.length ? "realisierter Gewinn/Verlust" : "noch keine Trades",
+      color: allTrades.length ? (totalPnl >= 0 ? "#22c55e" : "#ef4444") : "#6B7280",
+    },
+  ];
+
   return (
-    <div
-      className="min-h-screen"
-      style={{ backgroundColor: "#0B0F1A" }}
-    >
+    <div className="min-h-screen" style={{ backgroundColor: "#000000" }}>
       {/* Trial Banner */}
       {onTrial && !isSubscribed && (
-        <div
-          className="w-full px-6 py-3 flex items-center justify-between text-sm"
-          style={{
-            backgroundColor: "rgba(139, 92, 246, 0.1)",
-            borderBottom: "1px solid rgba(139, 92, 246, 0.2)",
-          }}
-        >
+        <div className="w-full px-6 py-3 flex items-center justify-between text-sm"
+          style={{ backgroundColor: "rgba(139, 92, 246, 0.1)", borderBottom: "1px solid rgba(139, 92, 246, 0.2)" }}>
           <span style={{ color: "#C4B5FD" }}>
             <strong style={{ color: "#A78BFA" }}>{daysLeft} day{daysLeft !== 1 ? "s" : ""}</strong>{" "}
             left in your free trial
           </span>
-          <Link
-            href="/billing"
-            className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
-            style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB" }}
-          >
+          <Link href="/billing" className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
+            style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB" }}>
             Upgrade – $29/mo
           </Link>
         </div>
       )}
 
       {/* Header */}
-      <header
-        style={{ borderBottom: "1px solid #1F2937" }}
-        className="px-6 py-5"
-      >
-        <div
-          className="mx-auto flex items-center justify-between"
-          style={{ maxWidth: "1200px" }}
-        >
-          <h1 className="text-lg font-semibold" style={{ color: "#F9FAFB" }}>
-            TJ TradeHub
-          </h1>
+      <header style={{ borderBottom: "1px solid #1F2937" }} className="px-6 py-5">
+        <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
+            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+              <div style={{ perspective: "150px" }}>
+                <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative", transformStyle: "preserve-3d" }}>
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <Image
+                      key={i}
+                      src="/logo-tj-transparent.png"
+                      alt={i === 0 ? "TJ TradeHub" : ""}
+                      width={36}
+                      height={36}
+                      className="logo-layer object-contain"
+                      style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }}
+                    />
+                  ))}
+                </div>
+              </div>
+              <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif" }}>
+                TJ TradeHub
+              </span>
+            </Link>
+            <nav style={{ display: "flex", gap: "24px" }}>
+              <Link href="/dashboard" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>
+                Dashboard
+              </Link>
+              <Link href="/dashboard/journal" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
+                Journal
+              </Link>
+            </nav>
+          </div>
           <div className="flex items-center gap-4">
-            <span className="text-sm" style={{ color: "#9CA3AF" }}>
-              {name}
-            </span>
+            <span className="text-sm" style={{ color: "#9CA3AF" }}>{name}</span>
             <SignOutButton />
           </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <main
-        className="mx-auto px-6 py-12"
-        style={{ maxWidth: "1200px" }}
-      >
+      {/* Main */}
+      <main className="mx-auto px-6 py-12" style={{ maxWidth: "1200px" }}>
         {/* Welcome */}
-        <div className="mb-12">
+        <div className="mb-10">
           <h2 className="text-3xl font-bold mb-2" style={{ color: "#F9FAFB" }}>
             Welcome back, {name?.split(" ")[0]} 👋
           </h2>
@@ -84,72 +140,58 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        {/* Dashboard Placeholder Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
-          {[
-            { label: "Total Trades", value: "0", sub: "this month" },
-            { label: "Discipline Score", value: "—", sub: "log trades to calculate" },
-            { label: "Win Rate", value: "—", sub: "log trades to calculate" },
-          ].map((card) => (
-            <div
-              key={card.label}
-              className="rounded-2xl p-6"
-              style={{
-                backgroundColor: "#111827",
-                border: "1px solid #1F2937",
-              }}
-            >
-              <p className="text-sm mb-3" style={{ color: "#9CA3AF" }}>
-                {card.label}
-              </p>
-              <p className="text-4xl font-bold mb-1" style={{ color: "#F9FAFB" }}>
-                {card.value}
-              </p>
-              <p className="text-xs" style={{ color: "#6B7280" }}>
-                {card.sub}
-              </p>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+          {cards.map((card) => (
+            <div key={card.label} className="rounded-2xl p-6"
+              style={{ backgroundColor: "#111827", border: "1px solid #1F2937" }}>
+              <p className="text-sm mb-3" style={{ color: "#9CA3AF" }}>{card.label}</p>
+              <p className="text-3xl font-bold mb-1" style={{ color: card.color }}>{card.value}</p>
+              <p className="text-xs" style={{ color: "#6B7280" }}>{card.sub}</p>
             </div>
           ))}
         </div>
 
-        {/* Empty State */}
-        <div
-          className="rounded-2xl p-12 flex flex-col items-center text-center"
-          style={{
-            backgroundColor: "#111827",
-            border: "1px solid #1F2937",
-          }}
-        >
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-6"
-            style={{ backgroundColor: "rgba(139, 92, 246, 0.1)" }}
-          >
-            <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-              <path
-                d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                stroke="#8B5CF6"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold mb-2" style={{ color: "#F9FAFB" }}>
-            Your journal is ready
-          </h3>
-          <p className="text-sm mb-6" style={{ color: "#9CA3AF", maxWidth: "360px" }}>
-            MT5 sync and manual trade logging coming soon. Your account is set up
-            and ready to go.
-          </p>
-          <div
-            className="px-4 py-2 rounded-xl text-xs font-medium"
-            style={{
-              backgroundColor: "rgba(139, 92, 246, 0.1)",
-              color: "#8B5CF6",
-              border: "1px solid rgba(139, 92, 246, 0.2)",
-            }}
-          >
-            MT5 Integration – Coming Soon
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
+            <div className="rounded-2xl p-6 transition-all" style={{
+              backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer",
+            }}>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(139,92,246,0.1)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                      stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>Trading Journal</h3>
+              </div>
+              <p className="text-sm" style={{ color: "#9CA3AF" }}>
+                {allTrades.length > 0
+                  ? `${allTrades.length} Trade${allTrades.length > 1 ? "s" : ""} erfasst – weiter tracken`
+                  : "Ersten Trade erfassen und Statistiken aufbauen"}
+              </p>
+            </div>
+          </Link>
+
+          <div className="rounded-2xl p-6" style={{ backgroundColor: "#111827", border: "1px solid #1F2937" }}>
+            <div className="flex items-center gap-4 mb-3">
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                style={{ backgroundColor: "rgba(59,130,246,0.1)" }}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                  <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#3B82F6" strokeWidth="2"
+                    strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </div>
+              <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>MT5 Sync</h3>
+            </div>
+            <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatische Trade-Synchronisation via MetaTrader 5</p>
+            <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
+              style={{ backgroundColor: "rgba(59,130,246,0.1)", color: "#3B82F6", border: "1px solid rgba(59,130,246,0.2)" }}>
+              Coming Soon
+            </span>
           </div>
         </div>
       </main>

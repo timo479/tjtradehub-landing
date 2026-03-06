@@ -11,21 +11,30 @@ export default function AuthLayout({ children, title, subtitle }: AuthLayoutProp
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-4 py-12"
-      style={{ backgroundColor: "#0B0F1A" }}
+      style={{ backgroundColor: "#000000" }}
     >
       <div className="w-full" style={{ maxWidth: "420px" }}>
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3 justify-center mb-10">
-          <Image
-            src="/logo-3d.png"
-            alt="TJ TradeHub Logo"
-            width={36}
-            height={36}
-            className="object-contain"
-          />
+          <div style={{ perspective: "150px" }}>
+            <div className="logo-rotate" style={{ width: 48, height: 48, position: "relative", transformStyle: "preserve-3d" }}>
+              {Array.from({ length: 16 }).map((_, i) => (
+                <Image
+                  key={i}
+                  src="/logo-tj-transparent.png"
+                  alt={i === 0 ? "TJ TradeHub Logo" : ""}
+                  width={48}
+                  height={48}
+                  className="logo-layer object-contain"
+                  style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }}
+                  priority={i === 0}
+                />
+              ))}
+            </div>
+          </div>
           <span
             className="font-semibold text-lg tracking-tight"
-            style={{ color: "#F9FAFB" }}
+            style={{ color: "#F9FAFB", fontFamily: "'Space Grotesk', sans-serif" }}
           >
             TJ TradeHub
           </span>

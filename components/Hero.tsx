@@ -7,7 +7,7 @@ export default function Hero() {
       style={{
         minHeight: "85vh",
         paddingTop: "80px",
-        backgroundColor: "#0B0F1A",
+        backgroundColor: "#000000",
       }}
     >
       <div
@@ -89,14 +89,22 @@ export default function Hero() {
                 filter: "blur(40px)",
               }}
             />
-            <Image
-              src="/logo-3d.png"
-              alt="TJ TradeHub 3D Logo"
-              width={420}
-              height={420}
-              className="relative z-10 object-contain"
-              priority
-            />
+            <div style={{ perspective: "600px" }} className="relative z-10">
+              <div className="logo-rotate" style={{ width: 340, height: 340, position: "relative", transformStyle: "preserve-3d" }}>
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <Image
+                    key={i}
+                    src="/logo-tj-transparent.png"
+                    alt=""
+                    width={340}
+                    height={340}
+                    className="logo-layer object-contain"
+                    style={{ transform: `translateZ(${i * 2}px)`, opacity: i === 15 ? 1 : 0.6 }}
+                    priority={i === 0}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </div>

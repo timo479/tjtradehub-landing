@@ -78,7 +78,7 @@ export default function RegisterForm() {
           required
           className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
           style={{
-            backgroundColor: "#0B0F1A",
+            backgroundColor: "#000000",
             border: "1px solid #1F2937",
             color: "#F9FAFB",
           }}
@@ -99,7 +99,7 @@ export default function RegisterForm() {
           required
           className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
           style={{
-            backgroundColor: "#0B0F1A",
+            backgroundColor: "#000000",
             border: "1px solid #1F2937",
             color: "#F9FAFB",
           }}
@@ -120,7 +120,7 @@ export default function RegisterForm() {
           required
           className="w-full px-4 py-3 rounded-xl text-sm outline-none transition-colors"
           style={{
-            backgroundColor: "#0B0F1A",
+            backgroundColor: "#000000",
             border: "1px solid #1F2937",
             color: "#F9FAFB",
           }}
