@@ -61,11 +61,11 @@ export default function Hero() {
               <span style={{ fontSize: "20px", lineHeight: 1, marginTop: "2px" }}>✦</span>
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#E2D9FF" }}>
-                  Dein Journal. Deine Regeln.
+                  Your Journal. Your Rules.
                 </p>
                 <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
-                  Kein vorgefertigtes Template. Baue dein Journal exakt nach deinem Trading-System –
-                  eigene Felder, eigene Sektionen, eigene Metriken. Was andere Tools nie konnten.
+                  Start with a ready-made template or build your own from scratch — custom fields,
+                  custom sections, custom metrics. Designed around your system, not someone else&apos;s.
                 </p>
               </div>
             </div>
