@@ -36,16 +36,9 @@ export default function Home() {
             © 2026 TJ TradeHub. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
-            {["Privacy Policy", "Terms of Service", "Contact"].map((link) => (
-              <a
-                key={link}
-                href="#"
-                className="footer-link text-sm transition-colors duration-200"
-                style={{ color: "#9CA3AF" }}
-              >
-                {link}
-              </a>
-            ))}
+            <a href="#" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Privacy Policy</a>
+            <Link href="/terms" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Terms of Service</Link>
+            <a href="mailto:support@tjtradehub.com" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Contact</a>
           </div>
         </div>
       </footer>
