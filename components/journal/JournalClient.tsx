@@ -2,6 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import TradeForm from "./TradeForm";
 import TradeCalendar from "./TradeCalendar";
+import JournalSettings from "./JournalSettings";
 
 interface Trade {
   id: string;
@@ -27,6 +28,7 @@ interface Trade {
 export default function JournalClient() {
   const [trades, setTrades] = useState<Trade[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
   const [loading, setLoading] = useState(true);
   const [expandedId, setExpandedId] = useState<string | null>(null);
@@ -107,12 +109,18 @@ export default function JournalClient() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
         <h2 style={{ color: "#F9FAFB", fontSize: "18px", fontWeight: 600 }}>Trade-Journal</h2>
-        <button
-          onClick={() => setShowForm(true)}
-          style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none", borderRadius: "12px",
-            padding: "10px 20px", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>
-          + Trade erfassen
-        </button>
+        <div style={{ display: "flex", gap: "10px" }}>
+          <button onClick={() => setShowSettings(true)}
+            style={{ backgroundColor: "transparent", color: "#9CA3AF", border: "1px solid #1F2937", borderRadius: "12px",
+              padding: "10px 16px", fontWeight: 500, fontSize: "14px", cursor: "pointer" }}>
+            ⚙️ Journal einrichten
+          </button>
+          <button onClick={() => setShowForm(true)}
+            style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none", borderRadius: "12px",
+              padding: "10px 20px", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>
+            + Trade erfassen
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -273,6 +281,12 @@ export default function JournalClient() {
           onClose={() => { setShowForm(false); setEditTrade(null); }}
           onSaved={fetchTrades}
           trade={editTrade ?? undefined}
+        />
+      )}
+      {showSettings && (
+        <JournalSettings
+          onClose={() => setShowSettings(false)}
+          onSaved={() => { setShowSettings(false); fetchTrades(); }}
         />
       )}
     </div>

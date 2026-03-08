@@ -2,6 +2,28 @@ import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
+import { removeAccount } from "@/lib/metaapi";
+
+async function cleanupMetaAccount(stripeCustomerId: string) {
+  const { data: user } = await db
+    .from("users")
+    .select("id, metaapi_account_id")
+    .eq("stripe_customer_id", stripeCustomerId)
+    .single();
+
+  if (user?.metaapi_account_id) {
+    await removeAccount(user.metaapi_account_id).catch(() => null);
+    await db.from("users").update({
+      metaapi_account_id: null,
+      metaapi_account_state: null,
+      mt_login: null,
+      mt_password: null,
+      mt_server: null,
+      mt_platform: null,
+      last_meta_sync: null,
+    }).eq("id", user.id);
+  }
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.text();
@@ -76,6 +98,7 @@ export async function POST(request: NextRequest) {
       const customerId = getCustomerId(sub);
       if (!customerId) break;
 
+      await cleanupMetaAccount(customerId);
       await db
         .from("users")
         .update({
@@ -91,6 +114,7 @@ export async function POST(request: NextRequest) {
       const customerId = getCustomerId(invoice);
       if (!customerId) break;
 
+      await cleanupMetaAccount(customerId);
       await db
         .from("users")
         .update({ subscription_status: "past_due" })

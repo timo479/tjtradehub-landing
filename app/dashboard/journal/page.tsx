@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import JournalClient from "@/components/journal/JournalClient";
+import JournalV2 from "@/components/journal/v2/JournalV2";
 import SignOutButton from "@/components/SignOutButton";
 import Link from "next/link";
 import Image from "next/image";
@@ -56,7 +56,7 @@ export default async function JournalPage() {
 
       {/* Content */}
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalClient />
+        <JournalV2 />
       </main>
     </div>
   );

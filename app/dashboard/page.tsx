@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import SignOutButton from "@/components/SignOutButton";
+import DashboardStats from "@/components/dashboard/DashboardStats";
+import MetaConnect from "@/components/meta/MetaConnect";
 
 export const metadata = {
   title: "Dashboard – TJ TradeHub",
@@ -150,6 +152,16 @@ export default async function DashboardPage() {
               <p className="text-xs" style={{ color: "#6B7280" }}>{card.sub}</p>
             </div>
           ))}
+        </div>
+
+        {/* MetaAPI */}
+        <div className="mb-8">
+          <MetaConnect />
+        </div>
+
+        {/* Statistiken Widget Grid */}
+        <div className="mb-10">
+          <DashboardStats />
         </div>
 
         {/* Quick Actions */}
