@@ -49,6 +49,27 @@ export default function Hero() {
               Track discipline, not just P&L. Measure execution, not just outcomes.
             </p>
 
+            {/* Custom Journal Highlight */}
+            <div
+              className="flex items-start gap-3 px-4 py-4 rounded-xl"
+              style={{
+                backgroundColor: "rgba(139,92,246,0.07)",
+                border: "1px solid rgba(139,92,246,0.2)",
+                maxWidth: "480px",
+              }}
+            >
+              <span style={{ fontSize: "20px", lineHeight: 1, marginTop: "2px" }}>✦</span>
+              <div>
+                <p className="text-sm font-semibold mb-1" style={{ color: "#E2D9FF" }}>
+                  Dein Journal. Deine Regeln.
+                </p>
+                <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
+                  Kein vorgefertigtes Template. Baue dein Journal exakt nach deinem Trading-System –
+                  eigene Felder, eigene Sektionen, eigene Metriken. Was andere Tools nie konnten.
+                </p>
+              </div>
+            </div>
+
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
               <a
                 href="/register"
