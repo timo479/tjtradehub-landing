@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
 import CursorTrail from "@/components/CursorTrail";
+import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
     <html lang="en" className={inter.variable}>
       <body>
         <CursorTrail />
+        <CookieBanner />
         <SessionProvider>{children}</SessionProvider>
       </body>
     </html>
