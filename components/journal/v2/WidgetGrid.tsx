@@ -41,8 +41,8 @@ const getField = (e: Entry, ...keywords: string[]): string | null => {
 };
 
 const fmt = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;
-const MONTHS_SHORT = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
-const DAYS_SHORT = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const DAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 const card: React.CSSProperties = {
   backgroundColor: "#111827",
@@ -55,7 +55,7 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   return <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "16px" }}>{children}</p>;
 }
 
-function NoData({ text = "Mindestens 1 Trade mit P&L nötig" }: { text?: string }) {
+function NoData({ text = "At least 1 trade with P&L needed" }: { text?: string }) {
   return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "32px 0" }}>{text}</div>;
 }
 
@@ -84,15 +84,15 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const items = [
-    { label: "Trades gesamt", value: String(entries.length), color: "#F9FAFB" },
+    { label: "Total Trades", value: String(entries.length), color: "#F9FAFB" },
     ...(s.hasPnl ? [
-      { label: "Gesamt P&L", value: fmt(s.total), color: s.total >= 0 ? "#22c55e" : "#ef4444" },
+      { label: "Total P&L", value: fmt(s.total), color: s.total >= 0 ? "#22c55e" : "#ef4444" },
       { label: "Win Rate", value: `${s.pnlCount ? Math.round((s.wins / s.pnlCount) * 100) : 0}%`, color: s.wins / (s.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444", sub: `${s.wins}W · ${s.losses}L` },
-      { label: "Ø P&L / Trade", value: fmt(s.avg), color: s.avg >= 0 ? "#22c55e" : "#ef4444" },
-      { label: "Bester Trade", value: fmt(s.best), color: "#22c55e" },
-      { label: "Schlechtester Trade", value: fmt(s.worst), color: "#ef4444" },
+      { label: "Avg P&L / Trade", value: fmt(s.avg), color: s.avg >= 0 ? "#22c55e" : "#ef4444" },
+      { label: "Best Trade", value: fmt(s.best), color: "#22c55e" },
+      { label: "Worst Trade", value: fmt(s.worst), color: "#ef4444" },
       { label: "Max. Drawdown", value: `-${s.dd.toFixed(2)}`, color: "#F59E0B" },
-      { label: "Aktuelle Serie", value: `${s.streak}x ${s.sType === "win" ? "Win" : "Loss"}`, color: s.sType === "win" ? "#22c55e" : "#ef4444" },
+      { label: "Current Streak", value: `${s.streak}x ${s.sType === "win" ? "Win" : "Loss"}`, color: s.sType === "win" ? "#22c55e" : "#ef4444" },
     ] : []),
   ];
 
@@ -262,7 +262,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
               </text>
             )}
             <text x={x + bW / 2} y={H + 14} textAnchor="middle" fill="#6B7280" fontSize="10">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={H + 26} textAnchor="middle" fill="#374151" fontSize="8">{b.count}T</text>}
+            {b.count > 0 && <text x={x + bW / 2} y={H + 26} textAnchor="middle" fill="#374151" fontSize="8">{b.count}tr</text>}
           </g>
         );
       })}
@@ -329,7 +329,7 @@ function WCalendar({ entries }: { entries: Entry[] }) {
         })}
       </div>
       <div style={{ display: "flex", gap: "14px", marginTop: "12px", flexWrap: "wrap" }}>
-        {[{ c: "rgba(34,197,94,0.6)", l: "Positiv" }, { c: "rgba(239,68,68,0.6)", l: "Negativ" }, { c: "rgba(107,114,128,0.3)", l: "Break-even" }, { c: "#0d1117", l: "Kein Trade" }].map(x => (
+        {[{ c: "rgba(34,197,94,0.6)", l: "Positive" }, { c: "rgba(239,68,68,0.6)", l: "Negative" }, { c: "rgba(107,114,128,0.3)", l: "Break-even" }, { c: "#0d1117", l: "No Trade" }].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: "1px solid #1F2937" }} />
             <span style={{ color: "#4B5563", fontSize: "11px" }}>{x.l}</span>
@@ -359,7 +359,7 @@ function WHistogram({ entries }: { entries: Entry[] }) {
     return buckets.map(b => ({ ...b, count: pnls.filter(p => p >= b.min && p < b.max).length }));
   }, [entries]);
 
-  if (!bars.length || bars.every(b => b.count === 0)) return <NoData text="Mindestens 1 Trade mit P&L nötig" />;
+  if (!bars.length || bars.every(b => b.count === 0)) return <NoData text="At least 1 trade with P&L needed" />;
 
   const maxCount = Math.max(1, ...bars.map(b => b.count));
   const H = 100, bW = 36, gap = 8, tW = bars.length * (bW + gap) - gap + 20;
@@ -402,7 +402,7 @@ function WInstrument({ entries }: { entries: Entry[] }) {
     return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 6);
   }, [entries]);
 
-  if (!bars.length) return <NoData text="Kein 'Instrument'-Feld gefunden" />;
+  if (!bars.length) return <NoData text="No 'Instrument' field found" />;
 
   const maxVal = bars[0][1];
   const colors = ["#8B5CF6", "#6366f1", "#3B82F6", "#22c55e", "#F59E0B", "#ef4444"];
@@ -518,16 +518,16 @@ interface WidgetDef {
 }
 
 const WIDGETS: WidgetDef[] = [
-  { id: "kpi-cards",    name: "KPI Übersicht",          desc: "Trades, P&L, Win Rate, Drawdown, Streak und mehr",    icon: "📊", size: "full", defaultOn: true,  component: WKpiCards },
-  { id: "equity-curve", name: "Equity Kurve",            desc: "Kumulativer P&L Verlauf über alle Trades",             icon: "📈", size: "full", defaultOn: true,  component: WEquityCurve },
-  { id: "winloss",      name: "Win / Loss",              desc: "Wins, Losses und Break-even als Donut-Chart",          icon: "🎯", size: "half", defaultOn: true,  component: WWinLoss },
-  { id: "weekday",      name: "Wochentag Performance",   desc: "Durchschnittlicher P&L nach Wochentag",                icon: "📅", size: "half", defaultOn: true,  component: WWeekday },
-  { id: "monthly-pnl",  name: "Monatlicher P&L",         desc: "P&L der letzten 6 Monate als Balkendiagramm",          icon: "🗓️", size: "full", defaultOn: true,  component: WMonthly },
-  { id: "calendar",     name: "Trade Kalender",          desc: "Heatmap der letzten 3 Monate nach Tages-P&L",          icon: "🗓️", size: "full", defaultOn: true,  component: WCalendar },
-  { id: "histogram",    name: "P&L Verteilung",          desc: "Häufigkeitsverteilung deiner Trade-Ergebnisse",         icon: "📉", size: "full", defaultOn: false, component: WHistogram },
-  { id: "instrument",   name: "Instrument Breakdown",    desc: "Welche Märkte du am häufigsten tradest",               icon: "🔍", size: "half", defaultOn: false, component: WInstrument },
+  { id: "kpi-cards",    name: "KPI Overview",            desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",     icon: "📊", size: "full", defaultOn: true,  component: WKpiCards },
+  { id: "equity-curve", name: "Equity Curve",            desc: "Cumulative P&L across all trades",                     icon: "📈", size: "full", defaultOn: true,  component: WEquityCurve },
+  { id: "winloss",      name: "Win / Loss",              desc: "Wins, Losses and Break-even as donut chart",           icon: "🎯", size: "half", defaultOn: true,  component: WWinLoss },
+  { id: "weekday",      name: "Weekday Performance",     desc: "Average P&L by weekday",                               icon: "📅", size: "half", defaultOn: true,  component: WWeekday },
+  { id: "monthly-pnl",  name: "Monthly P&L",             desc: "P&L for the last 6 months as bar chart",               icon: "🗓️", size: "full", defaultOn: true,  component: WMonthly },
+  { id: "calendar",     name: "Trade Calendar",          desc: "Heatmap of the last 3 months by daily P&L",            icon: "🗓️", size: "full", defaultOn: true,  component: WCalendar },
+  { id: "histogram",    name: "P&L Distribution",        desc: "Frequency distribution of your trade results",         icon: "📉", size: "full", defaultOn: false, component: WHistogram },
+  { id: "instrument",   name: "Instrument Breakdown",    desc: "Which markets you trade most frequently",               icon: "🔍", size: "half", defaultOn: false, component: WInstrument },
   { id: "profit-factor",name: "Profit Factor",           desc: "Profit Factor, Gross Profit/Loss, Expectancy",         icon: "⚡", size: "half", defaultOn: false, component: WProfitFactor },
-  { id: "frequency",    name: "Trade Häufigkeit",        desc: "Anzahl Trades pro Monat über die letzten 8 Monate",    icon: "🔢", size: "full", defaultOn: false, component: WFrequency },
+  { id: "frequency",    name: "Trade Frequency",         desc: "Number of trades per month over the last 8 months",    icon: "🔢", size: "full", defaultOn: false, component: WFrequency },
 ];
 
 const STORAGE_KEY = "tj-widget-prefs-v2";
@@ -589,19 +589,19 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <p style={{ color: "#6B7280", fontSize: "13px" }}>
-          {active.length} von {WIDGETS.length} Widgets aktiv
+          {active.length} of {WIDGETS.length} widgets active
         </p>
         <button
           onClick={() => setEditOpen(true)}
           style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
-          <span>⊞</span> Statistiken bearbeiten
+          <span>⊞</span> Edit Statistics
         </button>
       </div>
 
       {entries.length === 0 && (
         <div style={{ ...card, textAlign: "center", padding: "60px" }}>
           <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
-          <p style={{ color: "#4B5563", fontSize: "14px" }}>Noch keine Trades – Statistiken erscheinen sobald du Trades erfasst.</p>
+          <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades yet – Statistics will appear once you add trades.</p>
         </div>
       )}
 
@@ -630,13 +630,13 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
             {/* Panel Header */}
             <div style={{ padding: "24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <div>
-                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Statistiken bearbeiten</h3>
-                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} aktiv</p>
+                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Statistics</h3>
+                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} active</p>
               </div>
               <button
                 onClick={() => setEditOpen(false)}
                 style={{ padding: "8px 18px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>
-                Fertig
+                Done
               </button>
             </div>
 
@@ -645,7 +645,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
               {/* Active */}
               <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>
-                Aktiv
+                Active
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
                 {WIDGETS.filter(w => active.includes(w.id)).map(w => (
@@ -664,7 +664,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
               {WIDGETS.some(w => !active.includes(w.id)) && (
                 <>
                   <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>
-                    Verfügbar
+                    Available
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     {WIDGETS.filter(w => !active.includes(w.id)).map(w => (
