@@ -8,11 +8,8 @@ export default function BuiltForSection() {
 
   return (
     <section
-      style={{
-        backgroundColor: "#000000",
-        paddingTop: "120px",
-        paddingBottom: "120px",
-      }}
+      className="py-16 md:py-[120px]"
+      style={{ backgroundColor: "#000000" }}
     >
       <div
         className="mx-auto px-6 text-center"

@@ -62,7 +62,7 @@ export default function Header() {
               ((e.currentTarget as HTMLAnchorElement).style.color = "#9CA3AF")
             }
           >
-            AGB
+            Terms
           </Link>
         </nav>
 
@@ -142,7 +142,7 @@ export default function Header() {
             style={{ color: "#9CA3AF" }}
             onClick={() => setMenuOpen(false)}
           >
-            AGB
+            Terms
           </Link>
           <Link
             href="/login"

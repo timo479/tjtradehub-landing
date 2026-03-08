@@ -3,7 +3,7 @@ import Image from "next/image";
 export default function Hero() {
   return (
     <section
-      className="flex items-center"
+      className="flex items-center py-16 md:py-0"
       style={{
         minHeight: "85vh",
         paddingTop: "80px",
@@ -111,7 +111,7 @@ export default function Hero() {
               }}
             />
             <div style={{ perspective: "600px" }} className="relative z-10">
-              <div className="logo-rotate" style={{ width: 340, height: 340, position: "relative", transformStyle: "preserve-3d" }}>
+              <div className="logo-rotate w-[220px] h-[220px] md:w-[340px] md:h-[340px]" style={{ position: "relative", transformStyle: "preserve-3d" }}>
                 {Array.from({ length: 16 }).map((_, i) => (
                   <Image
                     key={i}

@@ -13,11 +13,8 @@ export default function PricingSection() {
   return (
     <section
       id="pricing"
-      style={{
-        backgroundColor: "#111827",
-        paddingTop: "120px",
-        paddingBottom: "120px",
-      }}
+      className="py-16 md:py-[120px]"
+      style={{ backgroundColor: "#111827" }}
     >
       <div
         className="mx-auto px-6 flex flex-col items-center"
