@@ -33,7 +33,7 @@ export default function Home() {
           style={{ maxWidth: "1200px" }}
         >
           <p className="text-sm" style={{ color: "#9CA3AF" }}>
-            © 2025 TJ TradeHub. All rights reserved.
+            © 2026 TJ TradeHub. All rights reserved.
           </p>
           <div className="flex items-center gap-6">
             {["Privacy Policy", "Terms of Service", "Contact"].map((link) => (

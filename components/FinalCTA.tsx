@@ -81,7 +81,7 @@ export default function FinalCTA() {
           className="mt-8 text-sm"
           style={{ color: "#9CA3AF" }}
         >
-          Founder rate: $29/month &nbsp;·&nbsp; Full access &nbsp;·&nbsp; Cancel anytime
+          Founder rate: CHF 29/month &nbsp;·&nbsp; Full access &nbsp;·&nbsp; Cancel anytime
         </p>
       </div>
     </section>
