@@ -435,7 +435,7 @@ export default function StatsView({ entries }: Props) {
         )}
         {stats.hasPnl && (
           <div style={card}>
-            {sectionTitle("Ø P&L nach Wochentag")}
+            {sectionTitle("Avg P&L by Weekday")}
             <WeekdayBars entries={entries} />
           </div>
         )}
@@ -443,14 +443,14 @@ export default function StatsView({ entries }: Props) {
 
       {/* Calendar */}
       <div style={card}>
-        {sectionTitle("Trade Kalender")}
+        {sectionTitle("Trade Calendar")}
         <TradeCalendar entries={entries} />
         <div style={{ display: "flex", gap: "16px", marginTop: "14px", flexWrap: "wrap" }}>
           {[
-            { color: "rgba(34,197,94,0.6)", label: "Positiver Tag" },
-            { color: "rgba(239,68,68,0.6)", label: "Negativer Tag" },
-            { color: "rgba(107,114,128,0.3)", label: "Break-even / kein P&L" },
-            { color: "#0d1117", label: "Kein Trade" },
+            { color: "rgba(34,197,94,0.6)", label: "Positive day" },
+            { color: "rgba(239,68,68,0.6)", label: "Negative day" },
+            { color: "rgba(107,114,128,0.3)", label: "Break-even / no P&L" },
+            { color: "#0d1117", label: "No trade" },
           ].map(l => (
             <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: "1px solid #1F2937" }} />

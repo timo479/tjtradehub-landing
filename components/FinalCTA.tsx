@@ -94,7 +94,7 @@ export default function FinalCTA() {
             color: "#4B5563",
           }}
         >
-          ⚠️ <strong style={{ color: "#6B7280" }}>Risikohinweis:</strong> TJ TradeHub ist ein Trading-Journal und Analytics-Tool. Wir sind <strong style={{ color: "#6B7280" }}>keine Finanzberater</strong> und erteilen keinerlei Anlageempfehlungen oder Handelssignale. Der Handel an der Börse birgt erhebliche Verlustrisiken. Alle Handelsentscheidungen liegen in der alleinigen Verantwortung des Nutzers.
+          ⚠️ <strong style={{ color: "#6B7280" }}>Risk Disclaimer:</strong> TJ TradeHub is a trading journal and analytics tool. We are <strong style={{ color: "#6B7280" }}>not financial advisors</strong> and do not provide investment recommendations or trading signals. Trading financial markets involves substantial risk of loss. All trading decisions are solely the responsibility of the user.
         </div>
       </div>
     </section>

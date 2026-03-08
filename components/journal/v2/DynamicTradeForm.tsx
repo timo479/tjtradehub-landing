@@ -160,10 +160,10 @@ export default function DynamicTradeForm({ template, onClose, onSaved, entryId, 
         {/* Footer */}
         <div style={{ padding: "16px 28px", borderTop: "1px solid #1F2937", display: "flex", gap: "12px", flexShrink: 0 }}>
           <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
-            Abbrechen
+            Cancel
           </button>
           <button onClick={save} disabled={saving} style={{ flex: 2, padding: "12px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", opacity: saving ? 0.7 : 1 }}>
-            {saving ? "Wird gespeichert..." : entryId ? "Änderungen speichern" : "Trade speichern"}
+            {saving ? "Saving..." : entryId ? "Save changes" : "Save trade"}
           </button>
         </div>
       </div>

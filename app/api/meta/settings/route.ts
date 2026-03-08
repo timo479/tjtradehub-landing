@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
 
   const { login, password, server, platform } = await req.json();
   if (!login || !password || !server || !platform) {
-    return NextResponse.json({ error: "Login, Passwort, Server und Plattform sind erforderlich" }, { status: 400 });
+    return NextResponse.json({ error: "Login, password, server and platform are required" }, { status: 400 });
   }
 
   // Altes Konto entfernen falls vorhanden

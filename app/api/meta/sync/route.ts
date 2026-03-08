@@ -22,7 +22,7 @@ async function ensureTemplate(userId: string): Promise<string> {
     .insert({ user_id: userId, name: META_TEMPLATE_NAME, version: 1 })
     .select()
     .single();
-  if (tErr || !tmpl) throw new Error("Template konnte nicht erstellt werden");
+  if (tErr || !tmpl) throw new Error("Failed to create template");
 
   // Create section
   const { data: sec } = await db
@@ -30,7 +30,7 @@ async function ensureTemplate(userId: string): Promise<string> {
     .insert({ template_id: tmpl.id, name: "Trade Info", order_index: 0 })
     .select()
     .single();
-  if (!sec) throw new Error("Section konnte nicht erstellt werden");
+  if (!sec) throw new Error("Failed to create section");
 
   // Create fields
   const fields = [

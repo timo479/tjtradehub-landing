@@ -2,7 +2,7 @@ const PROVISIONING = "https://mt-provisioning-api-v1.agiliumtrade.ai";
 
 function getToken(): string {
   const t = process.env.METAAPI_TOKEN;
-  if (!t) throw new Error("METAAPI_TOKEN nicht in .env konfiguriert");
+  if (!t) throw new Error("METAAPI_TOKEN not configured in .env");
   return t;
 }
 

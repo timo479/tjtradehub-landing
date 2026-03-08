@@ -36,11 +36,11 @@ const inp: React.CSSProperties = {
 function StateTag({ state, connectionStatus }: { state?: string; connectionStatus?: string }) {
   if (!state) return null;
   if (state === "DEPLOYED" && connectionStatus === "CONNECTED")
-    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e" }}>Verbunden</span>;
+    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(34,197,94,0.15)", color: "#22c55e" }}>Connected</span>;
   if (state === "DEPLOYED")
-    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>Bereit · Broker offline</span>;
+    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>Ready · Broker offline</span>;
   if (state === "DEPLOYING")
-    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>Verbinde...</span>;
+    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>Connecting...</span>;
   return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "#1F2937", color: "#6B7280" }}>{state}</span>;
 }
 
@@ -76,7 +76,7 @@ export default function MetaConnect() {
     if (!auto) { setError(null); setSyncResult(null); }
     const res = await fetch("/api/meta/sync", { method: "POST" });
     const data = await res.json();
-    if (!res.ok) { if (!auto) setError(data.error ?? "Sync fehlgeschlagen"); }
+    if (!res.ok) { if (!auto) setError(data.error ?? "Sync failed"); }
     else {
       setSyncResult({ synced: data.synced, skipped: data.skipped });
       setConn(prev => prev ? { ...prev, lastSync: new Date().toISOString() } : prev);
@@ -121,7 +121,7 @@ export default function MetaConnect() {
   }, [conn?.state]);
 
   const connect = async () => {
-    if (!login || !password || !server) { setError("Alle Felder ausfüllen"); return; }
+    if (!login || !password || !server) { setError("Please fill in all fields"); return; }
     setConnecting(true); setError(null);
     const res = await fetch("/api/meta/settings", {
       method: "POST",
@@ -129,7 +129,7 @@ export default function MetaConnect() {
       body: JSON.stringify({ login, password, server, platform }),
     });
     const data = await res.json();
-    if (!res.ok) { setError(data.error ?? "Verbindung fehlgeschlagen"); setConnecting(false); return; }
+    if (!res.ok) { setError(data.error ?? "Connection failed"); setConnecting(false); return; }
     setConnecting(false);
     setShowForm(false);
     setPassword("");
@@ -138,7 +138,7 @@ export default function MetaConnect() {
   };
 
   const disconnect = async () => {
-    if (!confirm("Verbindung trennen?")) return;
+    if (!confirm("Disconnect MetaTrader?")) return;
     await fetch("/api/meta/settings", { method: "DELETE" });
     setConn({ connected: false });
     setAccount(null);
@@ -152,7 +152,7 @@ export default function MetaConnect() {
   if (conn === null) return (
     <div style={{ ...card, display: "flex", alignItems: "center", gap: "10px" }}>
       <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#374151" }} />
-      <span style={{ color: "#4B5563", fontSize: "13px" }}>Lade MetaTrader Verbindung...</span>
+      <span style={{ color: "#4B5563", fontSize: "13px" }}>Loading MetaTrader connection...</span>
     </div>
   );
 
@@ -166,13 +166,13 @@ export default function MetaConnect() {
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                 <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px" }}>
-                  {conn.connected ? `MT${conn.platform === "mt5" ? "5" : "4"} · ${conn.login} · ${conn.server}` : "MetaTrader · Nicht verbunden"}
+                  {conn.connected ? `MT${conn.platform === "mt5" ? "5" : "4"} · ${conn.login} · ${conn.server}` : "MetaTrader · Not connected"}
                 </span>
                 <StateTag state={conn.state} connectionStatus={conn.connectionStatus} />
               </div>
               {conn.lastSync && (
                 <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "2px" }}>
-                  Letzter Sync: {new Date(conn.lastSync).toLocaleString("de-CH", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
+                  Last sync: {new Date(conn.lastSync).toLocaleString("en-GB", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" })}
                 </p>
               )}
             </div>
@@ -182,18 +182,18 @@ export default function MetaConnect() {
             {conn.state === "DEPLOYED" && (
               <button onClick={() => doSync(false)} disabled={syncing}
                 style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
-                {syncing ? "Sync..." : "↻ Jetzt synchronisieren"}
+                {syncing ? "Sync..." : "↻ Sync now"}
               </button>
             )}
             {conn.connected ? (
               <button onClick={disconnect}
                 style={{ padding: "7px 12px", borderRadius: "9px", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "12px" }}>
-                Trennen
+                Disconnect
               </button>
             ) : (
               <button onClick={() => { setShowForm(true); setError(null); }}
                 style={{ padding: "7px 16px", borderRadius: "9px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>
-                MT4/MT5 verbinden
+                Connect MT4/MT5
               </button>
             )}
           </div>
@@ -203,7 +203,7 @@ export default function MetaConnect() {
         {conn.state === "DEPLOYING" && (
           <div style={{ marginTop: "14px", backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "14px", height: "14px", border: "2px solid #8B5CF6", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
-            <p style={{ color: "#A78BFA", fontSize: "12px" }}>Verbindung wird aufgebaut – das dauert ca. 1–2 Minuten...</p>
+            <p style={{ color: "#A78BFA", fontSize: "12px" }}>Establishing connection – this takes about 1–2 minutes...</p>
           </div>
         )}
 
@@ -211,7 +211,7 @@ export default function MetaConnect() {
         {syncResult && (
           <div style={{ marginTop: "12px", backgroundColor: "rgba(34,197,94,0.07)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "10px", padding: "10px 14px" }}>
             <p style={{ color: "#22c55e", fontSize: "12px" }}>
-              ✓ {syncResult.synced} Trade{syncResult.synced !== 1 ? "s" : ""} importiert{syncResult.skipped > 0 ? ` · ${syncResult.skipped} bereits vorhanden` : ""}
+              ✓ {syncResult.synced} trade{syncResult.synced !== 1 ? "s" : ""} imported{syncResult.skipped > 0 ? ` · ${syncResult.skipped} already exist` : ""}
             </p>
           </div>
         )}
@@ -250,8 +250,8 @@ export default function MetaConnect() {
 
             <div style={{ padding: "22px 26px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>MetaTrader verbinden</h3>
-                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "3px" }}>MT4 oder MT5 Trading Account</p>
+                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Connect MetaTrader</h3>
+                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "3px" }}>MT4 or MT5 trading account</p>
               </div>
               <button onClick={() => setShowForm(false)} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px" }}>✕</button>
             </div>
@@ -260,7 +260,7 @@ export default function MetaConnect() {
 
               {/* Platform Toggle */}
               <div>
-                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Plattform</label>
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Platform</label>
                 <div style={{ display: "flex", gap: "8px" }}>
                   {(["mt5", "mt4"] as const).map(p => (
                     <button key={p} type="button" onClick={() => setPlatform(p)}
@@ -272,24 +272,24 @@ export default function MetaConnect() {
               </div>
 
               <div>
-                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Login-Nummer *</label>
-                <input style={inp} placeholder="z.B. 12345678" value={login} onChange={e => setLogin(e.target.value)} />
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Login Number *</label>
+                <input style={inp} placeholder="e.g. 12345678" value={login} onChange={e => setLogin(e.target.value)} />
               </div>
 
               <div>
-                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Passwort *</label>
-                <input style={inp} type="password" placeholder="Dein Trading-Passwort" value={password} onChange={e => setPassword(e.target.value)} />
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Password *</label>
+                <input style={inp} type="password" placeholder="Your trading password" value={password} onChange={e => setPassword(e.target.value)} />
               </div>
 
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Broker Server *</label>
-                <input style={inp} placeholder="z.B. ICMarkets-Live01" value={server} onChange={e => setServer(e.target.value)} />
-                <p style={{ color: "#374151", fontSize: "11px", marginTop: "5px" }}>Steht in deiner Broker-E-Mail oder im MetaTrader unter Datei → Konten</p>
+                <input style={inp} placeholder="e.g. ICMarkets-Live01" value={server} onChange={e => setServer(e.target.value)} />
+                <p style={{ color: "#374151", fontSize: "11px", marginTop: "5px" }}>Found in your broker email or in MetaTrader under File → Accounts</p>
               </div>
 
               <div style={{ backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", padding: "10px 14px" }}>
                 <p style={{ color: "#9CA3AF", fontSize: "11px" }}>
-                  🔒 Deine Zugangsdaten werden verschlüsselt übertragen. Die Verbindung läuft über MetaAPI.cloud – ein read-only Zugriff auf deine Trade-Historie.
+                  🔒 Your credentials are transmitted encrypted. The connection runs via MetaAPI.cloud – read-only access to your trade history.
                 </p>
               </div>
 
@@ -298,11 +298,11 @@ export default function MetaConnect() {
 
             <div style={{ padding: "16px 26px", borderTop: "1px solid #1F2937", display: "flex", gap: "10px" }}>
               <button onClick={() => setShowForm(false)} style={{ flex: 1, padding: "11px", borderRadius: "11px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
-                Abbrechen
+                Cancel
               </button>
               <button onClick={connect} disabled={connecting || !login || !password || !server}
                 style={{ flex: 2, padding: "11px", borderRadius: "11px", border: "none", backgroundColor: login && password && server ? "#8B5CF6" : "#1F2937", color: "#F9FAFB", fontWeight: 600, cursor: connecting ? "not-allowed" : "pointer", fontSize: "14px", opacity: connecting ? 0.7 : 1 }}>
-                {connecting ? "Verbinde..." : "Verbinden"}
+                {connecting ? "Connecting..." : "Connect"}
               </button>
             </div>
           </div>

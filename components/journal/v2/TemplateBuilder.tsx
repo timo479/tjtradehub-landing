@@ -24,12 +24,12 @@ interface Props {
 
 const FIELD_TYPES: { value: FieldType; label: string; icon: string }[] = [
   { value: "text",        label: "Text",         icon: "T"  },
-  { value: "number",      label: "Zahl",         icon: "#"  },
-  { value: "boolean",     label: "Ja / Nein",    icon: "✓"  },
-  { value: "select",      label: "Auswahl",      icon: "▾"  },
+  { value: "number",      label: "Number",       icon: "#"  },
+  { value: "boolean",     label: "Yes / No",     icon: "✓"  },
+  { value: "select",      label: "Select",       icon: "▾"  },
   { value: "multiselect", label: "Multi-Select", icon: "☑"  },
-  { value: "datetime",    label: "Datum & Zeit", icon: "📅" },
-  { value: "file",        label: "Datei",        icon: "📎" },
+  { value: "datetime",    label: "Date & Time",  icon: "📅" },
+  { value: "file",        label: "File",         icon: "📎" },
 ];
 
 const STANDARD_TEMPLATE: SectionDef[] = [
@@ -37,27 +37,27 @@ const STANDARD_TEMPLATE: SectionDef[] = [
     id: "s1", name: "Trade Info",
     fields: [
       { id: "f1", label: "Symbol / Asset",    field_type: "text",     is_required: true,  options: [] },
-      { id: "f2", label: "Datum & Uhrzeit",   field_type: "datetime", is_required: true,  options: [] },
-      { id: "f3", label: "Richtung",          field_type: "select",   is_required: true,  options: ["Long", "Short"] },
+      { id: "f2", label: "Date & Time",        field_type: "datetime", is_required: true,  options: [] },
+      { id: "f3", label: "Direction",         field_type: "select",   is_required: true,  options: ["Long", "Short"] },
       { id: "f4", label: "Setup Name",        field_type: "text",     is_required: true,  options: [] },
-      { id: "f5", label: "Instrument",        field_type: "select",   is_required: true,  options: ["Aktien", "Futures", "Forex", "Krypto", "Optionen", "CFDs"] },
+      { id: "f5", label: "Instrument",        field_type: "select",   is_required: true,  options: ["Stocks", "Futures", "Forex", "Crypto", "Options", "CFDs"] },
       { id: "f6", label: "P&L",              field_type: "number",   is_required: false, options: [] },
     ],
   },
   {
-    id: "s2", name: "Disziplin Checks",
+    id: "s2", name: "Discipline Checks",
     fields: [
-      { id: "f7",  label: "Setup eingehalten?",    field_type: "boolean", is_required: true, options: [] },
-      { id: "f8",  label: "Stop-Loss gesetzt?",    field_type: "boolean", is_required: true, options: [] },
+      { id: "f7",  label: "Setup followed?",       field_type: "boolean", is_required: true, options: [] },
+      { id: "f8",  label: "Stop-Loss set?",        field_type: "boolean", is_required: true, options: [] },
       { id: "f9",  label: "Revenge Trade?",        field_type: "boolean", is_required: true, options: [] },
-      { id: "f10", label: "Zu früh ausgestiegen?", field_type: "boolean", is_required: true, options: [] },
+      { id: "f10", label: "Exited too early?",     field_type: "boolean", is_required: true, options: [] },
     ],
   },
   {
-    id: "s3", name: "Psychologie & Notizen",
+    id: "s3", name: "Psychology & Notes",
     fields: [
-      { id: "f11", label: "Emotionen",        field_type: "multiselect", is_required: false, options: ["Gierig", "Ängstlich", "Ungeduldig", "Überzeugt", "Ruhig", "Nervös"] },
-      { id: "f12", label: "Notizen",          field_type: "text",        is_required: false, options: [] },
+      { id: "f11", label: "Emotions",         field_type: "multiselect", is_required: false, options: ["Greedy", "Fearful", "Impatient", "Confident", "Calm", "Nervous"] },
+      { id: "f12", label: "Notes",            field_type: "text",        is_required: false, options: [] },
       { id: "f13", label: "Chart Screenshot", field_type: "file",        is_required: false, options: [] },
     ],
   },
@@ -94,13 +94,13 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
   const totalFields = sections.reduce((s, sec) => s + sec.fields.length, 0);
 
   const loadStandard = () => {
-    setName("Mein Trading Journal");
+    setName("My Trading Journal");
     setSections(STANDARD_TEMPLATE.map(s => ({ ...s, id: uid(), fields: s.fields.map(f => ({ ...f, id: uid() })) })));
   };
 
   const addSection = () => {
     if (sections.length >= 3) return;
-    setSections(prev => [...prev, { id: uid(), name: `Sektion ${prev.length + 1}`, fields: [] }]);
+    setSections(prev => [...prev, { id: uid(), name: `Section ${prev.length + 1}`, fields: [] }]);
   };
 
   const openAddField = (sectionId: string) => {
@@ -142,9 +142,9 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
   };
 
   const save = async () => {
-    if (!name.trim()) { setError("Template braucht einen Namen"); return; }
-    if (sections.length === 0) { setError("Mindestens eine Sektion benötigt"); return; }
-    if (totalFields === 0) { setError("Mindestens ein Feld benötigt"); return; }
+    if (!name.trim()) { setError("Template needs a name"); return; }
+    if (sections.length === 0) { setError("At least one section required"); return; }
+    if (totalFields === 0) { setError("At least one field required"); return; }
     setSaving(true);
     setError(null);
     const res = await fetch("/api/v2/templates", {
@@ -171,9 +171,9 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
           {/* Header */}
           <div style={{ padding: "22px 28px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
             <div>
-              <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px", margin: 0 }}>Journal Template erstellen</h2>
+              <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px", margin: 0 }}>Create Journal Template</h2>
               <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "4px", marginBottom: 0 }}>
-                {totalFields}/20 Felder · {sections.length}/3 Sektionen
+                {totalFields}/20 fields · {sections.length}/3 sections
               </p>
             </div>
             <button onClick={onClose} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "22px", lineHeight: 1, padding: "4px" }}>✕</button>
@@ -188,7 +188,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Template Name *</label>
                 <input
                   style={inp}
-                  placeholder='z.B. "Mein Trading Journal"'
+                  placeholder='e.g. "My Trading Journal"'
                   value={name}
                   onChange={e => setName(e.target.value)}
                 />
@@ -197,7 +197,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                 onClick={loadStandard}
                 style={{ padding: "10px 16px", borderRadius: "10px", border: "1px solid rgba(139,92,246,0.5)", backgroundColor: "rgba(139,92,246,0.1)", color: "#A78BFA", fontSize: "13px", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}
               >
-                Standard laden
+                Load template
               </button>
             </div>
 
@@ -211,7 +211,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                     style={{ ...inp, padding: "6px 10px", backgroundColor: "transparent", border: "none", fontSize: "14px", fontWeight: 600, flex: 1 }}
                     value={section.name}
                     onChange={e => setSections(prev => prev.map(s => s.id === section.id ? { ...s, name: e.target.value } : s))}
-                    placeholder="Sektionsname"
+                    placeholder="Section name"
                   />
                   <button onClick={() => removeSection(section.id)} style={{ background: "none", border: "none", color: "#4B5563", cursor: "pointer", fontSize: "16px", padding: "4px", flexShrink: 0 }}>✕</button>
                 </div>
@@ -227,7 +227,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                       {field.options.length > 0 && (
                         <span style={{ color: "#4B5563", fontSize: "11px", maxWidth: "120px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{field.options.join(", ")}</span>
                       )}
-                      {field.is_required && <span style={{ color: "#8B5CF6", fontSize: "11px", flexShrink: 0 }}>Pflicht</span>}
+                      {field.is_required && <span style={{ color: "#8B5CF6", fontSize: "11px", flexShrink: 0 }}>Required</span>}
                       <button onClick={() => removeField(section.id, field.id)} style={{ background: "none", border: "none", color: "#374151", cursor: "pointer", fontSize: "16px", padding: "2px", flexShrink: 0 }}>✕</button>
                     </div>
                   ))}
@@ -237,7 +237,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                     disabled={totalFields >= 20}
                     style={{ padding: "10px", borderRadius: "10px", border: "1px dashed #1F2937", backgroundColor: "transparent", color: totalFields >= 20 ? "#374151" : "#6B7280", cursor: totalFields >= 20 ? "not-allowed" : "pointer", fontSize: "13px" }}
                   >
-                    + Feld hinzufügen{totalFields >= 20 ? " (Max. erreicht)" : ""}
+                    + Add field{totalFields >= 20 ? " (Max. reached)" : ""}
                   </button>
                 </div>
               </div>
@@ -249,7 +249,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                 onClick={addSection}
                 style={{ padding: "14px", borderRadius: "14px", border: "1px dashed #374151", backgroundColor: "transparent", color: "#6B7280", cursor: "pointer", fontSize: "14px", fontWeight: 500 }}
               >
-                + Sektion hinzufügen ({sections.length}/3)
+                + Add section ({sections.length}/3)
               </button>
             )}
 
@@ -263,10 +263,10 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
           {/* Footer */}
           <div style={{ padding: "16px 28px", borderTop: "1px solid #1F2937", display: "flex", gap: "12px", flexShrink: 0 }}>
             <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
-              Abbrechen
+              Cancel
             </button>
             <button onClick={save} disabled={saving} style={{ flex: 2, padding: "12px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", opacity: saving ? 0.7 : 1 }}>
-              {saving ? "Wird erstellt..." : "Template erstellen"}
+              {saving ? "Creating..." : "Create template"}
             </button>
           </div>
         </div>
@@ -284,7 +284,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
           >
             {/* Header */}
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-              <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Feld hinzufügen</h3>
+              <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Add Field</h3>
               <button onClick={closeAddField} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px", lineHeight: 1, padding: "4px" }}>✕</button>
             </div>
 
@@ -292,10 +292,10 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
             <div style={{ flex: 1, overflowY: "scroll", padding: "20px 24px", display: "flex", flexDirection: "column", gap: "16px" }}>
               {/* Field Name */}
               <div>
-                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Feldname *</label>
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Field name *</label>
                 <input
                   style={inp}
-                  placeholder='z.B. "P&L", "Symbol", "Notizen"'
+                  placeholder='e.g. "P&L", "Symbol", "Notes"'
                   value={fieldLabel}
                   onChange={e => setFieldLabel(e.target.value)}
                   autoFocus
@@ -304,7 +304,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
 
               {/* Field Type */}
               <div>
-                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Feldtyp</label>
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Field type</label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
                   {FIELD_TYPES.map(ft => (
                     <button
@@ -336,7 +336,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
               {/* Options for select/multiselect */}
               {(fieldType === "select" || fieldType === "multiselect") && (
                 <div>
-                  <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Optionen</label>
+                  <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Options</label>
                   {fieldOptions.length > 0 && (
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px" }}>
                       {fieldOptions.map((opt, i) => (
@@ -354,7 +354,7 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                   <div style={{ display: "flex", gap: "8px" }}>
                     <input
                       style={{ ...inp, flex: 1, padding: "8px 12px" }}
-                      placeholder="Option hinzufügen + Enter"
+                      placeholder="Add option + Enter"
                       value={optionInput}
                       onChange={e => setOptionInput(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addOption(); } }}
@@ -377,21 +377,21 @@ export default function TemplateBuilder({ onClose, onSaved }: Props) {
                 <div style={{ width: "18px", height: "18px", borderRadius: "5px", border: `2px solid ${fieldRequired ? "#8B5CF6" : "#374151"}`, backgroundColor: fieldRequired ? "#8B5CF6" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                   {fieldRequired && <span style={{ color: "#fff", fontSize: "11px", lineHeight: 1 }}>✓</span>}
                 </div>
-                <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Pflichtfeld</span>
+                <span style={{ color: "#9CA3AF", fontSize: "13px" }}>Required field</span>
               </button>
             </div>
 
             {/* Footer */}
             <div style={{ padding: "16px 24px", borderTop: "1px solid #1F2937", display: "flex", gap: "10px", flexShrink: 0 }}>
               <button onClick={closeAddField} style={{ flex: 1, padding: "11px", borderRadius: "11px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
-                Abbrechen
+                Cancel
               </button>
               <button
                 onClick={confirmField}
                 disabled={!fieldLabel.trim()}
                 style={{ flex: 2, padding: "11px", borderRadius: "11px", border: "none", backgroundColor: fieldLabel.trim() ? "#8B5CF6" : "#1F2937", color: "#F9FAFB", fontWeight: 600, cursor: fieldLabel.trim() ? "pointer" : "not-allowed", fontSize: "14px" }}
               >
-                Feld hinzufügen
+                Add field
               </button>
             </div>
           </div>

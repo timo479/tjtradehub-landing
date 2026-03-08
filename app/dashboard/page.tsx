@@ -46,27 +46,27 @@ export default async function DashboardPage() {
 
   const cards = [
     {
-      label: "Trades diesen Monat",
+      label: "Trades This Month",
       value: monthTrades.length > 0 ? monthTrades.length.toString() : "0",
-      sub: allTrades.length > 0 ? `${allTrades.length} gesamt` : "noch keine Trades",
+      sub: allTrades.length > 0 ? `${allTrades.length} total` : "no trades yet",
       color: "#F9FAFB",
     },
     {
-      label: "Ø Discipline Score",
+      label: "Avg Discipline Score",
       value: avgDiscipline ? `${avgDiscipline}/10` : "—",
-      sub: avgDiscipline ? "über alle Trades" : "Trades erfassen um zu berechnen",
+      sub: avgDiscipline ? "across all trades" : "add trades to calculate",
       color: avgDiscipline ? (parseFloat(avgDiscipline) >= 7 ? "#8B5CF6" : "#ef4444") : "#6B7280",
     },
     {
       label: "Win Rate",
       value: winRate !== null ? `${winRate}%` : "—",
-      sub: winRate !== null ? `${wins} von ${allTrades.length} Trades` : "Trades erfassen um zu berechnen",
+      sub: winRate !== null ? `${wins} of ${allTrades.length} trades` : "add trades to calculate",
       color: winRate !== null ? (winRate >= 50 ? "#22c55e" : "#ef4444") : "#6B7280",
     },
     {
       label: "Total P&L",
       value: allTrades.length ? `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} CHF` : "—",
-      sub: allTrades.length ? "realisierter Gewinn/Verlust" : "noch keine Trades",
+      sub: allTrades.length ? "realized profit / loss" : "no trades yet",
       color: allTrades.length ? (totalPnl >= 0 ? "#22c55e" : "#ef4444") : "#6B7280",
     },
   ];
@@ -182,8 +182,8 @@ export default async function DashboardPage() {
               </div>
               <p className="text-sm" style={{ color: "#9CA3AF" }}>
                 {allTrades.length > 0
-                  ? `${allTrades.length} Trade${allTrades.length > 1 ? "s" : ""} erfasst – weiter tracken`
-                  : "Ersten Trade erfassen und Statistiken aufbauen"}
+                  ? `${allTrades.length} trade${allTrades.length > 1 ? "s" : ""} logged – keep tracking`
+                  : "Log your first trade and build your statistics"}
               </p>
             </div>
           </Link>
@@ -199,7 +199,7 @@ export default async function DashboardPage() {
               </div>
               <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>MT5 Sync</h3>
             </div>
-            <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatische Trade-Synchronisation via MetaTrader 5</p>
+            <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatic trade synchronization via MetaTrader 5</p>
             <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
               style={{ backgroundColor: "rgba(59,130,246,0.1)", color: "#3B82F6", border: "1px solid rgba(59,130,246,0.2)" }}>
               Coming Soon

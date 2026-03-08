@@ -38,14 +38,14 @@ interface Props {
 }
 
 const MODULE_LIST = [
-  { key: "strategy", label: "Strategie & Regelcheckliste", desc: "Eigene Handelsregeln definieren – Discipline Score wird automatisch berechnet", icon: "🎯" },
-  { key: "prices", label: "Preise", desc: "Entry, Exit, Stop Loss, Take Profit", icon: "💰" },
-  { key: "position", label: "Position & Risiko", desc: "Lots, Risiko CHF, R-Multiple", icon: "📐" },
-  { key: "timeframe", label: "Timeframe", desc: "Welcher Zeitrahmen für den Trade", icon: "⏱️" },
-  { key: "session", label: "Session", desc: "London, New York, Asien, Überschneidung", icon: "🌍" },
-  { key: "psychology", label: "Psychologie", desc: "Emotionaler Zustand beim Trade", icon: "🧠" },
-  { key: "notes", label: "Notizen", desc: "Freitext-Notizen zum Trade", icon: "📝" },
-  { key: "custom", label: "Eigene Felder", desc: "Beliebige eigene Felder aktivieren", icon: "🔧" },
+  { key: "strategy", label: "Strategy & Rule Checklist", desc: "Define your trading rules – Discipline Score is calculated automatically", icon: "🎯" },
+  { key: "prices", label: "Prices", desc: "Entry, Exit, Stop Loss, Take Profit", icon: "💰" },
+  { key: "position", label: "Position & Risk", desc: "Lots, Risk CHF, R-Multiple", icon: "📐" },
+  { key: "timeframe", label: "Timeframe", desc: "Which timeframe for the trade", icon: "⏱️" },
+  { key: "session", label: "Session", desc: "London, New York, Asia, Overlap", icon: "🌍" },
+  { key: "psychology", label: "Psychology", desc: "Emotional state during the trade", icon: "🧠" },
+  { key: "notes", label: "Notes", desc: "Free-text notes for the trade", icon: "📝" },
+  { key: "custom", label: "Custom Fields", desc: "Enable any custom fields you need", icon: "🔧" },
 ];
 
 export default function JournalSettings({ onClose, onSaved }: Props) {
@@ -130,7 +130,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
   };
 
   const deleteStrategy = async (id: string) => {
-    if (!confirm("Strategie löschen?")) return;
+    if (!confirm("Delete strategy?")) return;
     await fetch(`/api/strategies/${id}`, { method: "DELETE" });
     setStrategies(s => s.filter(x => x.id !== id));
   };
@@ -190,15 +190,15 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
         {/* Header */}
         <div style={{ padding: "24px 28px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px" }}>Journal einrichten</h2>
-            <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "2px" }}>Baue dein Journal so wie du es brauchst</p>
+            <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px" }}>Configure Journal</h2>
+            <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "2px" }}>Build your journal exactly the way you need it</p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px" }}>✕</button>
         </div>
 
         {/* Tabs */}
         <div style={{ padding: "16px 28px", borderBottom: "1px solid #1F2937", display: "flex", gap: "8px" }}>
-          {([["modules", "Module"], ["strategies", "Strategien"], ["custom", "Eigene Felder"], ["risk", "⚠️ Risiko"]] as const).map(([key, label]) => (
+          {([["modules", "Modules"], ["strategies", "Strategies"], ["custom", "Custom Fields"], ["risk", "⚠️ Risk"]] as const).map(([key, label]) => (
             <button key={key} style={tabStyle(tab === key)} onClick={() => setTab(key)}>{label}</button>
           ))}
         </div>
@@ -248,17 +248,17 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                     <p style={{ color: "#9CA3AF", fontSize: "13px" }}>
-                      Definiere deine Handelsstrategien mit Regelchecklisten. Der Discipline Score wird automatisch berechnet.
+                      Define your trading strategies with rule checklists. The Discipline Score is calculated automatically.
                     </p>
                     <button onClick={() => setShowStrategyForm(true)} style={{
                       backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none",
                       borderRadius: "10px", padding: "8px 16px", fontSize: "13px",
                       fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap", marginLeft: "16px",
-                    }}>+ Strategie</button>
+                    }}>+ Strategy</button>
                   </div>
                   {strategies.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "40px", color: "#4B5563" }}>
-                      <p style={{ fontSize: "14px" }}>Noch keine Strategien definiert.</p>
+                      <p style={{ fontSize: "14px" }}>No strategies defined yet.</p>
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -270,8 +270,8 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                               {s.description && <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "2px" }}>{s.description}</p>}
                             </div>
                             <div style={{ display: "flex", gap: "8px" }}>
-                              <button onClick={() => openEditStrategy(s)} style={{ background: "none", border: "1px solid #1F2937", borderRadius: "6px", color: "#9CA3AF", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Bearbeiten</button>
-                              <button onClick={() => deleteStrategy(s.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "6px", color: "#ef4444", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Löschen</button>
+                              <button onClick={() => openEditStrategy(s)} style={{ background: "none", border: "1px solid #1F2937", borderRadius: "6px", color: "#9CA3AF", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Edit</button>
+                              <button onClick={() => deleteStrategy(s.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "6px", color: "#ef4444", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Delete</button>
                             </div>
                           </div>
                           <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
@@ -282,7 +282,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                               </div>
                             ))}
                           </div>
-                          <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "10px" }}>{s.strategy_rules.length} Regeln</p>
+                          <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "10px" }}>{s.strategy_rules.length} rule{s.strategy_rules.length !== 1 ? "s" : ""}</p>
                         </div>
                       ))}
                     </div>
@@ -294,25 +294,25 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                     <button onClick={() => { setShowStrategyForm(false); setEditingStrategy(null); setStratName(""); setStratDesc(""); setStratRules([""]); }}
                       style={{ background: "none", border: "none", color: "#9CA3AF", cursor: "pointer", fontSize: "18px" }}>←</button>
                     <h3 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px" }}>
-                      {editingStrategy ? "Strategie bearbeiten" : "Neue Strategie"}
+                      {editingStrategy ? "Edit strategy" : "New strategy"}
                     </h3>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                     <div>
                       <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Name *</label>
-                      <input style={inputStyle} placeholder='z.B. "London Breakout"' value={stratName} onChange={e => setStratName(e.target.value)} />
+                      <input style={inputStyle} placeholder='e.g. "London Breakout"' value={stratName} onChange={e => setStratName(e.target.value)} />
                     </div>
                     <div>
-                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Beschreibung (optional)</label>
-                      <input style={inputStyle} placeholder="Kurze Beschreibung der Strategie" value={stratDesc} onChange={e => setStratDesc(e.target.value)} />
+                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Description (optional)</label>
+                      <input style={inputStyle} placeholder="Short description of the strategy" value={stratDesc} onChange={e => setStratDesc(e.target.value)} />
                     </div>
                     <div>
-                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Regeln (Checkliste) *</label>
+                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Rules (checklist) *</label>
                       <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                         {stratRules.map((rule, i) => (
                           <div key={i} style={{ display: "flex", gap: "8px" }}>
                             <input style={{ ...inputStyle, flex: 1 }}
-                              placeholder={`Regel ${i + 1}, z.B. "Trend auf H4 bestätigt"`}
+                              placeholder={`Rule ${i + 1}, e.g. "Trend confirmed on H4"`}
                               value={rule} onChange={e => {
                                 const updated = [...stratRules];
                                 updated[i] = e.target.value;
@@ -326,7 +326,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                         ))}
                         <button onClick={() => setStratRules([...stratRules, ""])}
                           style={{ backgroundColor: "transparent", border: "1px dashed #374151", borderRadius: "10px", color: "#6B7280", cursor: "pointer", padding: "10px", fontSize: "13px" }}>
-                          + Regel hinzufügen
+                          + Add rule
                         </button>
                       </div>
                     </div>
@@ -334,7 +334,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                       backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none",
                       borderRadius: "12px", padding: "12px", fontWeight: 600, cursor: "pointer", fontSize: "14px",
                     }}>
-                      {editingStrategy ? "Änderungen speichern" : "Strategie erstellen"}
+                      {editingStrategy ? "Save changes" : "Create strategy"}
                     </button>
                   </div>
                 </div>
@@ -348,7 +348,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
               {!showFieldForm ? (
                 <>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
-                    <p style={{ color: "#9CA3AF", fontSize: "13px" }}>Füge eigene Felder hinzu die zu deinem System passen.</p>
+                    <p style={{ color: "#9CA3AF", fontSize: "13px" }}>Add custom fields that fit your trading system.</p>
                     <button onClick={() => setShowFieldForm(true)} style={{
                       backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none",
                       borderRadius: "10px", padding: "8px 16px", fontSize: "13px",
@@ -357,7 +357,7 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                   </div>
                   {customFields.length === 0 ? (
                     <div style={{ textAlign: "center", padding: "40px", color: "#4B5563", fontSize: "14px" }}>
-                      Noch keine eigenen Felder. Aktiviere zuerst das Modul "Eigene Felder".
+                      No custom fields yet. First enable the "Custom Fields" module.
                     </div>
                   ) : (
                     <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -366,10 +366,10 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                           <div>
                             <p style={{ color: "#F9FAFB", fontSize: "14px", fontWeight: 500 }}>{f.label}</p>
                             <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "2px" }}>
-                              {f.field_type === "text" ? "Text" : f.field_type === "number" ? "Zahl" : f.field_type === "boolean" ? "Ja/Nein" : `Auswahl: ${f.options?.join(", ")}`}
+                              {f.field_type === "text" ? "Text" : f.field_type === "number" ? "Number" : f.field_type === "boolean" ? "Yes/No" : `Select: ${f.options?.join(", ")}`}
                             </p>
                           </div>
-                          <button onClick={() => deleteCustomField(f.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "6px", color: "#ef4444", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Löschen</button>
+                          <button onClick={() => deleteCustomField(f.id)} style={{ background: "none", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "6px", color: "#ef4444", cursor: "pointer", padding: "4px 10px", fontSize: "12px" }}>Delete</button>
                         </div>
                       ))}
                     </div>
@@ -380,17 +380,17 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                   <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
                     <button onClick={() => setShowFieldForm(false)}
                       style={{ background: "none", border: "none", color: "#9CA3AF", cursor: "pointer", fontSize: "18px" }}>←</button>
-                    <h3 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px" }}>Neues Feld</h3>
+                    <h3 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px" }}>New Field</h3>
                   </div>
                   <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
                     <div>
-                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Feldname *</label>
-                      <input style={inputStyle} placeholder='z.B. "HTF Bias", "Spread", "News-Event"' value={fieldLabel} onChange={e => setFieldLabel(e.target.value)} />
+                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Field name *</label>
+                      <input style={inputStyle} placeholder='e.g. "HTF Bias", "Spread", "News Event"' value={fieldLabel} onChange={e => setFieldLabel(e.target.value)} />
                     </div>
                     <div>
-                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Feldtyp</label>
+                      <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Field type</label>
                       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                        {([["text", "Text", "Freitext"], ["number", "Zahl", "Numerischer Wert"], ["boolean", "Ja / Nein", "Toggle"], ["select", "Auswahl", "Dropdown"]] as const).map(([val, label, desc]) => (
+                        {([["text", "Text", "Free text"], ["number", "Number", "Numeric value"], ["boolean", "Yes / No", "Toggle"], ["select", "Select", "Dropdown"]] as const).map(([val, label, desc]) => (
                           <button key={val} type="button" onClick={() => setFieldType(val)}
                             style={{
                               padding: "10px", borderRadius: "10px", textAlign: "left",
@@ -406,14 +406,14 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
                     </div>
                     {fieldType === "select" && (
                       <div>
-                        <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Optionen (kommagetrennt)</label>
-                        <input style={inputStyle} placeholder='z.B. "Long, Short, Neutral"' value={fieldOptions} onChange={e => setFieldOptions(e.target.value)} />
+                        <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Options (comma-separated)</label>
+                        <input style={inputStyle} placeholder='e.g. "Long, Short, Neutral"' value={fieldOptions} onChange={e => setFieldOptions(e.target.value)} />
                       </div>
                     )}
                     <button onClick={saveCustomField} style={{
                       backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none",
                       borderRadius: "12px", padding: "12px", fontWeight: 600, cursor: "pointer", fontSize: "14px",
-                    }}>Feld erstellen</button>
+                    }}>Create field</button>
                   </div>
                 </div>
               )}
@@ -424,56 +424,56 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
             <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
               <div style={{ backgroundColor: "rgba(239,68,68,0.05)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "12px", padding: "14px 16px" }}>
                 <p style={{ color: "#FCA5A5", fontSize: "13px", lineHeight: "1.5" }}>
-                  Wenn du beim Trade-Erfassen mehr als <strong>20% über dein definiertes Limit</strong> gehst, wirst du gewarnt bevor du speicherst.
+                  If you exceed your defined limit by more than <strong>20%</strong> when logging a trade, you will be warned before saving.
                 </p>
               </div>
 
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>
-                  Max. Risiko pro Trade (CHF)
+                  Max. risk per trade (CHF)
                 </label>
                 <input
                   type="number" step="any"
                   style={inputStyle}
-                  placeholder="z.B. 50"
+                  placeholder="e.g. 50"
                   value={riskSettings.max_risk_per_trade ?? ""}
                   onChange={e => setRiskSettings(r => ({ ...r, max_risk_per_trade: e.target.value }))}
                 />
                 <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>
-                  Warnung bei &gt; {riskSettings.max_risk_per_trade ? (parseFloat(riskSettings.max_risk_per_trade) * 1.2).toFixed(2) : "—"} CHF
+                  Warning above &gt; {riskSettings.max_risk_per_trade ? (parseFloat(riskSettings.max_risk_per_trade) * 1.2).toFixed(2) : "—"} CHF
                 </p>
               </div>
 
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>
-                  Max. Tagesverlust (CHF)
+                  Max. daily loss (CHF)
                 </label>
                 <input
                   type="number" step="any"
                   style={inputStyle}
-                  placeholder="z.B. 150"
+                  placeholder="e.g. 150"
                   value={riskSettings.max_daily_loss ?? ""}
                   onChange={e => setRiskSettings(r => ({ ...r, max_daily_loss: e.target.value }))}
                 />
                 <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>
-                  Warnung wenn Tages-P&L unter -{riskSettings.max_daily_loss ?? "—"} CHF fällt
+                  Warning when daily P&L drops below -{riskSettings.max_daily_loss ?? "—"} CHF
                 </p>
               </div>
 
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>
-                  Account-Grösse (CHF) <span style={{ color: "#4B5563" }}>optional</span>
+                  Account size (CHF) <span style={{ color: "#4B5563" }}>optional</span>
                 </label>
                 <input
                   type="number" step="any"
                   style={inputStyle}
-                  placeholder="z.B. 10000"
+                  placeholder="e.g. 10000"
                   value={riskSettings.account_size ?? ""}
                   onChange={e => setRiskSettings(r => ({ ...r, account_size: e.target.value }))}
                 />
                 {riskSettings.account_size && riskSettings.max_risk_per_trade && (
                   <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>
-                    = {((parseFloat(riskSettings.max_risk_per_trade) / parseFloat(riskSettings.account_size)) * 100).toFixed(2)}% des Accounts pro Trade
+                    = {((parseFloat(riskSettings.max_risk_per_trade) / parseFloat(riskSettings.account_size)) * 100).toFixed(2)}% of account per trade
                   </p>
                 )}
               </div>
@@ -486,11 +486,11 @@ export default function JournalSettings({ onClose, onSaved }: Props) {
         {(tab === "modules" || tab === "risk") && (
           <div style={{ padding: "16px 28px", borderTop: "1px solid #1F2937", display: "flex", gap: "12px" }}>
             <button onClick={onClose} style={{ flex: 1, padding: "12px", borderRadius: "12px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
-              Abbrechen
+              Cancel
             </button>
             <button onClick={tab === "risk" ? saveRiskSettings : saveModules} disabled={saving}
               style={{ flex: 2, padding: "12px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
-              {saving ? "Speichern..." : "Einstellungen speichern"}
+              {saving ? "Saving..." : "Save settings"}
             </button>
           </div>
         )}
