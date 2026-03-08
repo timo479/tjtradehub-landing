@@ -83,6 +83,19 @@ export default function FinalCTA() {
         >
           Founder rate: CHF 29/month &nbsp;·&nbsp; Full access &nbsp;·&nbsp; Cancel anytime
         </p>
+
+        {/* Disclaimer */}
+        <div
+          className="mt-10 mx-auto px-5 py-4 rounded-xl text-xs leading-relaxed"
+          style={{
+            maxWidth: "600px",
+            backgroundColor: "rgba(255,255,255,0.03)",
+            border: "1px solid #1F2937",
+            color: "#4B5563",
+          }}
+        >
+          ⚠️ <strong style={{ color: "#6B7280" }}>Risikohinweis:</strong> TJ TradeHub ist ein Trading-Journal und Analytics-Tool. Wir sind <strong style={{ color: "#6B7280" }}>keine Finanzberater</strong> und erteilen keinerlei Anlageempfehlungen oder Handelssignale. Der Handel an der Börse birgt erhebliche Verlustrisiken. Alle Handelsentscheidungen liegen in der alleinigen Verantwortung des Nutzers.
+        </div>
       </div>
     </section>
   );

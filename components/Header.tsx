@@ -51,6 +51,19 @@ export default function Header() {
               {item}
             </a>
           ))}
+          <Link
+            href="/terms"
+            className="text-sm font-medium transition-colors duration-200"
+            style={{ color: "#9CA3AF" }}
+            onMouseEnter={(e) =>
+              ((e.currentTarget as HTMLAnchorElement).style.color = "#F9FAFB")
+            }
+            onMouseLeave={(e) =>
+              ((e.currentTarget as HTMLAnchorElement).style.color = "#9CA3AF")
+            }
+          >
+            AGB
+          </Link>
         </nav>
 
         {/* CTA */}
@@ -123,6 +136,14 @@ export default function Header() {
               {item}
             </a>
           ))}
+          <Link
+            href="/terms"
+            className="text-sm font-medium py-2"
+            style={{ color: "#9CA3AF" }}
+            onClick={() => setMenuOpen(false)}
+          >
+            AGB
+          </Link>
           <Link
             href="/login"
             className="text-sm font-medium py-2"
