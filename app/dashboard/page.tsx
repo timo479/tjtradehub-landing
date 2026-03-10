@@ -119,6 +119,9 @@ export default async function DashboardPage() {
               <Link href="/dashboard/journal" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
                 Journal
               </Link>
+              <Link href="/dashboard/calendar" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
+                Calendar
+              </Link>
             </nav>
           </div>
           <UserMenu name={name} email={session.user.email} />
