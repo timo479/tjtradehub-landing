@@ -205,9 +205,9 @@ function WWeekday({ entries }: { entries: Entry[] }) {
     <svg viewBox={`0 0 ${tW} ${H + 24}`} style={{ width: "100%", maxWidth: "260px", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
-        const h = (Math.abs(b.avg) / maxAbs) * (H / 2 - 4);
+        const mid = H * 0.7;
+        const h = (Math.abs(b.avg) / maxAbs) * (mid - 4);
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
-        const mid = H / 2;
         return (
           <g key={b.label}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
@@ -250,9 +250,9 @@ function WMonthly({ entries }: { entries: Entry[] }) {
     <svg viewBox={`0 0 ${tW} ${H + 24}`} style={{ width: "100%", maxWidth: "480px", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
-        const h = (Math.abs(b.total) / maxAbs) * (H / 2 - 4);
+        const mid = H * 0.7;
+        const h = (Math.abs(b.total) / maxAbs) * (mid - 6);
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
-        const mid = H / 2;
         return (
           <g key={b.key}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
