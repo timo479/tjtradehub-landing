@@ -2,15 +2,15 @@
 import { useState } from "react";
 import { getMarketHoliday, getHolidaysForYear, getUpcomingHolidays } from "@/lib/market-holidays";
 
-const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = [
-  "Januar", "Februar", "März", "April", "Mai", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "Dezember",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 function formatDate(dateStr: string) {
   const d = new Date(dateStr + "T00:00:00");
-  return d.toLocaleDateString("de-CH", { day: "2-digit", month: "long", year: "numeric" });
+  return d.toLocaleDateString("en-US", { day: "2-digit", month: "long", year: "numeric" });
 }
 
 function daysUntil(dateStr: string) {
@@ -18,9 +18,9 @@ function daysUntil(dateStr: string) {
   today.setHours(0, 0, 0, 0);
   const target = new Date(dateStr + "T00:00:00");
   const diff = Math.round((target.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-  if (diff === 0) return "Heute";
-  if (diff === 1) return "Morgen";
-  return `in ${diff} Tagen`;
+  if (diff === 0) return "Today";
+  if (diff === 1) return "Tomorrow";
+  return `in ${diff} days`;
 }
 
 export default function MarketCalendar() {
@@ -49,7 +49,7 @@ export default function MarketCalendar() {
       <div>
         <h1 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "22px" }}>Market Calendar</h1>
         <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "2px" }}>
-          NYSE / USD – Tage an denen der Markt geschlossen ist
+          NYSE / USD – Days when the market is closed
         </p>
       </div>
 
@@ -69,7 +69,7 @@ export default function MarketCalendar() {
                 {MONTHS[month]} {year}
               </h2>
               <p style={{ color: "#4B5563", fontSize: "12px", marginTop: "2px" }}>
-                {yearHolidays.filter(h => new Date(h.date + "T00:00:00").getMonth() === month).length} Feiertage diesen Monat
+                {yearHolidays.filter(h => new Date(h.date + "T00:00:00").getMonth() === month).length} holidays this month
               </p>
             </div>
             <button onClick={nextMonth} style={{
@@ -169,15 +169,15 @@ export default function MarketCalendar() {
           <div style={{ display: "flex", gap: "20px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid #1F2937" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "12px", height: "12px", borderRadius: "3px", backgroundColor: "rgba(251,146,60,0.1)", border: "1px solid rgba(251,146,60,0.4)" }} />
-              <span style={{ color: "#6B7280", fontSize: "12px" }}>Markt geschlossen</span>
+              <span style={{ color: "#6B7280", fontSize: "12px" }}>Market Closed</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "12px", height: "12px", borderRadius: "3px", backgroundColor: "rgba(139,92,246,0.08)", border: "1px solid #8B5CF6" }} />
-              <span style={{ color: "#6B7280", fontSize: "12px" }}>Heute</span>
+              <span style={{ color: "#6B7280", fontSize: "12px" }}>Today</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <div style={{ width: "12px", height: "12px", borderRadius: "3px", backgroundColor: "transparent", border: "1px solid #1F2937" }} />
-              <span style={{ color: "#6B7280", fontSize: "12px" }}>Trading-Tag</span>
+              <span style={{ color: "#6B7280", fontSize: "12px" }}>Trading Day</span>
             </div>
           </div>
         </div>
@@ -188,7 +188,7 @@ export default function MarketCalendar() {
           {/* Upcoming Holidays */}
           <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "20px" }}>
             <h3 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px", marginBottom: "16px" }}>
-              Nächste Feiertage
+              Upcoming Holidays
             </h3>
             <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               {upcomingHolidays.map(({ date, name }) => (
@@ -206,10 +206,10 @@ export default function MarketCalendar() {
           {/* All holidays this year */}
           <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "20px" }}>
             <h3 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px", marginBottom: "16px" }}>
-              Alle Feiertage {year}
+              All Holidays {year}
             </h3>
             {yearHolidays.length === 0 ? (
-              <p style={{ color: "#4B5563", fontSize: "13px" }}>Keine Daten für {year}.</p>
+              <p style={{ color: "#4B5563", fontSize: "13px" }}>No data for {year}.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
                 {yearHolidays.map(({ date, name }) => {

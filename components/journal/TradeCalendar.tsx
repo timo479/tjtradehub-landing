@@ -11,10 +11,10 @@ interface Props {
   trades: Trade[];
 }
 
-const WEEKDAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
+const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = [
-  "Januar", "Februar", "März", "April", "Mai", "Juni",
-  "Juli", "August", "September", "Oktober", "November", "Dezember",
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
 ];
 
 export default function TradeCalendar({ trades }: Props) {
@@ -86,19 +86,19 @@ export default function TradeCalendar({ trades }: Props) {
         {/* Month stats */}
         <div style={{ display: "flex", gap: "24px", fontSize: "13px" }}>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Trades-Tage</p>
+            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Trade Days</p>
             <p style={{ color: "#F9FAFB", fontWeight: 600 }}>{monthTrades.length}</p>
           </div>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Grüne Tage</p>
+            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Green Days</p>
             <p style={{ color: "#22c55e", fontWeight: 600 }}>{greenDays}</p>
           </div>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Rote Tage</p>
+            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Red Days</p>
             <p style={{ color: "#ef4444", fontWeight: 600 }}>{redDays}</p>
           </div>
           <div style={{ textAlign: "center" }}>
-            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Monats-P&L</p>
+            <p style={{ color: "#6B7280", marginBottom: "2px" }}>Monthly P&L</p>
             <p style={{ color: monthPnl >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>
               {monthPnl >= 0 ? "+" : ""}{monthPnl.toFixed(2)}
             </p>

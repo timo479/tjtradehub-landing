@@ -45,7 +45,7 @@ export default async function CalendarPage() {
                 Journal
               </Link>
               <Link href="/dashboard/calendar" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>
-                Kalender
+                Calendar
               </Link>
             </nav>
           </div>
