@@ -1,13 +1,13 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import JournalV2 from "@/components/journal/v2/JournalV2";
-import SignOutButton from "@/components/SignOutButton";
 import Link from "next/link";
 import Image from "next/image";
+import SignOutButton from "@/components/SignOutButton";
+import MarketCalendar from "@/components/calendar/MarketCalendar";
 
-export const metadata = { title: "Journal – TJ TradeHub" };
+export const metadata = { title: "Market Calendar – TJ TradeHub" };
 
-export default async function JournalPage() {
+export default async function CalendarPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
@@ -41,11 +41,10 @@ export default async function JournalPage() {
               <Link href="/dashboard" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
                 Dashboard
               </Link>
-              <Link href="/dashboard/journal"
-                style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>
+              <Link href="/dashboard/journal" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
                 Journal
               </Link>
-              <Link href="/dashboard/calendar" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
+              <Link href="/dashboard/calendar" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>
                 Kalender
               </Link>
             </nav>
@@ -59,7 +58,7 @@ export default async function JournalPage() {
 
       {/* Content */}
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalV2 />
+        <MarketCalendar />
       </main>
     </div>
   );

@@ -1,5 +1,6 @@
 "use client";
 import { useState, useMemo } from "react";
+import { getMarketHoliday } from "@/lib/market-holidays";
 
 interface Trade {
   trade_date: string;
@@ -127,12 +128,16 @@ export default function TradeCalendar({ trades }: Props) {
 
           const dateStr = `${year}-${String(month + 1).padStart(2, "0")}-${String(dayNum).padStart(2, "0")}`;
           const data = tradesByDate[dateStr];
+          const holiday = getMarketHoliday(dateStr);
 
           let bg = "transparent";
           let borderColor = "#1F2937";
           let pnlColor = "#9CA3AF";
 
-          if (data) {
+          if (holiday && !data) {
+            bg = "rgba(251, 146, 60, 0.07)";
+            borderColor = "rgba(251, 146, 60, 0.3)";
+          } else if (data) {
             if (data.pnl > 0) {
               bg = "rgba(34, 197, 94, 0.1)";
               borderColor = "rgba(34, 197, 94, 0.4)";
@@ -148,7 +153,7 @@ export default function TradeCalendar({ trades }: Props) {
           }
 
           return (
-            <div key={i} style={{
+            <div key={i} title={holiday ?? undefined} style={{
               height: "64px",
               borderRadius: "8px",
               border: `1px solid ${isToday ? "#8B5CF6" : borderColor}`,
@@ -162,10 +167,15 @@ export default function TradeCalendar({ trades }: Props) {
               <span style={{
                 fontSize: "12px",
                 fontWeight: isToday ? 700 : 400,
-                color: isToday ? "#8B5CF6" : data ? "#F9FAFB" : "#4B5563",
+                color: isToday ? "#8B5CF6" : holiday && !data ? "#fb923c" : data ? "#F9FAFB" : "#4B5563",
               }}>
                 {dayNum}
               </span>
+              {holiday && !data && (
+                <p style={{ color: "#fb923c", fontSize: "9px", fontWeight: 600, lineHeight: 1.2, overflow: "hidden" }}>
+                  CLOSED
+                </p>
+              )}
               {data && (
                 <div>
                   <p style={{ color: pnlColor, fontSize: "11px", fontWeight: 600, lineHeight: 1 }}>
