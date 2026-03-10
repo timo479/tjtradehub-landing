@@ -1,5 +1,6 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
+import { getMarketHoliday } from "@/lib/market-holidays";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -274,7 +275,11 @@ function WMonthly({ entries }: { entries: Entry[] }) {
 
 function WCalendar({ entries }: { entries: Entry[] }) {
   const today = new Date();
-  const months = [2, 1, 0].map(i => { const d = new Date(today.getFullYear(), today.getMonth() - i, 1); return { y: d.getFullYear(), m: d.getMonth() }; }).reverse();
+  // Current month + next 2 months (Mar → Apr → May)
+  const months = [0, 1, 2].map(i => {
+    const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
+    return { y: d.getFullYear(), m: d.getMonth() };
+  });
 
   const pnlByDate = useMemo(() => {
     const map: Record<string, { pnl: number; count: number }> = {};
@@ -287,12 +292,19 @@ function WCalendar({ entries }: { entries: Entry[] }) {
     return map;
   }, [entries]);
 
-  const cellBg = (key: string) => {
-    const d = pnlByDate[key];
-    if (!d) return "#0d1117";
-    if (d.pnl > 0) return `rgba(34,197,94,${Math.min(0.85, 0.3 + d.pnl / 200)})`;
-    if (d.pnl < 0) return `rgba(239,68,68,${Math.min(0.85, 0.3 + Math.abs(d.pnl) / 200)})`;
-    return "rgba(107,114,128,0.3)";
+  const getCellStyle = (key: string, dayOfWeek: number): { bg: string; border: string; color: string; label?: string } => {
+    const trade = pnlByDate[key];
+    const holiday = getMarketHoliday(key);
+    const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Sat=5, Sun=6 (0=Mon offset)
+
+    if (trade) {
+      if (trade.pnl > 0) return { bg: `rgba(34,197,94,${Math.min(0.85, 0.3 + trade.pnl / 200)})`, border: "transparent", color: "#F9FAFB" };
+      if (trade.pnl < 0) return { bg: `rgba(239,68,68,${Math.min(0.85, 0.3 + Math.abs(trade.pnl) / 200)})`, border: "transparent", color: "#F9FAFB" };
+      return { bg: "rgba(107,114,128,0.3)", border: "transparent", color: "#F9FAFB" };
+    }
+    if (holiday) return { bg: "rgba(251,146,60,0.12)", border: "rgba(251,146,60,0.4)", color: "#fb923c", label: "CLOSED" };
+    if (isWeekend) return { bg: "#0a0a0a", border: "transparent", color: "#1F2937" };
+    return { bg: "#0d1117", border: "transparent", color: "#374151" };
   };
 
   return (
@@ -314,12 +326,23 @@ function WCalendar({ entries }: { entries: Entry[] }) {
                 {cells.map((day, i) => {
                   if (!day) return <div key={i} />;
                   const key = `${y}-${String(m + 1).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-                  const d = pnlByDate[key];
+                  const dayOfWeek = i % 7;
+                  const trade = pnlByDate[key];
+                  const holiday = getMarketHoliday(key);
                   const isToday = today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
+                  const { bg, border, color, label } = getCellStyle(key, dayOfWeek);
+                  const titleText = trade
+                    ? `${trade.count} Trade${trade.count > 1 ? "s" : ""} · ${fmt(trade.pnl)}`
+                    : holiday ?? String(day);
                   return (
-                    <div key={i} title={d ? `${d.count} Trade${d.count > 1 ? "s" : ""} · ${fmt(d.pnl)}` : String(day)}
-                      style={{ aspectRatio: "1", borderRadius: "3px", backgroundColor: cellBg(key), border: isToday ? "1px solid #8B5CF6" : "1px solid transparent", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "8px", color: d ? "#F9FAFB" : "#374151" }}>
-                      {day}
+                    <div key={i} title={titleText} style={{
+                      aspectRatio: "1", borderRadius: "3px", backgroundColor: bg,
+                      border: isToday ? "1px solid #8B5CF6" : `1px solid ${border}`,
+                      display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
+                      fontSize: "8px", color,
+                    }}>
+                      <span>{day}</span>
+                      {label && <span style={{ fontSize: "6px", fontWeight: 700, lineHeight: 1 }}>{label}</span>}
                     </div>
                   );
                 })}
@@ -329,9 +352,15 @@ function WCalendar({ entries }: { entries: Entry[] }) {
         })}
       </div>
       <div style={{ display: "flex", gap: "14px", marginTop: "12px", flexWrap: "wrap" }}>
-        {[{ c: "rgba(34,197,94,0.6)", l: "Positive" }, { c: "rgba(239,68,68,0.6)", l: "Negative" }, { c: "rgba(107,114,128,0.3)", l: "Break-even" }, { c: "#0d1117", l: "No Trade" }].map(x => (
+        {[
+          { c: "rgba(34,197,94,0.6)", l: "Positive" },
+          { c: "rgba(239,68,68,0.6)", l: "Negative" },
+          { c: "rgba(107,114,128,0.3)", l: "Break-even" },
+          { c: "#0d1117", l: "No Trade" },
+          { c: "rgba(251,146,60,0.12)", l: "Market Closed", border: "rgba(251,146,60,0.4)" },
+        ].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: "1px solid #1F2937" }} />
+            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: `1px solid ${"border" in x ? x.border : "#1F2937"}` }} />
             <span style={{ color: "#4B5563", fontSize: "11px" }}>{x.l}</span>
           </div>
         ))}
