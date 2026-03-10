@@ -50,7 +50,10 @@ export default function RegisterForm() {
           We sent a verification link to <span style={{ color: "#F9FAFB" }}>{form.email}</span>.<br />
           Click the link to activate your account.
         </p>
-        <p className="text-xs mt-2" style={{ color: "#6B7280" }}>
+        <p className="text-xs" style={{ color: "#6B7280" }}>
+          Can&apos;t find it? Check your <strong style={{ color: "#9CA3AF" }}>spam / junk folder</strong>.
+        </p>
+        <p className="text-xs" style={{ color: "#6B7280" }}>
           Already verified?{" "}
           <a href="/login" style={{ color: "#8B5CF6" }}>Sign in</a>
         </p>
