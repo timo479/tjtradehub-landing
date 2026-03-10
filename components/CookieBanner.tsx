@@ -30,22 +30,22 @@ export default function CookieBanner() {
       gap: "16px", flexWrap: "wrap", boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
     }}>
       <p style={{ color: "#9CA3AF", fontSize: "13px", flex: 1, minWidth: "200px" }}>
-        Wir verwenden Cookies für grundlegende Funktionen und anonyme Nutzungsstatistiken.
-        Mehr dazu in unseren{" "}
-        <Link href="/terms" style={{ color: "#8B5CF6", textDecoration: "underline" }}>AGB</Link>.
+        We use cookies for essential functionality and anonymous usage statistics.
+        Learn more in our{" "}
+        <Link href="/terms" style={{ color: "#8B5CF6", textDecoration: "underline" }}>Terms</Link>.
       </p>
       <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
         <button onClick={decline} style={{
           padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937",
           backgroundColor: "transparent", color: "#6B7280", cursor: "pointer", fontSize: "13px",
         }}>
-          Ablehnen
+          Decline
         </button>
         <button onClick={accept} style={{
           padding: "8px 20px", borderRadius: "10px", border: "none",
           backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px",
         }}>
-          Akzeptieren
+          Accept
         </button>
       </div>
     </div>
