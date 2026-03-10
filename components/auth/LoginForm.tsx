@@ -86,9 +86,14 @@ export default function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <label className="text-sm font-medium" style={{ color: "#9CA3AF" }}>
-          Password
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-sm font-medium" style={{ color: "#9CA3AF" }}>
+            Password
+          </label>
+          <Link href="/forgot-password" className="text-xs" style={{ color: "#8B5CF6" }}>
+            Forgot password?
+          </Link>
+        </div>
         <input
           type="password"
           placeholder="Your password"

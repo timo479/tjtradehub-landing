@@ -9,10 +9,11 @@ export const metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ verified?: string; error?: string }>;
+  searchParams: Promise<{ verified?: string; error?: string; reset?: string }>;
 }) {
   const params = await searchParams;
   const verified = params.verified === "1";
+  const passwordReset = params.reset === "1";
   const tokenExpired = params.error === "token_expired";
   const invalidToken = params.error === "invalid_token";
 
@@ -21,6 +22,11 @@ export default async function LoginPage({
       title="Welcome back"
       subtitle="Sign in to access your trading journal."
     >
+      {passwordReset && (
+        <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400">
+          Password updated successfully! You can now sign in.
+        </div>
+      )}
       {verified && (
         <div className="mb-4 rounded-lg border border-green-500/30 bg-green-500/10 px-4 py-3 text-sm text-green-400">
           Email verified successfully! You can now sign in.
