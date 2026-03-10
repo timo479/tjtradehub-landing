@@ -4,7 +4,7 @@ import { db } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import SignOutButton from "@/components/SignOutButton";
+import UserMenu from "@/components/UserMenu";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import MetaConnect from "@/components/meta/MetaConnect";
 
@@ -121,10 +121,7 @@ export default async function DashboardPage() {
               </Link>
             </nav>
           </div>
-          <div className="flex items-center gap-4">
-            <span className="text-sm" style={{ color: "#9CA3AF" }}>{name}</span>
-            <SignOutButton />
-          </div>
+          <UserMenu name={name} email={session.user.email} />
         </div>
       </header>
 

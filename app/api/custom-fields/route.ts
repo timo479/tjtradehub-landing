@@ -1,6 +1,13 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const customFieldSchema = z.object({
+  label: z.string().min(1, "label is required").max(100),
+  field_type: z.enum(["text", "number", "boolean", "select", "multiselect", "date"]),
+  options: z.array(z.string().max(200)).optional().nullable(),
+});
 
 export async function GET() {
   const session = await auth();
@@ -20,7 +27,13 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { label, field_type, options } = await req.json();
+  const body = await req.json();
+  const result = customFieldSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+  }
+
+  const { label, field_type, options } = result.data;
 
   const { data: existing } = await db
     .from("custom_fields")

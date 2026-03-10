@@ -1,7 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
 import { z } from "zod";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
+import { sendVerificationEmail } from "@/lib/email";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -15,6 +18,16 @@ const registerSchema = z.object({
 
 export async function POST(request: NextRequest) {
   try {
+    const ip =
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+    const rl = rateLimit(ip, "register", 3, 60 * 60 * 1000);
+    if (!rl.allowed) {
+      return NextResponse.json(
+        { error: `Too many attempts. Try again in ${rl.retryAfter} seconds.` },
+        { status: 429 }
+      );
+    }
+
     const body = await request.json();
     const result = registerSchema.safeParse(body);
 
@@ -42,11 +55,18 @@ export async function POST(request: NextRequest) {
     }
 
     const password_hash = await bcrypt.hash(password, 12);
+    const verification_token = crypto.randomBytes(32).toString("hex");
+    const verification_token_expires = new Date(
+      Date.now() + 24 * 60 * 60 * 1000
+    ).toISOString();
 
     const { error } = await db.from("users").insert({
       name,
       email,
       password_hash,
+      email_verified: false,
+      verification_token,
+      verification_token_expires,
     });
 
     if (error) {
@@ -57,7 +77,17 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return NextResponse.json({ success: true }, { status: 201 });
+    try {
+      await sendVerificationEmail(email, verification_token);
+    } catch (emailErr) {
+      console.error("Email send error:", emailErr);
+      // Don't fail registration if email fails – user can request resend later
+    }
+
+    return NextResponse.json(
+      { success: true, message: "Account created. Please check your email to verify your address." },
+      { status: 201 }
+    );
   } catch (err) {
     console.error("Register error:", err);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

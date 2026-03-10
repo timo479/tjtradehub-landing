@@ -2,14 +2,13 @@
 
 import { useState } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [form, setForm] = useState({ name: "", email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,25 +30,33 @@ export default function RegisterForm() {
         return;
       }
 
-      // Auto-login after registration
-      const result = await signIn("credentials", {
-        email: form.email,
-        password: form.password,
-        redirect: false,
-      });
-
-      if (result?.error) {
-        setError("Account created, but login failed. Please sign in manually.");
-        router.push("/login");
-        return;
-      }
-
-      router.push("/dashboard");
+      setSuccess(true);
+      setLoading(false);
     } catch {
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
   };
+
+  if (success) {
+    return (
+      <div
+        className="flex flex-col items-center gap-4 py-6 px-4 rounded-xl text-center"
+        style={{ backgroundColor: "rgba(168, 85, 247, 0.08)", border: "1px solid rgba(168, 85, 247, 0.3)" }}
+      >
+        <div style={{ fontSize: "40px" }}>📬</div>
+        <h3 className="text-lg font-semibold" style={{ color: "#F9FAFB" }}>Check your email</h3>
+        <p className="text-sm" style={{ color: "#9CA3AF" }}>
+          We sent a verification link to <span style={{ color: "#F9FAFB" }}>{form.email}</span>.<br />
+          Click the link to activate your account.
+        </p>
+        <p className="text-xs mt-2" style={{ color: "#6B7280" }}>
+          Already verified?{" "}
+          <a href="/login" style={{ color: "#8B5CF6" }}>Sign in</a>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-4">

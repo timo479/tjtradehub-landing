@@ -2,7 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import SignOutButton from "@/components/SignOutButton";
+import UserMenu from "@/components/UserMenu";
 import MarketCalendar from "@/components/calendar/MarketCalendar";
 
 export const metadata = { title: "Market Calendar – TJ TradeHub" };
@@ -49,10 +49,7 @@ export default async function CalendarPage() {
               </Link>
             </nav>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <span style={{ color: "#9CA3AF", fontSize: "14px" }}>{session.user.name}</span>
-            <SignOutButton />
-          </div>
+          <UserMenu name={session.user.name} email={session.user.email} />
         </div>
       </header>
 

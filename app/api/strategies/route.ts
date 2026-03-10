@@ -1,6 +1,13 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const strategySchema = z.object({
+  name: z.string().min(1, "name is required").max(200),
+  description: z.string().max(2000).optional().nullable(),
+  rules: z.array(z.string().max(500)).optional(),
+});
 
 export async function GET() {
   const session = await auth();
@@ -20,7 +27,13 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, description, rules } = await req.json();
+  const body = await req.json();
+  const result = strategySchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+  }
+
+  const { name, description, rules } = result.data;
 
   const { data: strategy, error } = await db
     .from("strategies")

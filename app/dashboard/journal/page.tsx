@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import JournalV2 from "@/components/journal/v2/JournalV2";
-import SignOutButton from "@/components/SignOutButton";
+import UserMenu from "@/components/UserMenu";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -50,10 +50,7 @@ export default async function JournalPage() {
               </Link>
             </nav>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <span style={{ color: "#9CA3AF", fontSize: "14px" }}>{session.user.name}</span>
-            <SignOutButton />
-          </div>
+          <UserMenu name={session.user.name} email={session.user.email} />
         </div>
       </header>
 

@@ -1,6 +1,14 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const entrySchema = z.object({
+  template_id: z.string().uuid("template_id must be a valid UUID"),
+  template_version: z.number().int().positive(),
+  trade_date: z.string().min(1, "trade_date is required"),
+  field_values: z.record(z.string(), z.unknown()).optional(),
+});
 
 export async function GET() {
   const session = await auth();
@@ -24,7 +32,13 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { template_id, template_version, trade_date, field_values } = await req.json();
+  const body = await req.json();
+  const result = entrySchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+  }
+
+  const { template_id, template_version, trade_date, field_values } = result.data;
 
   // Create entry
   const { data: entry, error: eErr } = await db

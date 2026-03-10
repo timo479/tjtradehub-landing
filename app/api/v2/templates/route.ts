@@ -1,6 +1,24 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const fieldSchema = z.object({
+  label: z.string().min(1).max(200),
+  field_type: z.string().max(50),
+  is_required: z.boolean().optional(),
+  options: z.array(z.string().max(200)).optional().nullable(),
+});
+
+const sectionSchema = z.object({
+  name: z.string().min(1).max(200),
+  fields: z.array(fieldSchema).optional(),
+});
+
+const templateSchema = z.object({
+  name: z.string().min(1, "name is required").max(200),
+  sections: z.array(sectionSchema).min(1, "At least one section is required"),
+});
 
 export async function GET() {
   const session = await auth();
@@ -26,7 +44,13 @@ export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, sections } = await req.json();
+  const body = await req.json();
+  const result = templateSchema.safeParse(body);
+  if (!result.success) {
+    return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });
+  }
+
+  const { name, sections } = result.data;
 
   // Create template
   const { data: template, error: tErr } = await db
@@ -50,7 +74,7 @@ export async function POST(req: NextRequest) {
 
     if (sec.fields?.length) {
       await db.from("template_fields").insert(
-        sec.fields.map((f: { label: string; field_type: string; is_required: boolean; options?: string[] }, fi: number) => ({
+        sec.fields.map((f, fi) => ({
           template_id: template.id,
           section_id: section.id,
           label: f.label,

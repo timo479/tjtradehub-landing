@@ -4,6 +4,7 @@ import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { authConfig } from "@/auth.config";
+import { rateLimit } from "./rate-limit";
 
 const JWT_REFRESH_INTERVAL = 5 * 60; // 5 Minuten in Sekunden
 
@@ -88,7 +89,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
+      authorize: async (credentials, request) => {
+        const ip =
+          (request as Request | undefined)?.headers?.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+        const rl = rateLimit(ip, "login", 5, 15 * 60 * 1000);
+        if (!rl.allowed) {
+          throw new Error(`Too many login attempts. Try again in ${rl.retryAfter} seconds.`);
+        }
+
         if (!credentials?.email || !credentials?.password) return null;
 
         const { data: user } = await db
@@ -104,6 +112,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           user.password_hash
         );
         if (!valid) return null;
+
+        if (!user.email_verified) {
+          throw new Error("Please verify your email before signing in.");
+        }
 
         return {
           id: user.id,
