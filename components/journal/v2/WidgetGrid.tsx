@@ -199,22 +199,28 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
-  const H = 80, bW = 22, gap = 8, tW = bars.length * (bW + gap) - gap + 16;
+  const PT = 14, BAR = 80, PB = 24;
+  const bW = 22, gap = 8, tW = bars.length * (bW + gap) - gap + 16;
+  const mid = PT + BAR * 0.72;
+  const maxPos = BAR * 0.72 - 2;
+  const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${H + 24}`} style={{ width: "100%", maxWidth: "260px", height: "auto", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "260px", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
-        const mid = H * 0.7;
-        const h = (Math.abs(b.avg) / maxAbs) * (mid - 4);
+        const h = b.avg >= 0
+          ? (Math.abs(b.avg) / maxAbs) * maxPos
+          : (Math.abs(b.avg) / maxAbs) * maxNeg;
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
+        const labelY = b.avg >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.label}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
-            {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 10} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={H + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={H + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
+            {b.count > 0 && <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
           </g>
         );
       })}
@@ -244,26 +250,32 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.total)));
-  const H = 80, bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 28;
+  const PT = 14, BAR = 80, PB = 24;
+  const bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 28;
+  const mid = PT + BAR * 0.72;
+  const maxPos = BAR * 0.72 - 2;
+  const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${H + 24}`} style={{ width: "100%", maxWidth: "480px", height: "auto", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "480px", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
-        const mid = H * 0.7;
-        const h = (Math.abs(b.total) / maxAbs) * (mid - 6);
+        const h = b.total >= 0
+          ? (Math.abs(b.total) / maxAbs) * maxPos
+          : (Math.abs(b.total) / maxAbs) * maxNeg;
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
+        const labelY = b.total >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.key}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
             {b.count > 0 && (
-              <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 10} textAnchor="middle" fill={color} fontSize="7" fontWeight="600">
+              <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="7" fontWeight="600">
                 {b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}
               </text>
             )}
-            <text x={x + bW / 2} y={H + 12} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={H + 21} textAnchor="middle" fill="#374151" fontSize="7">{b.count}tr</text>}
+            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 21} textAnchor="middle" fill="#374151" fontSize="7">{b.count}tr</text>}
           </g>
         );
       })}
