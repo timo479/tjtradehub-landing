@@ -13,9 +13,9 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "TJ TradeHub – Structured Trading Requires Structured Tracking",
+  title: "Trading Journal für Forex & Futures Trader | TJ TradeHub",
   description:
-    "The advanced trading journal for system-based traders. Track discipline, measure execution, and improve your edge with TJ TradeHub.",
+    "TJ TradeHub ist ein Trading Journal für systematische Trader. Analysiere deine Trades, tracke deine Performance und verbessere deine Trading-Disziplin.",
   openGraph: {
     title: "TJ TradeHub",
     description: "Stop tracking outcomes. Start tracking discipline.",
