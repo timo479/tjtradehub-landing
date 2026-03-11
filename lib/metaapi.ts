@@ -66,10 +66,25 @@ export async function getAccountState(accountId: string) {
 
 export async function deployAccount(accountId: string) {
   const token = getToken();
-  return apiFetch(`${PROVISIONING}/users/current/accounts/${accountId}/deploy`, token, {
-    method: "POST",
-    body: "{}",
-  });
+  const url = `${PROVISIONING}/users/current/accounts/${accountId}/deploy`;
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method: "POST",
+      headers: { "auth-token": token, "Content-Type": "application/json" },
+      body: "{}",
+      cache: "no-store",
+    });
+  } catch (e) {
+    const cause = (e as { cause?: { message?: string } })?.cause;
+    throw new Error(`MetaAPI network error: ${cause?.message ?? (e instanceof Error ? e.message : String(e))}`);
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
+  }
+  // deploy returns 204 No Content
+  return null;
 }
 
 export async function removeAccount(accountId: string) {
