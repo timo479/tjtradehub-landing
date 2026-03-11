@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { fetchDeals, MetaDeal } from "@/lib/metaapi";
+import { fetchDeals, getAccountState, MetaDeal } from "@/lib/metaapi";
 import { NextResponse } from "next/server";
 
 const META_TEMPLATE_NAME = "MetaAPI Import";
@@ -76,6 +76,21 @@ export async function POST() {
 
   if (!user?.metaapi_account_id) {
     return NextResponse.json({ error: "not_configured" }, { status: 404 });
+  }
+
+  // Check account is fully connected before attempting to fetch history
+  try {
+    const accountState = await getAccountState(user.metaapi_account_id);
+    if (accountState.connectionStatus !== "CONNECTED") {
+      return NextResponse.json({
+        error: "not_connected",
+        state: accountState.state,
+        connectionStatus: accountState.connectionStatus,
+        message: "Account is not connected to broker yet. Please wait a few minutes and try again.",
+      }, { status: 425 });
+    }
+  } catch (e) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Failed to check account state" }, { status: 502 });
   }
 
   const to = new Date();

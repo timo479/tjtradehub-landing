@@ -76,15 +76,22 @@ export default function MetaConnect() {
     if (!auto) { setError(null); setSyncResult(null); }
     const res = await fetch("/api/meta/sync", { method: "POST" });
     const data = await res.json();
-    if (!res.ok) { if (!auto) setError(data.error ?? "Sync failed"); }
-    else {
+    if (!res.ok) {
+      if (!auto) {
+        if (data.error === "not_connected") {
+          setError("Account is not connected to broker yet. Please wait a moment and try again.");
+        } else {
+          setError(data.error ?? "Sync failed");
+        }
+      }
+    } else {
       setSyncResult({ synced: data.synced, skipped: data.skipped });
       setConn(prev => prev ? { ...prev, lastSync: new Date().toISOString() } : prev);
     }
     setSyncing(false);
   }, [syncing]);
 
-  // Poll until DEPLOYED when deploying
+  // Poll until DEPLOYED + CONNECTED
   const startPolling = useCallback(() => {
     if (pollTimer.current) clearInterval(pollTimer.current);
     pollTimer.current = setInterval(async () => {
@@ -92,7 +99,7 @@ export default function MetaConnect() {
       if (!res.ok) return;
       const data: ConnectionInfo = await res.json();
       setConn(data);
-      if (data.state === "DEPLOYED") {
+      if (data.state === "DEPLOYED" && data.connectionStatus === "CONNECTED") {
         clearInterval(pollTimer.current!);
         pollTimer.current = null;
         await loadAccount();
@@ -105,8 +112,11 @@ export default function MetaConnect() {
 
   useEffect(() => {
     if (!conn) return;
-    if (conn.state === "DEPLOYING") { startPolling(); return; }
-    if (conn.state === "DEPLOYED") {
+    if (conn.state === "DEPLOYING" || (conn.state === "DEPLOYED" && conn.connectionStatus !== "CONNECTED")) {
+      startPolling();
+      return;
+    }
+    if (conn.state === "DEPLOYED" && conn.connectionStatus === "CONNECTED") {
       loadAccount();
       // Auto-sync timing
       const last = conn.lastSync ? new Date(conn.lastSync).getTime() : 0;
@@ -118,7 +128,7 @@ export default function MetaConnect() {
       if (pollTimer.current) clearInterval(pollTimer.current);
       if (syncTimer.current) clearInterval(syncTimer.current);
     };
-  }, [conn?.state]);
+  }, [conn?.state, conn?.connectionStatus]);
 
   const connect = async () => {
     if (!login || !password || !server) { setError("Please fill in all fields"); return; }
@@ -179,7 +189,7 @@ export default function MetaConnect() {
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
-            {conn.state === "DEPLOYED" && (
+            {conn.state === "DEPLOYED" && conn.connectionStatus === "CONNECTED" && (
               <button onClick={() => doSync(false)} disabled={syncing}
                 style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
                 {syncing ? "Sync..." : "↻ Sync now"}
