@@ -78,15 +78,15 @@ export async function POST() {
     return NextResponse.json({ error: "not_configured" }, { status: 404 });
   }
 
-  // Check account is fully connected before attempting to fetch history
+  // Block sync only if account hasn't deployed yet
   try {
     const accountState = await getAccountState(user.metaapi_account_id);
-    if (accountState.connectionStatus !== "CONNECTED") {
+    if (accountState.state !== "DEPLOYED") {
       return NextResponse.json({
         error: "not_connected",
         state: accountState.state,
         connectionStatus: accountState.connectionStatus,
-        message: "Account is not connected to broker yet. Please wait a few minutes and try again.",
+        message: "Account is still connecting. Please wait a few minutes and try again.",
       }, { status: 425 });
     }
   } catch (e) {
