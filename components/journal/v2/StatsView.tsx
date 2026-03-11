@@ -27,7 +27,7 @@ const getPnl = (entry: Entry): number | null => {
     const label = (fv.template_fields?.label ?? "").toLowerCase();
     if (
       fv.template_fields?.field_type === "number" &&
-      (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gewinn"))
+      (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gain"))
     ) {
       const n = parseFloat(fv.value);
       return isNaN(n) ? null : n;
@@ -39,8 +39,8 @@ const getPnl = (entry: Entry): number | null => {
 const fmt = (n: number, digits = 2) =>
   `${n >= 0 ? "+" : ""}${n.toFixed(digits)}`;
 
-const DAYS = ["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"];
-const MONTHS = ["Jan", "Feb", "Mär", "Apr", "Mai", "Jun", "Jul", "Aug", "Sep", "Okt", "Nov", "Dez"];
+const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
 
   if (data.length < 2) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "160px", color: "#374151", fontSize: "13px" }}>
-      Mindestens 2 Trades mit P&L nötig
+      At least 2 trades with P&L required
     </div>
   );
 
@@ -96,8 +96,8 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
 
   // X axis labels (first + last date)
   const sorted = [...entries].filter(e => getPnl(e) !== null).sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
-  const firstDate = sorted[0]?.trade_date ? new Date(sorted[0].trade_date).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit" }) : "";
-  const lastDate = sorted[sorted.length - 1]?.trade_date ? new Date(sorted[sorted.length - 1].trade_date).toLocaleDateString("de-CH", { day: "2-digit", month: "2-digit" }) : "";
+  const firstDate = sorted[0]?.trade_date ? new Date(sorted[0].trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }) : "";
+  const lastDate = sorted[sorted.length - 1]?.trade_date ? new Date(sorted[sorted.length - 1].trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }) : "";
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
@@ -140,7 +140,7 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
 
 function WinLossDonut({ wins, losses }: { wins: number; losses: number }) {
   const total = wins + losses;
-  if (total === 0) return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "20px" }}>Keine Daten</div>;
+  if (total === 0) return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "20px" }}>No data</div>;
 
   const winPct = wins / total;
   const R = 40, CX = 56, CY = 56, stroke = 12;
@@ -300,7 +300,7 @@ function TradeCalendar({ entries }: { entries: Entry[] }) {
             </p>
             {/* Day headers */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "3px", marginBottom: "3px" }}>
-              {["Mo", "Di", "Mi", "Do", "Fr", "Sa", "So"].map(d => (
+              {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(d => (
                 <div key={d} style={{ textAlign: "center", color: "#374151", fontSize: "9px" }}>{d}</div>
               ))}
             </div>
@@ -391,7 +391,7 @@ export default function StatsView({ entries }: Props) {
     return (
       <div style={{ ...card, textAlign: "center", padding: "60px" }}>
         <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
-        <p style={{ color: "#4B5563", fontSize: "14px" }}>Noch keine Trades – Statistiken erscheinen sobald du Trades erfasst.</p>
+        <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades yet — statistics will appear once you log trades.</p>
       </div>
     );
   }
@@ -401,16 +401,16 @@ export default function StatsView({ entries }: Props) {
 
       {/* KPI Row */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
-        <KpiCard label="Trades gesamt" value={String(entries.length)} color="#F9FAFB" />
+        <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
         {stats.hasPnl && <>
-          <KpiCard label="Gesamt P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
+          <KpiCard label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
           <KpiCard label="Win Rate" value={`${stats.pnlCount > 0 ? Math.round((stats.wins / stats.pnlCount) * 100) : 0}%`} color={stats.wins / (stats.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444"} sub={`${stats.wins}W · ${stats.losses}L`} />
-          <KpiCard label="Ø P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
-          <KpiCard label="Bester Trade" value={fmt(stats.best)} color="#22c55e" />
-          <KpiCard label="Schlechtester Trade" value={fmt(stats.worst)} color="#ef4444" />
+          <KpiCard label="Avg P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
+          <KpiCard label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
+          <KpiCard label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
           <KpiCard label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
           <KpiCard
-            label="Aktuelle Serie"
+            label="Current Streak"
             value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`}
             color={stats.streakType === "win" ? "#22c55e" : "#ef4444"}
           />
@@ -420,7 +420,7 @@ export default function StatsView({ entries }: Props) {
       {/* Equity Curve */}
       {stats.hasPnl && (
         <div style={card}>
-          {sectionTitle("Equity Kurve")}
+          {sectionTitle("Equity Curve")}
           <EquityCurve entries={entries} />
         </div>
       )}

@@ -70,7 +70,7 @@ export default function DynamicTradeForm({ template, onClose, onSaved, entryId, 
         if (!f.is_required) continue;
         const v = values[f.id];
         if (v === undefined || v === "" || v === null || (Array.isArray(v) && v.length === 0)) {
-          setError(`Pflichtfeld fehlt: "${f.label}"`);
+          setError(`Required field missing: "${f.label}"`);
           return;
         }
       }
@@ -107,7 +107,7 @@ export default function DynamicTradeForm({ template, onClose, onSaved, entryId, 
         {/* Header */}
         <div style={{ padding: "24px 28px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
           <div>
-            <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px" }}>{entryId ? "Trade bearbeiten" : "Trade erfassen"}</h2>
+            <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px" }}>{entryId ? "Edit trade" : "Log trade"}</h2>
             <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "2px" }}>{template.name} · v{template.version}</p>
           </div>
           <button onClick={onClose} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px" }}>✕</button>
@@ -118,7 +118,7 @@ export default function DynamicTradeForm({ template, onClose, onSaved, entryId, 
 
           {/* Trade Date */}
           <div>
-            <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Trade Datum & Uhrzeit *</label>
+            <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Trade Date & Time *</label>
             <input
               type="datetime-local"
               style={inputStyle}
@@ -206,7 +206,7 @@ function FieldInput({ field, value, onChange, onToggleMulti }: {
           <div style={{ width: "42px", height: "24px", borderRadius: "12px", backgroundColor: checked ? "#8B5CF6" : "#1F2937", position: "relative", transition: "background 0.2s", flexShrink: 0 }}>
             <div style={{ position: "absolute", top: "3px", left: checked ? "21px" : "3px", width: "18px", height: "18px", borderRadius: "50%", backgroundColor: "#fff", transition: "left 0.2s" }} />
           </div>
-          <span style={{ color: checked ? "#A78BFA" : "#6B7280", fontSize: "14px" }}>{checked ? "Ja" : "Nein"}</span>
+          <span style={{ color: checked ? "#A78BFA" : "#6B7280", fontSize: "14px" }}>{checked ? "Yes" : "No"}</span>
         </button>
       </div>
     );
@@ -221,7 +221,7 @@ function FieldInput({ field, value, onChange, onToggleMulti }: {
           style={{ ...inputStyle, cursor: "pointer" }}
           value={(value as string) ?? ""}
           onChange={e => onChange(e.target.value)}>
-          <option value="">— Auswählen —</option>
+          <option value="">— Select —</option>
           {opts.map(o => <option key={o} value={o}>{o}</option>)}
         </select>
       </div>
@@ -272,7 +272,7 @@ function FieldInput({ field, value, onChange, onToggleMulti }: {
       <div>
         {label}
         <div style={{ padding: "20px", borderRadius: "10px", border: "1px dashed #374151", backgroundColor: "#0a0a0a", textAlign: "center" }}>
-          <p style={{ color: "#4B5563", fontSize: "13px" }}>📎 Screenshot-Upload kommt bald</p>
+          <p style={{ color: "#4B5563", fontSize: "13px" }}>📎 Screenshot upload coming soon</p>
         </div>
       </div>
     );

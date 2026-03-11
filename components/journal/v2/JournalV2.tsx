@@ -66,7 +66,7 @@ export default function JournalV2() {
         setLoadError(prev => prev ? prev + ` | Entries: ${err.error ?? eRes.status}` : `Entries: ${err.error ?? eRes.status}`);
       }
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : "Verbindungsfehler");
+      setLoadError(e instanceof Error ? e.message : "Connection error");
     }
     setLoading(false);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -116,14 +116,14 @@ export default function JournalV2() {
         allLabels.add(fv.template_fields?.label ?? fv.field_id);
       }
     }
-    const headers = ["Datum", "Template", ...Array.from(allLabels)];
+    const headers = ["Date", "Template", ...Array.from(allLabels)];
     const rows = entries.map(e => {
       const map: Record<string, string> = {};
       for (const fv of e.trade_field_values ?? []) {
         map[fv.template_fields?.label ?? fv.field_id] = renderValue(fv);
       }
       return [
-        new Date(e.trade_date).toLocaleDateString("de-CH"),
+        new Date(e.trade_date).toLocaleDateString("en-GB"),
         e.journal_templates?.name ?? "",
         ...Array.from(allLabels).map(l => map[l] ?? ""),
       ];
@@ -146,7 +146,7 @@ export default function JournalV2() {
   const renderValue = (fv: FieldValue) => {
     if (!fv.template_fields) return fv.value;
     const ft = fv.template_fields.field_type;
-    if (ft === "boolean") return fv.value === "true" ? "✅ Ja" : "❌ Nein";
+    if (ft === "boolean") return fv.value === "true" ? "✅ Yes" : "❌ No";
     try {
       const parsed = JSON.parse(fv.value);
       if (Array.isArray(parsed)) return parsed.join(", ");
@@ -164,7 +164,7 @@ export default function JournalV2() {
   if (loading) {
     return (
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px" }}>
-        <div style={{ color: "#6B7280", fontSize: "14px" }}>Laden...</div>
+        <div style={{ color: "#6B7280", fontSize: "14px" }}>Loading...</div>
       </div>
     );
   }
@@ -172,10 +172,10 @@ export default function JournalV2() {
   if (loadError) {
     return (
       <div style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "16px", padding: "24px", textAlign: "center" }}>
-        <p style={{ color: "#ef4444", fontWeight: 600, marginBottom: "8px" }}>Fehler beim Laden</p>
+        <p style={{ color: "#ef4444", fontWeight: 600, marginBottom: "8px" }}>Failed to load</p>
         <p style={{ color: "#9CA3AF", fontSize: "13px", marginBottom: "16px" }}>{loadError}</p>
         <button onClick={() => load()} style={{ padding: "8px 20px", borderRadius: "10px", border: "1px solid rgba(239,68,68,0.4)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "13px" }}>
-          Erneut versuchen
+          Try again
         </button>
       </div>
     );
@@ -189,7 +189,7 @@ export default function JournalV2() {
         <div>
           <h1 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "22px" }}>Trading Journal</h1>
           <p style={{ color: "#6B7280", fontSize: "13px", marginTop: "2px" }}>
-            {entries.length} Einträge · {templates.length} {templates.length === 1 ? "Template" : "Templates"}
+            {entries.length} {entries.length === 1 ? "entry" : "entries"} · {templates.length} {templates.length === 1 ? "template" : "templates"}
           </p>
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
@@ -204,7 +204,7 @@ export default function JournalV2() {
             <button
               onClick={() => setView(v => v === "stats" ? "list" : "stats")}
               style={{ padding: "9px 16px", borderRadius: "10px", border: `1px solid ${view === "stats" ? "rgba(139,92,246,0.5)" : "#1F2937"}`, backgroundColor: view === "stats" ? "rgba(139,92,246,0.1)" : "transparent", color: view === "stats" ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
-              📊 Statistiken
+              📊 Statistics
             </button>
           )}
           <button
@@ -217,7 +217,7 @@ export default function JournalV2() {
               onClick={() => { if (activeTemplate) setShowTradeForm(true); }}
               disabled={!activeTemplate}
               style={{ padding: "9px 18px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: activeTemplate ? "pointer" : "not-allowed", fontSize: "13px", opacity: activeTemplate ? 1 : 0.5 }}>
-              + Trade erfassen
+              + Log trade
             </button>
           )}
         </div>
@@ -230,22 +230,22 @@ export default function JournalV2() {
       {view === "templates" && (
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <h2 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px" }}>Deine Templates</h2>
+            <h2 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px" }}>Your Templates</h2>
             <button
               onClick={() => setShowBuilder(true)}
               style={{ padding: "8px 16px", borderRadius: "10px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "rgba(139,92,246,0.1)", color: "#A78BFA", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
-              + Neues Template
+              + New Template
             </button>
           </div>
 
           {templates.length === 0 ? (
             <div style={{ ...cardStyle, padding: "40px", textAlign: "center" }}>
               <p style={{ color: "#4B5563", fontSize: "24px", marginBottom: "12px" }}>📋</p>
-              <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>Noch kein Template erstellt.</p>
+              <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>No templates created yet.</p>
               <button
                 onClick={() => setShowBuilder(true)}
                 style={{ padding: "10px 24px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
-                Erstes Template erstellen
+                Create first template
               </button>
             </div>
           ) : (
@@ -256,20 +256,20 @@ export default function JournalV2() {
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px" }}>{t.name}</span>
                       <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "#1F2937", color: "#6B7280" }}>v{t.version}</span>
-                      {t.is_frozen && <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>🔒 Eingefroren</span>}
+                      {t.is_frozen && <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>🔒 Frozen</span>}
                     </div>
                     <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>
-                      {t.template_sections?.reduce((sum, s) => sum + (s.template_fields?.length ?? 0), 0) ?? 0} Felder · {t.template_sections?.length ?? 0} Sektionen
+                      {t.template_sections?.reduce((sum, s) => sum + (s.template_fields?.length ?? 0), 0) ?? 0} fields · {t.template_sections?.length ?? 0} sections
                     </p>
                   </div>
                   <div style={{ display: "flex", gap: "8px" }}>
                     <button
                       onClick={() => { setActiveTemplate(t); setView("list"); }}
                       style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${activeTemplate?.id === t.id ? "#8B5CF6" : "#1F2937"}`, backgroundColor: activeTemplate?.id === t.id ? "rgba(139,92,246,0.15)" : "transparent", color: activeTemplate?.id === t.id ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "12px" }}>
-                      {activeTemplate?.id === t.id ? "✓ Aktiv" : "Auswählen"}
+                      {activeTemplate?.id === t.id ? "✓ Active" : "Select"}
                     </button>
                     <button
-                      onClick={() => { if (confirm(`Template "${t.name}" löschen?`)) deleteTemplate(t.id); }}
+                      onClick={() => { if (confirm(`Delete template "${t.name}"?`)) deleteTemplate(t.id); }}
                       style={{ padding: "6px 10px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "12px" }}>
                       ✕
                     </button>
@@ -288,14 +288,14 @@ export default function JournalV2() {
           {templates.length === 0 && (
             <div style={{ ...cardStyle, padding: "60px 40px", textAlign: "center" }}>
               <p style={{ fontSize: "48px", marginBottom: "16px" }}>📋</p>
-              <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>Erstelle dein erstes Journal-Template</h2>
+              <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>Create your first journal template</h2>
               <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "24px" }}>
-                Definiere welche Felder du für jeden Trade erfassen möchtest.
+                Define which fields you want to log for each trade.
               </p>
               <button
                 onClick={() => setShowBuilder(true)}
                 style={{ padding: "12px 28px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "15px" }}>
-                Template erstellen
+                Create template
               </button>
             </div>
           )}
@@ -319,12 +319,12 @@ export default function JournalV2() {
                 <div style={{ ...cardStyle, padding: "40px", textAlign: "center" }}>
                   <p style={{ color: "#4B5563", fontSize: "32px", marginBottom: "12px" }}>📈</p>
                   <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>
-                    Noch kein Trade erfasst.{activeTemplate ? ` Template: "${activeTemplate.name}"` : ""}
+                    No trades logged yet.{activeTemplate ? ` Template: "${activeTemplate.name}"` : ""}
                   </p>
                   <button
                     onClick={() => { if (activeTemplate) setShowTradeForm(true); }}
                     style={{ padding: "10px 24px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
-                    Ersten Trade erfassen
+                    Log your first trade
                   </button>
                 </div>
               ) : (
@@ -358,7 +358,7 @@ export default function JournalV2() {
                       {isExpanded && (
                         <div style={{ borderTop: "1px solid #1F2937", padding: "16px 18px" }}>
                           {fvs.length === 0 ? (
-                            <p style={{ color: "#4B5563", fontSize: "13px" }}>Keine Felder erfasst.</p>
+                            <p style={{ color: "#4B5563", fontSize: "13px" }}>No fields logged.</p>
                           ) : (
                             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))", gap: "12px" }}>
                               {fvs.map(fv => (
@@ -373,13 +373,13 @@ export default function JournalV2() {
                             <button
                               onClick={() => openEdit(entry)}
                               style={{ padding: "6px 14px", borderRadius: "8px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: "pointer", fontSize: "12px" }}>
-                              ✎ Bearbeiten
+                              ✎ Edit
                             </button>
                             <button
-                              onClick={() => { if (confirm("Trade löschen?")) deleteEntry(entry.id); }}
+                              onClick={() => { if (confirm("Delete trade?")) deleteEntry(entry.id); }}
                               disabled={deleting === entry.id}
                               style={{ padding: "6px 14px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "12px", opacity: deleting === entry.id ? 0.5 : 1 }}>
-                              {deleting === entry.id ? "Löschen..." : "Trade löschen"}
+                              {deleting === entry.id ? "Deleting..." : "Delete trade"}
                             </button>
                           </div>
                         </div>

@@ -35,14 +35,14 @@ async function ensureTemplate(userId: string): Promise<string> {
   // Create fields
   const fields = [
     { label: "Symbol",     field_type: "text",   is_required: true,  order_index: 0 },
-    { label: "Richtung",   field_type: "select", is_required: true,  order_index: 1, options: ["Long", "Short"] },
+    { label: "Direction",  field_type: "select", is_required: true,  order_index: 1, options: ["Long", "Short"] },
     { label: "Volume",     field_type: "number", is_required: false, order_index: 2 },
     { label: "Entry Price",field_type: "number", is_required: false, order_index: 3 },
     { label: "Exit Price", field_type: "number", is_required: false, order_index: 4 },
     { label: "P&L",        field_type: "number", is_required: false, order_index: 5 },
     { label: "Commission", field_type: "number", is_required: false, order_index: 6 },
     { label: "Swap",       field_type: "number", is_required: false, order_index: 7 },
-    { label: "Kommentar",  field_type: "text",   is_required: false, order_index: 8 },
+    { label: "Comment",    field_type: "text",   is_required: false, order_index: 8 },
   ];
 
   await db.from("template_fields").insert(
@@ -129,12 +129,12 @@ export async function POST() {
       const isLong = deal.type === "DEAL_TYPE_BUY";
       const fieldValues = [
         fieldMap["Symbol"]      && { field_id: fieldMap["Symbol"],      value: deal.symbol },
-        fieldMap["Richtung"]    && { field_id: fieldMap["Richtung"],    value: isLong ? "Long" : "Short" },
+        fieldMap["Direction"]   && { field_id: fieldMap["Direction"],   value: isLong ? "Long" : "Short" },
         fieldMap["Volume"]      && { field_id: fieldMap["Volume"],      value: String(deal.volume) },
         fieldMap["P&L"]         && { field_id: fieldMap["P&L"],         value: String(deal.profit + (deal.commission ?? 0) + (deal.swap ?? 0)) },
         fieldMap["Commission"]  && { field_id: fieldMap["Commission"],  value: String(deal.commission ?? 0) },
         fieldMap["Swap"]        && { field_id: fieldMap["Swap"],        value: String(deal.swap ?? 0) },
-        deal.comment && fieldMap["Kommentar"] && { field_id: fieldMap["Kommentar"], value: deal.comment },
+        deal.comment && fieldMap["Comment"]   && { field_id: fieldMap["Comment"],   value: deal.comment },
       ].filter(Boolean) as { field_id: string; value: string }[];
 
       if (fieldValues.length > 0) {
@@ -150,6 +150,6 @@ export async function POST() {
     return NextResponse.json({ synced, skipped, total: closedDeals.length });
 
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Sync Fehler" }, { status: 502 });
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Sync error" }, { status: 502 });
   }
 }

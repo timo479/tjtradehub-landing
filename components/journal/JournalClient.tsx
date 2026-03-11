@@ -44,7 +44,7 @@ export default function JournalClient() {
   useEffect(() => { fetchTrades(); }, [fetchTrades]);
 
   const deleteTrade = async (id: string) => {
-    if (!confirm("Trade löschen?")) return;
+    if (!confirm("Delete trade?")) return;
     await fetch(`/api/trades/${id}`, { method: "DELETE" });
     fetchTrades();
   };
@@ -108,32 +108,32 @@ export default function JournalClient() {
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-        <h2 style={{ color: "#F9FAFB", fontSize: "18px", fontWeight: 600 }}>Trade-Journal</h2>
+        <h2 style={{ color: "#F9FAFB", fontSize: "18px", fontWeight: 600 }}>Trade Journal</h2>
         <div style={{ display: "flex", gap: "10px" }}>
           <button onClick={() => setShowSettings(true)}
             style={{ backgroundColor: "transparent", color: "#9CA3AF", border: "1px solid #1F2937", borderRadius: "12px",
               padding: "10px 16px", fontWeight: 500, fontSize: "14px", cursor: "pointer" }}>
-            ⚙️ Journal einrichten
+            ⚙️ Journal Settings
           </button>
           <button onClick={() => setShowForm(true)}
             style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none", borderRadius: "12px",
               padding: "10px 20px", fontWeight: 600, fontSize: "14px", cursor: "pointer" }}>
-            + Trade erfassen
+            + Log trade
           </button>
         </div>
       </div>
 
       {/* Table */}
       {loading ? (
-        <p style={{ color: "#6B7280", textAlign: "center", padding: "60px" }}>Laden...</p>
+        <p style={{ color: "#6B7280", textAlign: "center", padding: "60px" }}>Loading...</p>
       ) : trades.length === 0 ? (
         <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px",
           padding: "60px", textAlign: "center" }}>
-          <p style={{ color: "#9CA3AF", marginBottom: "16px" }}>Noch keine Trades erfasst.</p>
+          <p style={{ color: "#9CA3AF", marginBottom: "16px" }}>No trades logged yet.</p>
           <button onClick={() => setShowForm(true)}
             style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", border: "none", borderRadius: "12px",
               padding: "10px 24px", fontWeight: 600, cursor: "pointer" }}>
-            Ersten Trade erfassen
+            Log your first trade
           </button>
         </div>
       ) : (
@@ -142,7 +142,7 @@ export default function JournalClient() {
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px", minWidth: "900px" }}>
               <thead>
                 <tr style={{ borderBottom: "1px solid #1F2937" }}>
-                  {["Datum", "Symbol", "Dir.", "Setup", "TF", "P&L", "R-Mult.", "Disc.", "Emotion", "Regel", ""].map((h) => (
+                  {["Date", "Symbol", "Dir.", "Setup", "TF", "P&L", "R-Mult.", "Disc.", "Emotion", "Rule", ""].map((h) => (
                     <th key={h} style={{ padding: "14px 16px", textAlign: "left", color: "#6B7280",
                       fontSize: "12px", fontWeight: 500, whiteSpace: "nowrap" }}>{h}</th>
                   ))}
@@ -207,9 +207,9 @@ export default function JournalClient() {
                         </td>
                         <td style={{ padding: "14px 16px" }}>
                           {!t.followed_plan ? (
-                            <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: 600 }}>✕ Ja</span>
+                            <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: 600 }}>✕ Yes</span>
                           ) : (
-                            <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600 }}>✓ Nein</span>
+                            <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600 }}>✓ No</span>
                           )}
                         </td>
                         <td style={{ padding: "14px 16px" }} onClick={(e) => e.stopPropagation()}>
@@ -217,11 +217,11 @@ export default function JournalClient() {
                             <button onClick={() => { setEditTrade(t); setShowForm(true); }}
                               style={{ background: "none", border: "none", color: "#6B7280",
                                 cursor: "pointer", fontSize: "14px", padding: "4px" }}
-                              title="Bearbeiten">✏️</button>
+                              title="Edit">✏️</button>
                             <button onClick={() => deleteTrade(t.id)}
                               style={{ background: "none", border: "none", color: "#4B5563",
                                 cursor: "pointer", fontSize: "16px", padding: "4px" }}
-                              title="Löschen">✕</button>
+                              title="Delete">✕</button>
                           </div>
                         </td>
                       </tr>
@@ -254,12 +254,12 @@ export default function JournalClient() {
                                 <p style={{ color: "#F9FAFB", marginTop: "2px" }}>{t.lot_size}</p>
                               </div>
                               <div>
-                                <span style={{ color: "#6B7280" }}>Risiko (CHF)</span>
+                                <span style={{ color: "#6B7280" }}>Risk (CHF)</span>
                                 <p style={{ color: "#F9FAFB", marginTop: "2px" }}>{t.risk_amount ?? "—"}</p>
                               </div>
                               {t.notes && (
                                 <div style={{ gridColumn: "span 2" }}>
-                                  <span style={{ color: "#6B7280" }}>Notizen</span>
+                                  <span style={{ color: "#6B7280" }}>Notes</span>
                                   <p style={{ color: "#9CA3AF", marginTop: "2px", lineHeight: "1.5" }}>{t.notes}</p>
                                 </div>
                               )}
