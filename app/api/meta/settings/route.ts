@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Verbindung fehlgeschlagen" }, { status: 502 });
+    return NextResponse.json({ error: e instanceof Error ? e.message : "Connection failed" }, { status: 502 });
   }
 }
 

@@ -3,7 +3,7 @@ const PROVISIONING = "https://mt-provisioning-api-v1.agiliumtrade.ai";
 function getToken(): string {
   const t = process.env.METAAPI_TOKEN;
   if (!t) throw new Error("METAAPI_TOKEN not configured in .env");
-  return t;
+  return t.trim();
 }
 
 async function apiFetch(url: string, token: string, options?: RequestInit) {
