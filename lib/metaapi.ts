@@ -64,6 +64,14 @@ export async function getAccountState(accountId: string) {
   return apiFetch(`${PROVISIONING}/users/current/accounts/${accountId}`, token);
 }
 
+export async function deployAccount(accountId: string) {
+  const token = getToken();
+  return apiFetch(`${PROVISIONING}/users/current/accounts/${accountId}/deploy`, token, {
+    method: "POST",
+    body: "{}",
+  });
+}
+
 export async function removeAccount(accountId: string) {
   const token = getToken();
   const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}`, {

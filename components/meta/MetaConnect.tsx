@@ -41,6 +41,8 @@ function StateTag({ state, connectionStatus }: { state?: string; connectionStatu
     return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(245,158,11,0.15)", color: "#F59E0B" }}>Ready · Broker offline</span>;
   if (state === "DEPLOYING")
     return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>Connecting...</span>;
+  if (state === "UNDEPLOYED")
+    return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "rgba(239,68,68,0.12)", color: "#f87171" }}>Disconnected</span>;
   return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "#1F2937", color: "#6B7280" }}>{state}</span>;
 }
 
@@ -53,6 +55,7 @@ export default function MetaConnect() {
   const [server, setServer] = useState("");
   const [platform, setPlatform] = useState<"mt4" | "mt5">("mt5");
   const [connecting, setConnecting] = useState(false);
+  const [deploying, setDeploying] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [syncResult, setSyncResult] = useState<{ synced: number; skipped: number } | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -147,6 +150,21 @@ export default function MetaConnect() {
     startPolling();
   };
 
+  const redeploy = async () => {
+    setDeploying(true);
+    setError(null);
+    const res = await fetch("/api/meta/deploy", { method: "POST" });
+    if (!res.ok) {
+      const data = await res.json();
+      setError(data.error ?? "Failed to reconnect");
+      setDeploying(false);
+      return;
+    }
+    setConn(prev => prev ? { ...prev, state: "DEPLOYING" } : prev);
+    setDeploying(false);
+    startPolling();
+  };
+
   const disconnect = async () => {
     if (!confirm("Disconnect MetaTrader?")) return;
     await fetch("/api/meta/settings", { method: "DELETE" });
@@ -189,6 +207,12 @@ export default function MetaConnect() {
           </div>
 
           <div style={{ display: "flex", gap: "8px" }}>
+            {conn.state === "UNDEPLOYED" && (
+              <button onClick={redeploy} disabled={deploying}
+                style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(245,158,11,0.4)", backgroundColor: "transparent", color: "#F59E0B", cursor: deploying ? "not-allowed" : "pointer", fontSize: "12px", opacity: deploying ? 0.6 : 1 }}>
+                {deploying ? "Reconnecting..." : "↺ Reconnect"}
+              </button>
+            )}
             {conn.state === "DEPLOYED" && (
               <button onClick={() => doSync(false)} disabled={syncing}
                 style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
