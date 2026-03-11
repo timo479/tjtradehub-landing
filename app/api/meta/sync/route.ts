@@ -64,9 +64,12 @@ async function getFieldMap(templateId: string): Promise<Record<string, string>> 
   return map;
 }
 
-export async function POST() {
+export async function POST(req: Request) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const url = new URL(req.url);
+  const fullResync = url.searchParams.get("reset") === "true";
 
   const { data: user } = await db
     .from("users")
@@ -94,7 +97,15 @@ export async function POST() {
   }
 
   const to = new Date();
-  const from = user.last_meta_sync ? new Date(user.last_meta_sync) : new Date(Date.now() - 90 * 24 * 60 * 60 * 1000); // 90 days back
+  // Full resync or first sync: fetch 2 years of history
+  const isFirstSync = !user.last_meta_sync;
+  const from = (!fullResync && user.last_meta_sync)
+    ? new Date(user.last_meta_sync)
+    : new Date(Date.now() - 730 * 24 * 60 * 60 * 1000);
+
+  if (fullResync) {
+    await db.from("users").update({ last_meta_sync: null }).eq("id", session.user.id);
+  }
 
   try {
     const deals = await fetchDeals(user.metaapi_account_id, from, to);
@@ -105,7 +116,10 @@ export async function POST() {
     );
 
     if (closedDeals.length === 0) {
-      await db.from("users").update({ last_meta_sync: to.toISOString() }).eq("id", session.user.id);
+      // On first sync, don't advance the timestamp — MetaAPI may still be loading history
+      if (!isFirstSync) {
+        await db.from("users").update({ last_meta_sync: to.toISOString() }).eq("id", session.user.id);
+      }
       return NextResponse.json({ synced: 0, skipped: 0 });
     }
 

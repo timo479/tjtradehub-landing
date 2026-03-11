@@ -73,11 +73,11 @@ export default function MetaConnect() {
     else setAccount(null);
   }, []);
 
-  const doSync = useCallback(async (auto = false) => {
+  const doSync = useCallback(async (auto = false, reset = false) => {
     if (syncing) return;
     setSyncing(true);
     if (!auto) { setError(null); setSyncResult(null); }
-    const res = await fetch("/api/meta/sync", { method: "POST" });
+    const res = await fetch(`/api/meta/sync${reset ? "?reset=true" : ""}`, { method: "POST" });
     const data = await res.json();
     if (!res.ok) {
       if (!auto) {
@@ -214,10 +214,17 @@ export default function MetaConnect() {
               </button>
             )}
             {conn.state === "DEPLOYED" && (
-              <button onClick={() => doSync(false)} disabled={syncing}
-                style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
-                {syncing ? "Sync..." : "↻ Sync now"}
-              </button>
+              <>
+                <button onClick={() => doSync(false)} disabled={syncing}
+                  style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
+                  {syncing ? "Sync..." : "↻ Sync now"}
+                </button>
+                <button onClick={() => doSync(false, true)} disabled={syncing}
+                  style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(107,114,128,0.4)", backgroundColor: "transparent", color: "#6B7280", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}
+                  title="Re-import all history (2 years)">
+                  Full Resync
+                </button>
+              </>
             )}
             {conn.connected ? (
               <button onClick={disconnect}
