@@ -98,7 +98,7 @@ export async function POST(req: Request) {
 
   const to = new Date();
   // Full resync or first sync: fetch 2 years of history
-  const isFirstSync = !user.last_meta_sync;
+  const isFirstSync = !user.last_meta_sync || fullResync;
   const from = (!fullResync && user.last_meta_sync)
     ? new Date(user.last_meta_sync)
     : new Date(Date.now() - 730 * 24 * 60 * 60 * 1000);
@@ -112,7 +112,7 @@ export async function POST(req: Request) {
 
     // Only closed trades (DEAL_ENTRY_OUT) that have P&L
     const closedDeals: MetaDeal[] = deals.filter(
-      d => d.entry === "DEAL_ENTRY_OUT" && (d.type === "DEAL_TYPE_BUY" || d.type === "DEAL_TYPE_SELL")
+      d => d.entryType === "DEAL_ENTRY_OUT" && (d.type === "DEAL_TYPE_BUY" || d.type === "DEAL_TYPE_SELL")
     );
 
     if (closedDeals.length === 0) {

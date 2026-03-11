@@ -116,7 +116,7 @@ export interface MetaDeal {
   time: string;
   symbol: string;
   type: string;
-  entry: string;
+  entryType: string;
   volume: number;
   price: number;
   commission: number;
