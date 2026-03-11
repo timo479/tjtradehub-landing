@@ -5,6 +5,29 @@ import { NextResponse } from "next/server";
 
 const META_TEMPLATE_NAME = "MetaAPI Import";
 
+// All fields for the MetaAPI Import template
+const TRADE_DATA_FIELDS = [
+  { label: "Symbol",      field_type: "text",   is_required: true,  order_index: 0 },
+  { label: "Direction",   field_type: "select", is_required: true,  order_index: 1, options: ["Long", "Short"] },
+  { label: "Volume",      field_type: "number", is_required: false, order_index: 2 },
+  { label: "Entry Price", field_type: "number", is_required: false, order_index: 3 },
+  { label: "Exit Price",  field_type: "number", is_required: false, order_index: 4 },
+  { label: "P&L",         field_type: "number", is_required: false, order_index: 5 },
+  { label: "Commission",  field_type: "number", is_required: false, order_index: 6 },
+  { label: "Swap",        field_type: "number", is_required: false, order_index: 7 },
+  { label: "Comment",     field_type: "text",   is_required: false, order_index: 8 },
+];
+
+const REVIEW_FIELDS = [
+  { label: "Rating",         field_type: "number",      is_required: false, order_index: 0 },
+  { label: "Emotion",        field_type: "select",      is_required: false, order_index: 1, options: ["Calm", "Confident", "Nervous", "Fearful", "Greedy", "Uncertain", "Frustrated", "Euphoric"] },
+  { label: "Setup",          field_type: "text",        is_required: false, order_index: 2 },
+  { label: "Followed Plan",  field_type: "boolean",     is_required: false, order_index: 3 },
+  { label: "Mistake",        field_type: "select",      is_required: false, order_index: 4, options: ["None", "Entry too early", "Entry too late", "Exited too early", "Exited too late", "Overleveraged", "Wrong direction", "Other"] },
+  { label: "Notes",          field_type: "text",        is_required: false, order_index: 5 },
+  { label: "Screenshot",     field_type: "file",        is_required: false, order_index: 6 },
+];
+
 // Ensure the MetaAPI import template exists, return its id
 async function ensureTemplate(userId: string): Promise<string> {
   const { data: existing } = await db
@@ -14,42 +37,70 @@ async function ensureTemplate(userId: string): Promise<string> {
     .eq("name", META_TEMPLATE_NAME)
     .single();
 
-  if (existing) return existing.id;
+  if (existing) {
+    // Ensure review fields exist (for users who had the old template)
+    await ensureReviewSection(existing.id);
+    return existing.id;
+  }
 
   // Create template
   const { data: tmpl, error: tErr } = await db
     .from("journal_templates")
-    .insert({ user_id: userId, name: META_TEMPLATE_NAME, version: 1 })
+    .insert({ user_id: userId, name: META_TEMPLATE_NAME, version: 1, is_frozen: false })
     .select()
     .single();
   if (tErr || !tmpl) throw new Error("Failed to create template");
 
-  // Create section
-  const { data: sec } = await db
+  // Section 1: Trade Data
+  const { data: sec1 } = await db
     .from("template_sections")
-    .insert({ template_id: tmpl.id, name: "Trade Info", order_index: 0 })
+    .insert({ template_id: tmpl.id, name: "Trade Data", order_index: 0 })
     .select()
     .single();
-  if (!sec) throw new Error("Failed to create section");
-
-  // Create fields
-  const fields = [
-    { label: "Symbol",     field_type: "text",   is_required: true,  order_index: 0 },
-    { label: "Direction",  field_type: "select", is_required: true,  order_index: 1, options: ["Long", "Short"] },
-    { label: "Volume",     field_type: "number", is_required: false, order_index: 2 },
-    { label: "Entry Price",field_type: "number", is_required: false, order_index: 3 },
-    { label: "Exit Price", field_type: "number", is_required: false, order_index: 4 },
-    { label: "P&L",        field_type: "number", is_required: false, order_index: 5 },
-    { label: "Commission", field_type: "number", is_required: false, order_index: 6 },
-    { label: "Swap",       field_type: "number", is_required: false, order_index: 7 },
-    { label: "Comment",    field_type: "text",   is_required: false, order_index: 8 },
-  ];
+  if (!sec1) throw new Error("Failed to create section");
 
   await db.from("template_fields").insert(
-    fields.map(f => ({ ...f, template_id: tmpl.id, section_id: sec.id, options: ("options" in f ? f.options : null) ?? null }))
+    TRADE_DATA_FIELDS.map(f => ({ ...f, template_id: tmpl.id, section_id: sec1.id, options: ("options" in f ? f.options : null) ?? null }))
+  );
+
+  // Section 2: Trade Review
+  const { data: sec2 } = await db
+    .from("template_sections")
+    .insert({ template_id: tmpl.id, name: "Trade Review", order_index: 1 })
+    .select()
+    .single();
+  if (!sec2) throw new Error("Failed to create review section");
+
+  await db.from("template_fields").insert(
+    REVIEW_FIELDS.map(f => ({ ...f, template_id: tmpl.id, section_id: sec2.id, options: ("options" in f ? f.options : null) ?? null }))
   );
 
   return tmpl.id;
+}
+
+// Add Trade Review section to existing templates that don't have it yet
+async function ensureReviewSection(templateId: string): Promise<void> {
+  const { data: sections } = await db
+    .from("template_sections")
+    .select("id, name")
+    .eq("template_id", templateId);
+
+  const hasReview = sections?.some(s => s.name === "Trade Review");
+  if (hasReview) return;
+
+  const { data: sec } = await db
+    .from("template_sections")
+    .insert({ template_id: templateId, name: "Trade Review", order_index: 1 })
+    .select()
+    .single();
+  if (!sec) return;
+
+  await db.from("template_fields").insert(
+    REVIEW_FIELDS.map(f => ({ ...f, template_id: templateId, section_id: sec.id, options: ("options" in f ? f.options : null) ?? null }))
+  );
+
+  // Unfreeze so fields can be used
+  await db.from("journal_templates").update({ is_frozen: false }).eq("id", templateId);
 }
 
 // Get field IDs for a template
