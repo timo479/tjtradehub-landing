@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { getAccountState, provisionAccount, removeAccount } from "@/lib/metaapi";
+import { getAccountState, provisionAccount, removeAccount, updateAccount } from "@/lib/metaapi";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET – Status der Verbindung abrufen
@@ -54,20 +54,41 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Login, password, server and platform are required" }, { status: 400 });
   }
 
-  // Altes Konto entfernen falls vorhanden
   const { data: existing } = await db
-    .from("users").select("metaapi_account_id").eq("id", session.user.id).single();
-  if (existing?.metaapi_account_id) {
-    await removeAccount(existing.metaapi_account_id).catch(() => null);
-  }
+    .from("users").select("metaapi_account_id, mt_platform").eq("id", session.user.id).single();
+
+  const accountName = `TJTradeHub-${session.user.id.slice(0, 8)}-${login}`;
 
   try {
+    // Reuse existing MetaAPI slot if platform matches → no extra billing
+    if (existing?.metaapi_account_id && existing.mt_platform === platform) {
+      try {
+        await updateAccount(existing.metaapi_account_id, { login, password, server, name: accountName });
+        await db.from("users").update({
+          mt_login: login,
+          mt_password: password,
+          mt_server: server,
+          mt_platform: platform,
+          metaapi_account_state: "DEPLOYING",
+          last_meta_sync: null,
+        }).eq("id", session.user.id);
+        return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
+      } catch {
+        // Update failed (account deleted externally etc.) → fall through to create new
+        await removeAccount(existing.metaapi_account_id).catch(() => null);
+      }
+    } else if (existing?.metaapi_account_id) {
+      // Platform changed (mt4↔mt5) → must create new account
+      await removeAccount(existing.metaapi_account_id).catch(() => null);
+    }
+
+    // Create new account
     const account = await provisionAccount({
       login,
       password,
       server,
       platform: platform as "mt4" | "mt5",
-      name: `TJTradeHub-${session.user.id.slice(0, 8)}-${login}`,
+      name: accountName,
     });
 
     await db.from("users").update({
@@ -77,6 +98,7 @@ export async function POST(req: NextRequest) {
       mt_platform: platform,
       metaapi_account_id: account.id,
       metaapi_account_state: "DEPLOYING",
+      last_meta_sync: null,
     }).eq("id", session.user.id);
 
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });

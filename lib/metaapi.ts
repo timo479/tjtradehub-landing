@@ -87,6 +87,24 @@ export async function deployAccount(accountId: string) {
   return null;
 }
 
+export async function updateAccount(accountId: string, params: {
+  login: string;
+  password: string;
+  server: string;
+  name: string;
+}) {
+  const token = getToken();
+  return apiFetch(`${PROVISIONING}/users/current/accounts/${accountId}`, token, {
+    method: "PUT",
+    body: JSON.stringify({
+      name: params.name,
+      login: params.login,
+      password: params.password,
+      server: params.server,
+    }),
+  });
+}
+
 export async function removeAccount(accountId: string) {
   const token = getToken();
   const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}`, {
