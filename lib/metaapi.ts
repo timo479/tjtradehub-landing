@@ -1,4 +1,4 @@
-const PROVISIONING = "https://mt-provisioning-api-v1.agiliumtrade.ai";
+const PROVISIONING = "https://mt-provisioning-api-v1.agiliumtrade.agiliumtrade.ai";
 
 function getToken(): string {
   const t = process.env.METAAPI_TOKEN;
