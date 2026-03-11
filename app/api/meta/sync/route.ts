@@ -155,15 +155,30 @@ export async function POST(req: Request) {
     : new Date(Date.now() - 730 * 24 * 60 * 60 * 1000);
 
   if (fullResync) {
+    // Delete all previously imported MetaAPI entries so they get re-imported with correct timestamps
+    const templateData = await db
+      .from("journal_templates")
+      .select("id")
+      .eq("user_id", session.user.id)
+      .eq("name", "MetaAPI Import")
+      .single();
+    if (templateData.data) {
+      await db.from("trade_entries")
+        .delete()
+        .eq("user_id", session.user.id)
+        .eq("template_id", templateData.data.id)
+        .not("meta_deal_id", "is", null);
+    }
     await db.from("users").update({ last_meta_sync: null }).eq("id", session.user.id);
   }
 
   try {
     const deals = await fetchDeals(user.metaapi_account_id, from, to);
 
-    // Only closed trades (DEAL_ENTRY_OUT) that have P&L
+    // Closed trades: DEAL_ENTRY_OUT or DEAL_ENTRY_INOUT (reversals), BUY or SELL only
     const closedDeals: MetaDeal[] = deals.filter(
-      d => d.entryType === "DEAL_ENTRY_OUT" && (d.type === "DEAL_TYPE_BUY" || d.type === "DEAL_TYPE_SELL")
+      d => (d.entryType === "DEAL_ENTRY_OUT" || d.entryType === "DEAL_ENTRY_INOUT") &&
+           (d.type === "DEAL_TYPE_BUY" || d.type === "DEAL_TYPE_SELL")
     );
 
     if (closedDeals.length === 0) {
@@ -197,7 +212,7 @@ export async function POST(req: Request) {
           user_id: session.user.id,
           template_id: templateId,
           template_version: 1,
-          trade_date: deal.time.slice(0, 10),
+          trade_date: deal.time,
           meta_deal_id: deal.id,
         })
         .select()
