@@ -7,15 +7,21 @@ function getToken(): string {
 }
 
 async function apiFetch(url: string, token: string, options?: RequestInit) {
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      "auth-token": token,
-      "Content-Type": "application/json",
-      ...(options?.headers ?? {}),
-    },
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      ...options,
+      headers: {
+        "auth-token": token,
+        "Content-Type": "application/json",
+        ...(options?.headers ?? {}),
+      },
+      cache: "no-store",
+    });
+  } catch (e) {
+    const cause = (e as { cause?: { message?: string } })?.cause;
+    throw new Error(`MetaAPI network error: ${cause?.message ?? (e instanceof Error ? e.message : String(e))}`);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
