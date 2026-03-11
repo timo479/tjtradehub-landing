@@ -115,15 +115,19 @@ export default function MetaConnect() {
 
   useEffect(() => {
     if (!conn) return;
+    if (conn.state === "UNDEPLOYED") {
+      // Auto-redeploy silently when page loads
+      redeploy();
+      return;
+    }
     if (conn.state === "DEPLOYING") {
       startPolling();
       return;
     }
     if (conn.state === "DEPLOYED") {
       loadAccount();
-      // Auto-sync timing
-      const last = conn.lastSync ? new Date(conn.lastSync).getTime() : 0;
-      if (Date.now() - last > AUTO_SYNC_MS) doSync(true);
+      // Always sync on page load to pick up new trades
+      doSync(true);
       if (syncTimer.current) clearInterval(syncTimer.current);
       syncTimer.current = setInterval(() => doSync(true), AUTO_SYNC_MS);
     }
