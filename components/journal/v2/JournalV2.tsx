@@ -326,16 +326,18 @@ export default function JournalV2() {
               </div>
 
               {entries.map(entry => {
-                const symbol    = getField(entry, "Symbol");
-                const direction = getField(entry, "Direction");
-                const pnl       = getField(entry, "P&L");
-                const rating    = getField(entry, "Rating");
-                const emotion   = getField(entry, "Emotion");
-                const notes     = getField(entry, "Notes");
-                const setup     = getField(entry, "Setup");
-                const mistake   = getField(entry, "Mistake");
-                const followed  = getField(entry, "Followed Plan");
-                const volume    = getField(entry, "Volume");
+                const symbol     = getField(entry, "Symbol");
+                const direction  = getField(entry, "Direction");
+                const pnl        = getField(entry, "P&L");
+                const rating     = getField(entry, "Rating");
+                const emotion    = getField(entry, "Emotion");
+                const notes      = getField(entry, "Notes");
+                const setup      = getField(entry, "Setup");
+                const mistake    = getField(entry, "Mistake");
+                const followed   = getField(entry, "Followed Plan");
+                const volume     = getField(entry, "Volume");
+                const entryPrice = getField(entry, "Entry Price");
+                const exitPrice  = getField(entry, "Exit Price");
                 const isExpanded = expandedId === entry.id;
                 const date = new Date(entry.trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
                 const time = new Date(entry.trade_date).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
@@ -375,6 +377,27 @@ export default function JournalV2() {
                     {/* Expanded Panel */}
                     {isExpanded && (
                       <div style={{ borderTop: "1px solid #1F2937", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "16px" }}>
+
+                        {/* Entry / Exit prices */}
+                        {(entryPrice || exitPrice) && (
+                          <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+                            {entryPrice && (
+                              <div>
+                                <p style={{ color: "#4B5563", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "2px" }}>Entry Price</p>
+                                <p style={{ color: "#D1D5DB", fontSize: "14px", fontWeight: 600 }}>{parseFloat(entryPrice).toFixed(5).replace(/\.?0+$/, "")}</p>
+                              </div>
+                            )}
+                            {entryPrice && exitPrice && (
+                              <span style={{ color: "#374151", fontSize: "16px" }}>→</span>
+                            )}
+                            {exitPrice && (
+                              <div>
+                                <p style={{ color: "#4B5563", fontSize: "11px", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "2px" }}>Exit Price</p>
+                                <p style={{ color: "#D1D5DB", fontSize: "14px", fontWeight: 600 }}>{parseFloat(exitPrice).toFixed(5).replace(/\.?0+$/, "")}</p>
+                              </div>
+                            )}
+                          </div>
+                        )}
 
                         {/* Review Fields */}
                         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(160px, 1fr))", gap: "12px" }}>
