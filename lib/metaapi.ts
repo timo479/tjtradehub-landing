@@ -114,14 +114,15 @@ export interface MetaAccountInfo {
 export interface MetaDeal {
   id: string;
   time: string;
+  brokerTime: string;
   symbol: string;
   type: string;
   entryType: string;
   volume: number;
   price: number;
-  commission: number;
-  swap: number;
-  profit: number;
+  commission?: number;
+  swap?: number;
+  profit?: number;
   comment?: string;
   positionId?: string;
 }

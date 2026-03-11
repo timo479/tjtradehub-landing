@@ -175,11 +175,19 @@ export async function POST(req: Request) {
   try {
     const deals = await fetchDeals(user.metaapi_account_id, from, to);
 
-    // Closed trades: DEAL_ENTRY_OUT or DEAL_ENTRY_INOUT (reversals), BUY or SELL only
+    // Closed trades: OUT, OUT_BY (close-by), or INOUT (reversal), BUY or SELL only
     const closedDeals: MetaDeal[] = deals.filter(
-      d => (d.entryType === "DEAL_ENTRY_OUT" || d.entryType === "DEAL_ENTRY_INOUT") &&
+      d => (d.entryType === "DEAL_ENTRY_OUT" || d.entryType === "DEAL_ENTRY_OUT_BY" || d.entryType === "DEAL_ENTRY_INOUT") &&
            (d.type === "DEAL_TYPE_BUY" || d.type === "DEAL_TYPE_SELL")
     );
+
+    // Build opening deal map: positionId → opening deal (for entry price lookup)
+    const openingDeals = new Map<string, MetaDeal>();
+    for (const d of deals) {
+      if (d.entryType === "DEAL_ENTRY_IN" && d.positionId) {
+        openingDeals.set(d.positionId, d);
+      }
+    }
 
     if (closedDeals.length === 0) {
       // On first sync, don't advance the timestamp — MetaAPI may still be loading history
@@ -205,6 +213,12 @@ export async function POST(req: Request) {
 
       if (exists) { skipped++; continue; }
 
+      // Use brokerTime for display (matches what trader sees in MT5)
+      // brokerTime format: "2026-03-11 20:57:31.040" → convert to ISO
+      const tradeDate = deal.brokerTime
+        ? new Date(deal.brokerTime.replace(" ", "T")).toISOString()
+        : deal.time;
+
       // Create entry
       const { data: entry, error: eErr } = await db
         .from("trade_entries")
@@ -212,7 +226,7 @@ export async function POST(req: Request) {
           user_id: session.user.id,
           template_id: templateId,
           template_version: 1,
-          trade_date: deal.time,
+          trade_date: tradeDate,
           meta_deal_id: deal.id,
         })
         .select()
@@ -220,16 +234,28 @@ export async function POST(req: Request) {
 
       if (eErr || !entry) { skipped++; continue; }
 
-      // Build field values
-      const isLong = deal.type === "DEAL_TYPE_BUY";
+      // Direction: closing SELL = was LONG, closing BUY = was SHORT
+      const isLong = deal.type === "DEAL_TYPE_SELL";
+
+      // Safe numeric values (can be undefined/null in MetaAPI)
+      const profit     = deal.profit     ?? 0;
+      const commission = deal.commission ?? 0;
+      const swap       = deal.swap       ?? 0;
+      const totalPnl   = profit + commission + swap;
+
+      // Entry price from the matching opening deal
+      const openingDeal = deal.positionId ? openingDeals.get(deal.positionId) : null;
+
       const fieldValues = [
-        fieldMap["Symbol"]      && { field_id: fieldMap["Symbol"],      value: deal.symbol },
-        fieldMap["Direction"]   && { field_id: fieldMap["Direction"],   value: isLong ? "Long" : "Short" },
-        fieldMap["Volume"]      && { field_id: fieldMap["Volume"],      value: String(deal.volume) },
-        fieldMap["P&L"]         && { field_id: fieldMap["P&L"],         value: String(deal.profit + (deal.commission ?? 0) + (deal.swap ?? 0)) },
-        fieldMap["Commission"]  && { field_id: fieldMap["Commission"],  value: String(deal.commission ?? 0) },
-        fieldMap["Swap"]        && { field_id: fieldMap["Swap"],        value: String(deal.swap ?? 0) },
-        deal.comment && fieldMap["Comment"]   && { field_id: fieldMap["Comment"],   value: deal.comment },
+        fieldMap["Symbol"]       && deal.symbol && { field_id: fieldMap["Symbol"],       value: deal.symbol },
+        fieldMap["Direction"]    && { field_id: fieldMap["Direction"],    value: isLong ? "Long" : "Short" },
+        fieldMap["Volume"]       && deal.volume != null && { field_id: fieldMap["Volume"],       value: String(deal.volume) },
+        fieldMap["Entry Price"]  && openingDeal?.price != null && { field_id: fieldMap["Entry Price"],  value: String(openingDeal.price) },
+        fieldMap["Exit Price"]   && deal.price  != null && { field_id: fieldMap["Exit Price"],   value: String(deal.price) },
+        fieldMap["P&L"]          && { field_id: fieldMap["P&L"],          value: String(totalPnl) },
+        fieldMap["Commission"]   && commission !== 0 && { field_id: fieldMap["Commission"],   value: String(commission) },
+        fieldMap["Swap"]         && swap        !== 0 && { field_id: fieldMap["Swap"],         value: String(swap) },
+        fieldMap["Comment"] && deal.comment    && { field_id: fieldMap["Comment"],    value: deal.comment },
       ].filter(Boolean) as { field_id: string; value: string }[];
 
       if (fieldValues.length > 0) {
