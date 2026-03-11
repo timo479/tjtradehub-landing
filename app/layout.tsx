@@ -13,13 +13,55 @@ const inter = Inter({
 
 
 export const metadata: Metadata = {
-  title: "Trading Journal für Forex & Futures Trader | TJ TradeHub",
+  metadataBase: new URL("https://www.tjtradehub.com"),
+  title: {
+    default: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    template: "%s | TJ TradeHub",
+  },
   description:
-    "TJ TradeHub ist ein Trading Journal für systematische Trader. Analysiere deine Trades, tracke deine Performance und verbessere deine Trading-Disziplin.",
+    "TJ TradeHub is an advanced trading journal for system-based traders. Track performance, analyze execution quality, and improve discipline — built for Forex & Futures traders.",
+  keywords: [
+    "trading journal",
+    "forex trading journal",
+    "futures trading journal",
+    "best trading journal",
+    "trading journal software",
+    "mt5 trading journal",
+    "trading performance tracker",
+    "trader journal",
+    "forex performance tracker",
+    "trading analytics journal",
+  ],
   openGraph: {
-    title: "TJ TradeHub",
-    description: "Stop tracking outcomes. Start tracking discipline.",
+    title: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    description:
+      "Advanced trading journal for system-based Forex & Futures traders. Track performance, analyze execution quality, and improve discipline.",
+    url: "https://www.tjtradehub.com",
+    siteName: "TJ TradeHub",
+    images: [
+      {
+        url: "/logo-3d.png",
+        width: 512,
+        height: 512,
+        alt: "TJ TradeHub – Trading Journal for Forex & Futures Traders",
+      },
+    ],
     type: "website",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    description:
+      "Advanced trading journal for system-based Forex & Futures traders. Track performance, analyze execution quality, improve discipline.",
+    images: ["/logo-3d.png"],
+  },
+  robots: {
+    index: true,
+    follow: true,
+  },
+  alternates: {
+    canonical: "https://www.tjtradehub.com",
   },
 };
 

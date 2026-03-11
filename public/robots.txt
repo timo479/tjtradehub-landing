@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+Disallow: /dashboard
+Disallow: /dashboard/
+Disallow: /api/
+Disallow: /billing
+Disallow: /billing/
+
+Sitemap: https://www.tjtradehub.com/sitemap.xml
