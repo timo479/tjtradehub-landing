@@ -52,6 +52,8 @@ export async function provisionAccount(params: {
       password: params.password,
       server: params.server,
       platform: params.platform,
+      magic: 0,
+      manualTrades: true,
       quoteStreamingIntervalInSeconds: 2.5,
     }),
   });
