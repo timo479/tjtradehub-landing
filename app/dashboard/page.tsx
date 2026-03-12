@@ -21,53 +21,75 @@ export default async function DashboardPage() {
   const daysLeft = getDaysRemaining({ trial_ends_at: trialEndsAt });
   const isSubscribed = subscriptionStatus === "active";
 
-  // Fetch trades
-  const { data: trades } = await db
-    .from("trades")
-    .select("profit_loss, discipline_score, trade_date")
+  // Fetch entries from JournalV2
+  const { data: rawEntries } = await db
+    .from("trade_entries")
+    .select("id, trade_date, trade_field_values(value, template_fields(label, field_type))")
     .eq("user_id", session.user.id);
 
-  const allTrades = trades ?? [];
+  const allEntries = rawEntries ?? [];
 
-  // This month
+  const getPnl = (e: typeof allEntries[0]): number | null => {
+    for (const fv of e.trade_field_values ?? []) {
+      const label = (fv.template_fields?.label ?? "").toLowerCase();
+      if (fv.template_fields?.field_type === "number" &&
+        (label.includes("p&l") || label.includes("pnl") || label.includes("profit"))) {
+        const n = parseFloat(fv.value);
+        return isNaN(n) ? null : n;
+      }
+    }
+    return null;
+  };
+
+  const getRating = (e: typeof allEntries[0]): number | null => {
+    for (const fv of e.trade_field_values ?? []) {
+      if ((fv.template_fields?.label ?? "").toLowerCase().includes("rating")) {
+        const n = parseFloat(fv.value);
+        return isNaN(n) ? null : n;
+      }
+    }
+    return null;
+  };
+
   const now = new Date();
-  const monthTrades = allTrades.filter((t) => {
-    const d = new Date(t.trade_date);
+  const monthEntries = allEntries.filter((e) => {
+    const d = new Date(e.trade_date);
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
-  const totalPnl = allTrades.reduce((s, t) => s + (t.profit_loss ?? 0), 0);
-  const wins = allTrades.filter((t) => t.profit_loss > 0).length;
-  const winRate = allTrades.length ? Math.round((wins / allTrades.length) * 100) : null;
-  const disciplineTrades = allTrades.filter((t) => t.discipline_score != null);
-  const avgDiscipline = disciplineTrades.length
-    ? (disciplineTrades.reduce((s, t) => s + t.discipline_score!, 0) / disciplineTrades.length).toFixed(1)
+  const pnls = allEntries.map(getPnl).filter((v): v is number => v !== null);
+  const totalPnl = pnls.reduce((s, v) => s + v, 0);
+  const wins = pnls.filter((v) => v > 0).length;
+  const winRate = pnls.length ? Math.round((wins / pnls.length) * 100) : null;
+  const ratings = allEntries.map(getRating).filter((v): v is number => v !== null);
+  const avgRating = ratings.length
+    ? (ratings.reduce((s, v) => s + v, 0) / ratings.length).toFixed(1)
     : null;
 
   const cards = [
     {
       label: "Trades This Month",
-      value: monthTrades.length > 0 ? monthTrades.length.toString() : "0",
-      sub: allTrades.length > 0 ? `${allTrades.length} total` : "no trades yet",
+      value: monthEntries.length.toString(),
+      sub: allEntries.length > 0 ? `${allEntries.length} total` : "no trades yet",
       color: "#F9FAFB",
     },
     {
-      label: "Avg Discipline Score",
-      value: avgDiscipline ? `${avgDiscipline}/10` : "—",
-      sub: avgDiscipline ? "across all trades" : "add trades to calculate",
-      color: avgDiscipline ? (parseFloat(avgDiscipline) >= 7 ? "#8B5CF6" : "#ef4444") : "#6B7280",
+      label: "Avg Rating",
+      value: avgRating ? `${avgRating}/10` : "—",
+      sub: avgRating ? "across all trades" : "add trades to calculate",
+      color: avgRating ? (parseFloat(avgRating) >= 7 ? "#8B5CF6" : "#ef4444") : "#6B7280",
     },
     {
       label: "Win Rate",
       value: winRate !== null ? `${winRate}%` : "—",
-      sub: winRate !== null ? `${wins} of ${allTrades.length} trades` : "add trades to calculate",
+      sub: winRate !== null ? `${wins} of ${pnls.length} trades` : "add trades to calculate",
       color: winRate !== null ? (winRate >= 50 ? "#22c55e" : "#ef4444") : "#6B7280",
     },
     {
       label: "Total P&L",
-      value: allTrades.length ? `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)} CHF` : "—",
-      sub: allTrades.length ? "realized profit / loss" : "no trades yet",
-      color: allTrades.length ? (totalPnl >= 0 ? "#22c55e" : "#ef4444") : "#6B7280",
+      value: pnls.length ? `${totalPnl >= 0 ? "+" : ""}${totalPnl.toFixed(2)}` : "—",
+      sub: pnls.length ? "realized profit / loss" : "no trades yet",
+      color: pnls.length ? (totalPnl >= 0 ? "#22c55e" : "#ef4444") : "#6B7280",
     },
   ];
 
