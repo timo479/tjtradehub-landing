@@ -105,6 +105,21 @@ export async function updateAccount(accountId: string, params: {
   });
 }
 
+export async function undeployAccount(accountId: string) {
+  const token = getToken();
+  const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}/undeploy`, {
+    method: "POST",
+    headers: { "auth-token": token, "Content-Type": "application/json" },
+    body: "{}",
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
+  }
+  return null;
+}
+
 export async function removeAccount(accountId: string) {
   const token = getToken();
   const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}`, {

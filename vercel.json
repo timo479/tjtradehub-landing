@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/undeploy",
+      "schedule": "0 */6 * * *"
+    }
+  ]
+}
