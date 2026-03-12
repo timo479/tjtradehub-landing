@@ -188,23 +188,25 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          <div className="rounded-2xl p-6" style={{ backgroundColor: "#111827", border: "1px solid #1F2937" }}>
-            <div className="flex items-center gap-4 mb-3">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                style={{ backgroundColor: "rgba(59,130,246,0.1)" }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                  <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#3B82F6" strokeWidth="2"
-                    strokeLinecap="round" strokeLinejoin="round" />
-                </svg>
+          <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
+            <div className="rounded-2xl p-6 transition-all" style={{ backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer" }}>
+              <div className="flex items-center gap-4 mb-3">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center"
+                  style={{ backgroundColor: "rgba(34,197,94,0.1)" }}>
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#22c55e" strokeWidth="2"
+                      strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                </div>
+                <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>MT4 / MT5 Sync</h3>
               </div>
-              <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>MT5 Sync</h3>
+              <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatic trade synchronization via MetaTrader 4 & 5</p>
+              <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
+                style={{ backgroundColor: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+                Live
+              </span>
             </div>
-            <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatic trade synchronization via MetaTrader 5</p>
-            <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
-              style={{ backgroundColor: "rgba(59,130,246,0.1)", color: "#3B82F6", border: "1px solid rgba(59,130,246,0.2)" }}>
-              Coming Soon
-            </span>
-          </div>
+          </Link>
         </div>
       </main>
     </div>
