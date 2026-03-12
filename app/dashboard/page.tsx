@@ -203,8 +203,8 @@ export default async function DashboardPage() {
                 <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>Trading Journal</h3>
               </div>
               <p className="text-sm" style={{ color: "#9CA3AF" }}>
-                {allTrades.length > 0
-                  ? `${allTrades.length} trade${allTrades.length > 1 ? "s" : ""} logged – keep tracking`
+                {allEntries.length > 0
+                  ? `${allEntries.length} trade${allEntries.length > 1 ? "s" : ""} logged – keep tracking`
                   : "Log your first trade and build your statistics"}
               </p>
             </div>
