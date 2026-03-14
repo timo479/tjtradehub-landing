@@ -178,7 +178,7 @@ export default async function DashboardPage() {
 
         {/* MetaAPI */}
         <div className="mb-8">
-          <MetaConnect />
+          <MetaConnect isSubscribed={isSubscribed} />
         </div>
 
         {/* Statistiken Widget Grid */}

@@ -1,0 +1,15 @@
+name: MetaAPI Inactivity Undeploy
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"  # every 30 minutes
+
+jobs:
+  undeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger undeploy cron
+        run: |
+          curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/undeploy"

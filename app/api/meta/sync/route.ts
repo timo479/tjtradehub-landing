@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { hasActiveSubscription } from "@/lib/trial";
 import { fetchDeals, getAccountState, MetaDeal } from "@/lib/metaapi";
 import { NextResponse } from "next/server";
 
@@ -124,11 +125,15 @@ export async function POST(req: Request) {
 
   const { data: user } = await db
     .from("users")
-    .select("metaapi_account_id, last_meta_sync")
+    .select("metaapi_account_id, last_meta_sync, subscription_status, current_period_end")
     .eq("id", session.user.id)
     .single();
 
-  if (!user?.metaapi_account_id) {
+  if (!user || !hasActiveSubscription(user)) {
+    return NextResponse.json({ error: "Pro plan required" }, { status: 403 });
+  }
+
+  if (!user.metaapi_account_id) {
     return NextResponse.json({ error: "not_configured" }, { status: 404 });
   }
 

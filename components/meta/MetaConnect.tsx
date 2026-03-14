@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 
 interface ConnectionInfo {
   connected: boolean;
@@ -26,6 +27,7 @@ interface AccountInfo {
 
 const AUTO_SYNC_MS = 15 * 60 * 1000;
 const POLL_MS = 5_000;
+const HEARTBEAT_MS = 5 * 60 * 1000;
 
 const inp: React.CSSProperties = {
   backgroundColor: "#0a0a0a", border: "1px solid #1F2937", borderRadius: "10px",
@@ -46,7 +48,8 @@ function StateTag({ state, connectionStatus }: { state?: string; connectionStatu
   return <span style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "6px", backgroundColor: "#1F2937", color: "#6B7280" }}>{state}</span>;
 }
 
-export default function MetaConnect() {
+export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean }) {
+  const router = useRouter();
   const [conn, setConn] = useState<ConnectionInfo | null>(null);
   const [account, setAccount] = useState<AccountInfo | null>(null);
   const [showForm, setShowForm] = useState(false);
@@ -61,6 +64,21 @@ export default function MetaConnect() {
   const [error, setError] = useState<string | null>(null);
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const heartbeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const sendHeartbeat = useCallback(async () => {
+    await fetch("/api/meta/heartbeat", { method: "POST" });
+  }, []);
+
+  const startHeartbeat = useCallback(() => {
+    if (heartbeatTimer.current) clearInterval(heartbeatTimer.current);
+    sendHeartbeat();
+    heartbeatTimer.current = setInterval(sendHeartbeat, HEARTBEAT_MS);
+  }, [sendHeartbeat]);
+
+  const stopHeartbeat = useCallback(() => {
+    if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
+  }, []);
 
   const loadConn = useCallback(async () => {
     const res = await fetch("/api/meta/settings");
@@ -116,7 +134,6 @@ export default function MetaConnect() {
   useEffect(() => {
     if (!conn) return;
     if (conn.state === "UNDEPLOYED") {
-      // Auto-redeploy silently when page loads
       redeploy();
       return;
     }
@@ -126,14 +143,15 @@ export default function MetaConnect() {
     }
     if (conn.state === "DEPLOYED") {
       loadAccount();
-      // Always sync on page load to pick up new trades
       doSync(true);
+      startHeartbeat();
       if (syncTimer.current) clearInterval(syncTimer.current);
       syncTimer.current = setInterval(() => doSync(true), AUTO_SYNC_MS);
     }
     return () => {
       if (pollTimer.current) clearInterval(pollTimer.current);
       if (syncTimer.current) clearInterval(syncTimer.current);
+      stopHeartbeat();
     };
   }, [conn?.state]);
 
@@ -172,6 +190,7 @@ export default function MetaConnect() {
   const disconnect = async () => {
     if (!confirm("Disconnect MetaTrader?")) return;
     await fetch("/api/meta/settings", { method: "DELETE" });
+    stopHeartbeat();
     setConn({ connected: false });
     setAccount(null);
     setSyncResult(null);
@@ -181,6 +200,48 @@ export default function MetaConnect() {
     backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "20px 24px",
   };
 
+  // ── Upsell Card for Trial Users ──────────────────────────────────────────────
+  if (!isSubscribed) {
+    return (
+      <div style={{ ...card, display: "flex", flexDirection: "column", gap: "16px" }}>
+        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#374151", flexShrink: 0 }} />
+              <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px" }}>MT4/MT5 Auto-Sync</span>
+              <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "5px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA", fontWeight: 600, letterSpacing: "0.04em" }}>PRO</span>
+            </div>
+            <p style={{ color: "#6B7280", fontSize: "12px" }}>Automatically import trades from MetaTrader into your journal</p>
+          </div>
+        </div>
+
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
+          {[
+            "Auto-sync every 15 minutes",
+            "Full trade history import",
+            "Works with MT4 & MT5",
+            "No manual entry needed",
+          ].map(f => (
+            <div key={f} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <span style={{ color: "#8B5CF6", fontSize: "13px" }}>✓</span>
+              <span style={{ color: "#9CA3AF", fontSize: "12px" }}>{f}</span>
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", paddingTop: "4px", borderTop: "1px solid #1F2937" }}>
+          <span style={{ color: "#4B5563", fontSize: "12px" }}>Available on Pro Plan · $29/mo</span>
+          <button
+            onClick={() => router.push("/billing")}
+            style={{ padding: "9px 20px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>
+            Upgrade Plan →
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Loading ──────────────────────────────────────────────────────────────────
   if (conn === null) return (
     <div style={{ ...card, display: "flex", alignItems: "center", gap: "10px" }}>
       <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#374151" }} />

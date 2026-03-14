@@ -8,15 +8,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const cutoff = new Date(Date.now() - 48 * 60 * 60 * 1000).toISOString();
+  // Undeploy accounts inactive for more than 60 minutes
+  const cutoff = new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
   const { data: staleAccounts } = await db
     .from("users")
     .select("id, metaapi_account_id")
     .eq("metaapi_account_state", "DEPLOYED")
     .not("metaapi_account_id", "is", null)
-    .not("last_meta_sync", "is", null)
-    .lt("last_meta_sync", cutoff);
+    .lt("meta_last_active", cutoff);
 
   if (!staleAccounts?.length) {
     return NextResponse.json({ undeployed: 0 });
