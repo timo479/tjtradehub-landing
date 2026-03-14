@@ -28,6 +28,7 @@ interface AccountInfo {
 const AUTO_SYNC_MS = 15 * 60 * 1000;
 const POLL_MS = 5_000;
 const HEARTBEAT_MS = 5 * 60 * 1000;
+const ACTIVITY_TIMEOUT_MS = 30 * 60 * 1000; // 30 min no activity → stop heartbeat
 
 const inp: React.CSSProperties = {
   backgroundColor: "#0a0a0a", border: "1px solid #1F2937", borderRadius: "10px",
@@ -65,19 +66,49 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
   const pollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const syncTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const heartbeatTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const lastActivityRef = useRef<number>(Date.now());
 
-  const sendHeartbeat = useCallback(async () => {
-    await fetch("/api/meta/heartbeat", { method: "POST" });
+  const isUserActive = useCallback(() => {
+    const tabVisible = document.visibilityState === "visible";
+    const recentlyActive = Date.now() - lastActivityRef.current < ACTIVITY_TIMEOUT_MS;
+    return tabVisible && recentlyActive;
   }, []);
 
+  const sendHeartbeat = useCallback(async () => {
+    if (!isUserActive()) return;
+    await fetch("/api/meta/heartbeat", { method: "POST" });
+  }, [isUserActive]);
+
   const startHeartbeat = useCallback(() => {
+    lastActivityRef.current = Date.now();
     if (heartbeatTimer.current) clearInterval(heartbeatTimer.current);
     sendHeartbeat();
     heartbeatTimer.current = setInterval(sendHeartbeat, HEARTBEAT_MS);
-  }, [sendHeartbeat]);
+
+    // Track user activity: mouse, keyboard, scroll, touch
+    const onActivity = () => { lastActivityRef.current = Date.now(); };
+    const events = ["mousemove", "keydown", "scroll", "click", "touchstart"] as const;
+    events.forEach(e => window.addEventListener(e, onActivity, { passive: true }));
+
+    // Page Visibility: stop heartbeat when tab hidden, resume when visible + active
+    const onVisibilityChange = () => {
+      if (document.visibilityState === "visible" && isUserActive()) {
+        sendHeartbeat();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // Store cleanup on the ref so stopHeartbeat can remove listeners
+    (heartbeatTimer as React.MutableRefObject<ReturnType<typeof setInterval> | null> & { cleanup?: () => void }).cleanup = () => {
+      events.forEach(e => window.removeEventListener(e, onActivity));
+      document.removeEventListener("visibilitychange", onVisibilityChange);
+    };
+  }, [sendHeartbeat, isUserActive]);
 
   const stopHeartbeat = useCallback(() => {
     if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
+    const t = heartbeatTimer as React.MutableRefObject<ReturnType<typeof setInterval> | null> & { cleanup?: () => void };
+    t.cleanup?.();
   }, []);
 
   const loadConn = useCallback(async () => {
