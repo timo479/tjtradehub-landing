@@ -315,11 +315,6 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
                   style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}>
                   {syncing ? "Sync..." : "↻ Sync now"}
                 </button>
-                <button onClick={() => doSync(false, true)} disabled={syncing}
-                  style={{ padding: "7px 14px", borderRadius: "9px", border: "1px solid rgba(107,114,128,0.4)", backgroundColor: "transparent", color: "#6B7280", cursor: syncing ? "not-allowed" : "pointer", fontSize: "12px", opacity: syncing ? 0.6 : 1 }}
-                  title="Re-import all history (2 years)">
-                  Full Resync
-                </button>
               </>
             )}
             {conn.connected ? (
