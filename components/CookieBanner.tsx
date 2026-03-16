@@ -30,9 +30,9 @@ export default function CookieBanner() {
       gap: "16px", flexWrap: "wrap", boxShadow: "0 8px 32px rgba(0,0,0,0.5)",
     }}>
       <p style={{ color: "#9CA3AF", fontSize: "13px", flex: 1, minWidth: "200px" }}>
-        We use cookies for essential functionality and anonymous usage statistics.
+        We use cookies for essential functionality and authentication.
         Learn more in our{" "}
-        <Link href="/terms" style={{ color: "#8B5CF6", textDecoration: "underline" }}>Terms</Link>.
+        <Link href="/privacy" style={{ color: "#8B5CF6", textDecoration: "underline" }}>Privacy Policy</Link>.
       </p>
       <div style={{ display: "flex", gap: "10px", flexShrink: 0 }}>
         <button onClick={decline} style={{

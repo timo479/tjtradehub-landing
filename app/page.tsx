@@ -93,8 +93,9 @@ export default function Home() {
               © 2026 TJ TradeHub. All rights reserved.
             </p>
             <div className="flex items-center gap-6">
-              <a href="#" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Privacy Policy</a>
+              <Link href="/privacy" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Privacy Policy</Link>
               <Link href="/terms" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Terms of Service</Link>
+              <Link href="/impressum" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Legal Notice</Link>
               <a href="mailto:support@tjtradehub.com" className="footer-link text-sm transition-colors duration-200" style={{ color: "#9CA3AF" }}>Contact</a>
             </div>
           </div>
