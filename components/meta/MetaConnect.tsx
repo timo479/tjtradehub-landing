@@ -143,7 +143,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     setSyncing(false);
   }, [syncing]);
 
-  // Poll until DEPLOYED + CONNECTED
+  // Poll until DEPLOYED + CONNECTED (broker handshake complete)
   const startPolling = useCallback(() => {
     if (pollTimer.current) clearInterval(pollTimer.current);
     pollTimer.current = setInterval(async () => {
@@ -151,7 +151,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
       if (!res.ok) return;
       const data: ConnectionInfo = await res.json();
       setConn(data);
-      if (data.state === "DEPLOYED") {
+      if (data.state === "DEPLOYED" && data.connectionStatus === "CONNECTED") {
         clearInterval(pollTimer.current!);
         pollTimer.current = null;
         await loadAccount();
@@ -331,11 +331,15 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
           </div>
         </div>
 
-        {/* Deploying hint */}
-        {conn.state === "DEPLOYING" && (
+        {/* Deploying / waiting for broker hint */}
+        {(conn.state === "DEPLOYING" || (conn.state === "DEPLOYED" && conn.connectionStatus !== "CONNECTED")) && (
           <div style={{ marginTop: "14px", backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "14px", height: "14px", border: "2px solid #8B5CF6", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
-            <p style={{ color: "#A78BFA", fontSize: "12px" }}>Establishing connection – this takes about 1–2 minutes...</p>
+            <p style={{ color: "#A78BFA", fontSize: "12px" }}>
+              {conn.state === "DEPLOYING"
+                ? "Establishing connection – this takes about 1–2 minutes..."
+                : "Connected to server – waiting for broker handshake..."}
+            </p>
           </div>
         )}
 
