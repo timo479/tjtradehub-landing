@@ -41,6 +41,7 @@ import BuiltForSection from "@/components/BuiltForSection";
 import PricingSection from "@/components/PricingSection";
 import AboutSection from "@/components/AboutSection";
 import FinalCTA from "@/components/FinalCTA";
+import EarlyAccessBanner from "@/components/EarlyAccessBanner";
 
 export default function Home() {
   return (
@@ -52,6 +53,7 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <EarlyAccessBanner />
         <MT5Section />
         <ProblemSection />
         <DifferentiatorSection />
