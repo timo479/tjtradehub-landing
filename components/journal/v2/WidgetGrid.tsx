@@ -410,14 +410,13 @@ function WHistogram({ entries }: { entries: Entry[] }) {
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 10;
         const h = (b.count / maxCount) * (H - 16);
-        const color = b.min >= 0 || (b.min === -Infinity && false) ? "#22c55e" : (b.max <= 0 ? "#ef4444" : "#22c55e");
-        const isPos = b.min >= 0;
+        const barColor = b.min >= 0 ? "#22c55e" : b.max <= 0 ? "#ef4444" : "#6B7280";
         return (
           <g key={b.label}>
             {b.count > 0 && (
               <>
-                <rect x={x} y={H - h} width={bW} height={h} rx="4" fill={isPos ? "#22c55e" : "#ef4444"} opacity="0.75" />
-                <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill={isPos ? "#22c55e" : "#ef4444"} fontSize="10" fontWeight="600">{b.count}</text>
+                <rect x={x} y={H - h} width={bW} height={h} rx="4" fill={barColor} opacity="0.75" />
+                <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill={barColor} fontSize="10" fontWeight="600">{b.count}</text>
               </>
             )}
             {b.label.split("\n").map((line, li) => (
