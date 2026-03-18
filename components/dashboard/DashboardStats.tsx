@@ -8,8 +8,9 @@ export default function DashboardStats() {
 
   useEffect(() => {
     fetch("/api/v2/entries")
-      .then(r => r.ok ? r.json() : [])
+      .then(r => r.ok ? r.json() : Promise.reject(r))
       .then(data => setEntries(Array.isArray(data) ? data : []))
+      .catch(() => setEntries([]))
       .finally(() => setLoading(false));
   }, []);
 

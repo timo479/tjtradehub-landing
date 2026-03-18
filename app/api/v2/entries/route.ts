@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
+import { canAccessDashboard } from "@/lib/trial";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -10,9 +11,15 @@ const entrySchema = z.object({
   field_values: z.record(z.string(), z.unknown()).optional(),
 });
 
+async function checkAccess(userId: string) {
+  const { data } = await db.from("users").select("subscription_status, current_period_end, trial_ends_at").eq("id", userId).single();
+  return data && canAccessDashboard(data);
+}
+
 export async function GET() {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!await checkAccess(session.user.id)) return NextResponse.json({ error: "Subscription required" }, { status: 403 });
 
   const { data, error } = await db
     .from("trade_entries")
@@ -31,6 +38,7 @@ export async function GET() {
 export async function POST(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!await checkAccess(session.user.id)) return NextResponse.json({ error: "Subscription required" }, { status: 403 });
 
   const body = await req.json();
   const result = entrySchema.safeParse(body);
