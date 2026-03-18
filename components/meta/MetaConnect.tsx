@@ -137,7 +137,8 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     setSyncing(true);
     if (!auto) { setError(null); setSyncResult(null); }
     const res = await fetch(`/api/meta/sync${reset ? "?reset=true" : ""}`, { method: "POST" });
-    const data = await res.json();
+    let data: { error?: string; synced?: number; skipped?: number } = {};
+    try { data = await res.json(); } catch { if (!auto) setError("Sync failed"); setSyncing(false); return; }
     if (!res.ok) {
       if (!auto) {
         if (data.error === "not_connected") {

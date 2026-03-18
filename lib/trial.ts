@@ -1,7 +1,7 @@
 import type { User } from "./db";
 
 export function isTrialActive(user: Pick<User, "trial_ends_at">): boolean {
-  return new Date(user.trial_ends_at) > new Date();
+  return new Date(user.trial_ends_at) >= new Date();
 }
 
 export function getDaysRemaining(user: Pick<User, "trial_ends_at">): number {

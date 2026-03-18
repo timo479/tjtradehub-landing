@@ -62,6 +62,7 @@ export async function POST(request: NextRequest) {
       const sub = await stripe.subscriptions.retrieve(
         session.subscription as string
       );
+      if (session.payment_status !== "paid") break;
       const customerId = session.customer as string;
       if (!customerId) break;
 
