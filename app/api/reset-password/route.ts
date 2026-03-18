@@ -13,7 +13,10 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
+  let body: unknown;
+  try { body = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
   const result = schema.safeParse(body);
   if (!result.success) {
     return NextResponse.json({ error: result.error.issues[0].message }, { status: 400 });

@@ -19,7 +19,10 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
+  let body: unknown;
+  try { body = await req.json(); } catch {
+    return NextResponse.json({ error: "Invalid request" }, { status: 400 });
+  }
   const result = schema.safeParse(body);
   if (!result.success) {
     return NextResponse.json({ error: "Invalid email" }, { status: 400 });
@@ -50,6 +53,7 @@ export async function POST(req: NextRequest) {
     await sendPasswordResetEmail(email, token);
   } catch (err) {
     console.error("Reset email error:", err);
+    return NextResponse.json({ error: "Failed to send email. Please try again in a moment." }, { status: 500 });
   }
 
   return NextResponse.json({ success: true });
