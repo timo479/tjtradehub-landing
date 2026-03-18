@@ -31,25 +31,25 @@ export async function DELETE() {
     const entryIds = entries?.map((e) => e.id) ?? [];
     const strategyIds = strategies?.map((s) => s.id) ?? [];
 
-    // Delete nested first
+    // Delete nested first – best effort (catch individual errors so user always gets deleted)
     if (entryIds.length) {
-      await db.from("trade_field_values").delete().in("trade_id", entryIds);
+      await db.from("trade_field_values").delete().in("trade_id", entryIds).catch(() => null);
     }
     if (templateIds.length) {
-      await db.from("template_fields").delete().in("template_id", templateIds);
-      await db.from("template_sections").delete().in("template_id", templateIds);
+      await db.from("template_fields").delete().in("template_id", templateIds).catch(() => null);
+      await db.from("template_sections").delete().in("template_id", templateIds).catch(() => null);
     }
     if (strategyIds.length) {
-      await db.from("strategy_rules").delete().in("strategy_id", strategyIds);
+      await db.from("strategy_rules").delete().in("strategy_id", strategyIds).catch(() => null);
     }
 
-    // Delete top-level user data
-    await db.from("trade_entries").delete().eq("user_id", userId);
-    await db.from("journal_templates").delete().eq("user_id", userId);
-    await db.from("strategies").delete().eq("user_id", userId);
-    await db.from("custom_fields").delete().eq("user_id", userId);
-    await db.from("trades").delete().eq("user_id", userId);
-    await db.from("journal_config").delete().eq("user_id", userId);
+    // Delete top-level user data – best effort
+    await db.from("trade_entries").delete().eq("user_id", userId).catch(() => null);
+    await db.from("journal_templates").delete().eq("user_id", userId).catch(() => null);
+    await db.from("strategies").delete().eq("user_id", userId).catch(() => null);
+    await db.from("custom_fields").delete().eq("user_id", userId).catch(() => null);
+    await db.from("trades").delete().eq("user_id", userId).catch(() => null);
+    await db.from("journal_config").delete().eq("user_id", userId).catch(() => null);
 
     // Finally delete the user
     const { error } = await db.from("users").delete().eq("id", userId);

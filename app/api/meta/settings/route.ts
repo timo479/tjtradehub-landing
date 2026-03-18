@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
 import { getAccountState, provisionAccount, removeAccount, updateAccount } from "@/lib/metaapi";
+import { encrypt } from "@/lib/encrypt";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET – Status der Verbindung abrufen
@@ -77,7 +78,7 @@ export async function POST(req: NextRequest) {
         await updateAccount(existing.metaapi_account_id, { login, password, server, name: accountName });
         await db.from("users").update({
           mt_login: login,
-          mt_password: password,
+          mt_password: encrypt(password),
           mt_server: server,
           mt_platform: platform,
           metaapi_account_state: "DEPLOYING",
@@ -104,7 +105,7 @@ export async function POST(req: NextRequest) {
 
     await db.from("users").update({
       mt_login: login,
-      mt_password: password,
+      mt_password: encrypt(password),
       mt_server: server,
       mt_platform: platform,
       metaapi_account_id: account.id,
