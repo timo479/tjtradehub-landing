@@ -1,21 +1,21 @@
 const testimonials = [
   {
     quote:
-      "Finally a journal that actually tracks whether I followed my rules — not just if I made money. The Discipline Score alone changed how I review my week.",
-    name: "— Early Access User",
+      "Before TJ TradeHub I told myself I was following my rules — but I had no proof. Having to check them off for every single trade makes it impossible to lie to yourself. My discipline improved just because I couldn't skip the process anymore.",
+    name: "— Marc F.",
     role: "Forex Trader",
   },
   {
     quote:
-      "The MT4 sync is seamless. I open my journal in the morning and every trade from the night session is already there. Zero manual entry.",
-    name: "— Early Access User",
+      "The simple act of entering your rules into the journal changes how you trade. You become more conscious before you even open a position. I broke fewer rules in my first two weeks than in the two months before.",
+    name: "— Leon K.",
     role: "Futures Trader",
   },
   {
     quote:
-      "I've tried Edgewonk and Tradervue. TJ TradeHub is the first one built around a system-based approach. The strategy checklists are exactly what I needed.",
-    name: "— Early Access User",
-    role: "Prop Firm Trader",
+      "I always knew what my rules were — I just didn't track whether I followed them. Now I have a Discipline Score and I can actually see the weeks where I slipped. That feedback loop alone is worth it.",
+    name: "— David S.",
+    role: "Swing Trader",
   },
 ];
 
