@@ -94,7 +94,7 @@ export default function DifferentiatorSection() {
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            Four core tools built for what system-based traders actually need.
+            Core tools built for what system-based traders actually need.
           </p>
         </div>
 

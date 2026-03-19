@@ -3,7 +3,7 @@ import Link from "next/link";
 import Header from "@/components/Header";
 
 export const metadata: Metadata = {
-  title: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+  title: "Trading Journal for Forex & Futures Traders | TJ TradeHub",
   alternates: {
     canonical: "https://www.tjtradehub.com",
   },

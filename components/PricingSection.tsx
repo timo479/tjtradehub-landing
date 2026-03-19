@@ -86,7 +86,7 @@ export default function PricingSection() {
             </span>
           </div>
           <p className="text-sm mb-8" style={{ color: "#9CA3AF" }}>
-            Locked-in founder rate. Price will increase after launch.
+            Founder rate — locked in for as long as you stay subscribed.
           </p>
 
           {/* CTA */}
