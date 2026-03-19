@@ -178,35 +178,6 @@ export default function MT5Section() {
                   </p>
                 </div>
 
-                {/* Stats Row */}
-                <div className="grid grid-cols-3 gap-3 mt-6">
-                  {[
-                    { label: "Latency", value: "&lt;3s" },
-                    { label: "Uptime", value: "99.9%" },
-                    { label: "Accounts", value: "Multi" },
-                  ].map((s, i) => (
-                    <div
-                      key={i}
-                      className="rounded-lg p-3 text-center"
-                      style={{
-                        backgroundColor: "#111827",
-                        border: "1px solid #1F2937",
-                      }}
-                    >
-                      <p
-                        className="font-bold text-sm"
-                        style={{ color: "#F9FAFB" }}
-                        dangerouslySetInnerHTML={{ __html: s.value }}
-                      />
-                      <p
-                        className="text-xs mt-0.5"
-                        style={{ color: "#9CA3AF" }}
-                      >
-                        {s.label}
-                      </p>
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
