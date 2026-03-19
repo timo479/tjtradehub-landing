@@ -21,7 +21,7 @@ const jsonLd = {
   offers: {
     "@type": "Offer",
     price: "29",
-    priceCurrency: "CHF",
+    priceCurrency: "USD",
   },
   featureList: [
     "MT5 & MT4 Trade Import",

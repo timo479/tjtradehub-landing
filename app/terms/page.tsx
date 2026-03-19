@@ -41,7 +41,7 @@ export default function TermsPage() {
 
           <section>
             <h2 style={{ color: "#F9FAFB", fontSize: "20px", fontWeight: 600, marginBottom: "12px" }}>4. Free Trial & Subscription</h2>
-            <p>New users receive a 7-day free trial with full access to all features. No credit card is required for the trial. After the trial period, continued access requires a paid subscription at CHF 29 per month.</p>
+            <p>New users receive a 7-day free trial with full access to all features. No credit card is required for the trial. After the trial period, continued access requires a paid subscription at $29 per month.</p>
             <p className="mt-3">Subscriptions are billed monthly and renew automatically unless cancelled. You may cancel at any time through your account settings. No refunds are issued for partial billing periods.</p>
           </section>
 

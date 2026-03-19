@@ -28,7 +28,7 @@ const jsonLd = {
   offers: {
     "@type": "Offer",
     price: "29",
-    priceCurrency: "CHF",
+    priceCurrency: "USD",
   },
 };
 

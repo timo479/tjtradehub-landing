@@ -76,7 +76,7 @@ export default function PricingSection() {
               className="text-5xl font-bold leading-none"
               style={{ color: "#F9FAFB" }}
             >
-              CHF 29
+              $29
             </span>
             <span
               className="text-base font-medium mb-1"
