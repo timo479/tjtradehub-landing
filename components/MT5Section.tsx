@@ -2,7 +2,7 @@ export default function MT5Section() {
   const bullets = [
     {
       title: "Zero Manual Entry",
-      desc: "Every trade from your MT5 account syncs automatically — no copy-paste, no CSV imports.",
+      desc: "Every trade from your MT4 or MT5 account syncs automatically — no copy-paste, no CSV imports.",
     },
     {
       title: "Real-Time Sync",
@@ -14,7 +14,7 @@ export default function MT5Section() {
     },
     {
       title: "Multi-Account Support",
-      desc: "Connect multiple MT5 accounts and track them unified in one dashboard.",
+      desc: "Connect multiple MT4/MT5 accounts and track them unified in one dashboard.",
     },
   ];
 
@@ -36,21 +36,21 @@ export default function MT5Section() {
                 className="text-sm font-semibold uppercase tracking-widest mb-4"
                 style={{ color: "#8B5CF6" }}
               >
-                MT5 Integration
+                MT4 / MT5 Integration
               </p>
               <h2
                 className="text-3xl md:text-4xl font-bold leading-tight"
                 style={{ color: "#F9FAFB" }}
               >
-                Fully Automated MT5 Trade Sync.
+                Fully Automated MT4 & MT5 Trade Sync.
               </h2>
               <p
                 className="mt-4 text-lg leading-relaxed"
                 style={{ color: "#9CA3AF" }}
               >
-                Connect your MetaTrader 5 account once. TJ TradeHub handles the
-                rest — automatically pulling every trade into your journal with
-                full execution detail.
+                Connect your MetaTrader 4 or 5 account once. TJ TradeHub handles
+                the rest — automatically pulling every trade into your journal
+                with full execution detail.
               </p>
             </div>
 
@@ -122,7 +122,7 @@ export default function MT5Section() {
                   }}
                 >
                   <p className="text-xs font-medium mb-1" style={{ color: "#9CA3AF" }}>
-                    MetaTrader 5
+                    MetaTrader 4 / 5
                   </p>
                   <p className="font-semibold text-sm" style={{ color: "#F9FAFB" }}>
                     Trade Executed

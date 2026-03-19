@@ -1,7 +1,7 @@
 const features = [
   {
-    title: "Custom Rules Engine",
-    desc: "Define your exact trading rules — entry conditions, setup requirements, time filters — and track whether you follow them on every single trade.",
+    title: "Strategy Rule Tracking",
+    desc: "Build your trading strategies with custom rules. Check off which rules you followed on every trade and track your adherence over time — automatically.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -16,7 +16,7 @@ const features = [
   },
   {
     title: "Setup Tagging",
-    desc: "Tag every trade with its setup type, market condition, and execution context. See exactly which setups are profitable and which are destroying your edge.",
+    desc: "Log the setup type for every trade to build a structured trade history. Identify which setups appear most in your journal and spot patterns across your entries.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -47,6 +47,7 @@ const features = [
   {
     title: "Execution Analytics",
     desc: "Deep-dive into entry timing, position sizing consistency, stop placement, and target management. Know exactly where your execution breaks down.",
+    comingSoon: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -116,12 +117,23 @@ export default function DifferentiatorSection() {
                 {f.icon}
               </div>
               <div>
-                <p
-                  className="font-bold text-lg mb-2"
-                  style={{ color: "#F9FAFB" }}
-                >
-                  {f.title}
-                </p>
+                <div className="flex items-center gap-3 mb-2">
+                  <p className="font-bold text-lg" style={{ color: "#F9FAFB" }}>
+                    {f.title}
+                  </p>
+                  {f.comingSoon && (
+                    <span
+                      className="px-2 py-0.5 text-xs font-semibold rounded-full"
+                      style={{
+                        backgroundColor: "rgba(139, 92, 246, 0.12)",
+                        color: "#8B5CF6",
+                        border: "1px solid rgba(139, 92, 246, 0.25)",
+                      }}
+                    >
+                      Coming Soon
+                    </span>
+                  )}
+                </div>
                 <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
                   {f.desc}
                 </p>

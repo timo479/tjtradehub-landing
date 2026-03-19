@@ -1,10 +1,10 @@
 const included = [
   "Unlimited trade logging",
-  "Full MT5 auto-sync",
-  "Custom rules engine",
-  "Setup tagging & filtering",
+  "Full MT4 & MT5 auto-sync",
+  "Strategy rule tracking",
+  "Setup tagging",
   "Discipline score & trends",
-  "Execution analytics dashboard",
+  "Execution analytics (coming soon)",
   "Multi-account support",
   "Export & data ownership",
 ];

@@ -38,6 +38,7 @@ import MT5Section from "@/components/MT5Section";
 import ProblemSection from "@/components/ProblemSection";
 import DifferentiatorSection from "@/components/DifferentiatorSection";
 import BuiltForSection from "@/components/BuiltForSection";
+import TestimonialsSection from "@/components/TestimonialsSection";
 import PricingSection from "@/components/PricingSection";
 import AboutSection from "@/components/AboutSection";
 import FinalCTA from "@/components/FinalCTA";
@@ -58,6 +59,7 @@ export default function Home() {
         <ProblemSection />
         <DifferentiatorSection />
         <BuiltForSection />
+        <TestimonialsSection />
         <PricingSection />
         <AboutSection />
         <FinalCTA />
