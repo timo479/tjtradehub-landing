@@ -15,7 +15,7 @@ const inter = Inter({
 export const metadata: Metadata = {
   metadataBase: new URL("https://www.tjtradehub.com"),
   title: {
-    default: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    default: "Trading Journal for Forex & Futures Traders | TJ TradeHub",
     template: "%s | TJ TradeHub",
   },
   description:
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
     "trading analytics journal",
   ],
   openGraph: {
-    title: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    title: "Trading Journal for Forex & Futures Traders | TJ TradeHub",
     description:
       "Advanced trading journal for system-based Forex & Futures traders. Track performance, analyze execution quality, and improve discipline.",
     url: "https://www.tjtradehub.com",
@@ -51,7 +51,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Best Trading Journal for Forex & Futures Traders | TJ TradeHub",
+    title: "Trading Journal for Forex & Futures Traders | TJ TradeHub",
     description:
       "Advanced trading journal for system-based Forex & Futures traders. Track performance, analyze execution quality, improve discipline.",
     images: ["/logo-3d.png"],

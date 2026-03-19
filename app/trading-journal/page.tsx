@@ -2,16 +2,16 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "Best Trading Journal Software for Serious Traders",
+  title: "Trading Journal Software for Serious Traders",
   description:
-    "TJ TradeHub is the best trading journal software for system-based traders. Log trades, track performance, measure discipline, and improve your edge — all in one place.",
+    "TJ TradeHub is a trading journal built for system-based traders. Log trades, track performance, measure discipline, and improve your edge — all in one place.",
   alternates: {
     canonical: "https://www.tjtradehub.com/trading-journal",
   },
   openGraph: {
-    title: "Best Trading Journal Software for Serious Traders | TJ TradeHub",
+    title: "Trading Journal Software for Serious Traders | TJ TradeHub",
     description:
-      "Log trades, track performance, and measure discipline. TJ TradeHub is the best trading journal built for Forex and Futures traders.",
+      "Log trades, track performance, and measure discipline. TJ TradeHub is a trading journal built for Forex and Futures traders.",
     url: "https://www.tjtradehub.com/trading-journal",
   },
 };
@@ -49,7 +49,7 @@ export default function TradingJournalPage() {
           className="text-4xl font-bold mt-8 mb-4"
           style={{ color: "#F9FAFB", lineHeight: "1.2" }}
         >
-          The Best Trading Journal Software for Serious Traders
+          The Trading Journal Software for Serious Traders
         </h1>
         <p style={{ color: "#9CA3AF", fontSize: "18px", lineHeight: "1.7", marginBottom: "48px" }}>
           Stop guessing why you lose trades. A structured trading journal gives you the data to understand your edge, identify patterns, and systematically improve your performance.
