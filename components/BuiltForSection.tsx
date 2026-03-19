@@ -72,8 +72,8 @@ export default function BuiltForSection() {
             If you have rules, you should be able to measure them.
           </p>
           <p className="text-sm" style={{ color: "#9CA3AF" }}>
-            Most traders lose money not because their system is bad — but because
-            they don&apos;t execute it consistently. TJ TradeHub shows you the difference.
+            Many traders underperform not because their strategy is flawed — but
+            because inconsistent execution hides what&apos;s actually working. TJ TradeHub helps you see the difference.
           </p>
         </div>
       </div>

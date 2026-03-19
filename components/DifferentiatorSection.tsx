@@ -31,7 +31,7 @@ const features = [
   },
   {
     title: "Discipline Score",
-    desc: "Get a quantified score for how consistently you follow your rules. Track discipline trends over time and understand the correlation between discipline and profitability.",
+    desc: "Get a quantified score for how consistently you follow your rules. Track your discipline over time and see how it relates to your trading results.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -94,8 +94,7 @@ export default function DifferentiatorSection() {
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            Four core tools that give system-based traders what every other
-            journal is missing.
+            Four core tools built for what system-based traders actually need.
           </p>
         </div>
 

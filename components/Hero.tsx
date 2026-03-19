@@ -45,8 +45,8 @@ export default function Hero() {
               className="text-lg leading-relaxed"
               style={{ color: "#9CA3AF", maxWidth: "480px" }}
             >
-              TJ TradeHub is the only journal built for traders who follow rules.
-              Track discipline, not just P&L. Measure execution, not just outcomes.
+              TJ TradeHub is the trading journal built around your rules — not just
+              your P&L. Track discipline. Measure execution. Know why you win or lose.
             </p>
 
             {/* Custom Journal Highlight */}

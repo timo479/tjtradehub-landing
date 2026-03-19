@@ -27,7 +27,7 @@ export default function AboutSection() {
             traders who needed a journal that understood rules — not just P&amp;L.
           </p>
           <p className="text-base leading-relaxed" style={{ color: "#9CA3AF" }}>
-            Every other tool we tried logged our trades beautifully. None of them
+            Every tool we tried logged our trades beautifully. None of them
             could tell us whether we actually traded our system. We were left to
             manually review logs, build spreadsheets, and guess whether discipline
             was the problem.

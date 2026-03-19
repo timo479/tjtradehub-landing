@@ -5,16 +5,16 @@ export default function MT5Section() {
       desc: "Every trade from your MT4 or MT5 account syncs automatically — no copy-paste, no CSV imports.",
     },
     {
-      title: "Real-Time Sync",
-      desc: "Trades appear in your journal within seconds of execution, so your data is always current.",
+      title: "Automatic Sync",
+      desc: "Trades sync automatically to your journal — no manual entry, no CSV, no copy-paste.",
     },
     {
       title: "Full Trade History",
-      desc: "Access your complete trading history from day one, enriched with execution metadata.",
+      desc: "Import your existing trade history and keep every future trade enriched with execution metadata.",
     },
     {
-      title: "Multi-Account Support",
-      desc: "Connect multiple MT4/MT5 accounts and track them unified in one dashboard.",
+      title: "Always Up to Date",
+      desc: "Your journal stays current without any effort from your side — just trade, we handle the rest.",
     },
   ];
 
@@ -145,7 +145,7 @@ export default function MT5Section() {
                     />
                   </svg>
                   <p className="text-xs font-medium" style={{ color: "#8B5CF6" }}>
-                    Instant Sync
+                    Auto Sync
                   </p>
                   <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
                     <path

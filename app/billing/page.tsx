@@ -6,13 +6,13 @@ import Image from "next/image";
 
 const included = [
   "Unlimited trade logging",
-  "Full MT4 & MT5 auto-sync",
+  "MT4 & MT5 auto-sync",
   "Strategy rule tracking",
   "Setup tagging",
   "Discipline score & trends",
   "Execution analytics (coming soon)",
-  "Multi-account support",
-  "Export & data ownership",
+  "Full trade history import",
+  "Your data, always accessible",
 ];
 
 export default function BillingPage() {
