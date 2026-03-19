@@ -24,7 +24,7 @@ const jsonLd = {
   operatingSystem: "Web, Browser",
   url: "https://www.tjtradehub.com/trading-journal",
   description:
-    "The best trading journal software for system-based Forex and Futures traders. Track every trade, measure discipline, and improve your performance.",
+    "A trading journal built for system-based Forex and Futures traders. Track every trade, measure discipline, and improve your performance.",
   offers: {
     "@type": "Offer",
     price: "29",
