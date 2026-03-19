@@ -50,7 +50,7 @@ export default function TestimonialsSection() {
           {testimonials.map((t, i) => (
             <div
               key={i}
-              className="rounded-2xl p-8 flex flex-col gap-6"
+              className="card-hover rounded-2xl p-8 flex flex-col gap-6 transition-all duration-200 hover:-translate-y-1.5"
               style={{
                 backgroundColor: "#111827",
                 border: "1px solid #1F2937",
