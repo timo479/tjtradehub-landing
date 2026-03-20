@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
+import HelpButton from "@/components/HelpButton";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import MetaConnect from "@/components/meta/MetaConnect";
 
@@ -144,7 +145,10 @@ export default async function DashboardPage() {
               </Link>
             </nav>
           </div>
-          <UserMenu name={name} email={session.user.email} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <HelpButton />
+            <UserMenu name={name} email={session.user.email} />
+          </div>
         </div>
       </header>
 

@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
+import HelpButton from "@/components/HelpButton";
 import MarketCalendar from "@/components/calendar/MarketCalendar";
 
 export const metadata = { title: "Market Calendar – TJ TradeHub" };
@@ -49,7 +50,10 @@ export default async function CalendarPage() {
               </Link>
             </nav>
           </div>
-          <UserMenu name={session.user.name} email={session.user.email} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <HelpButton />
+            <UserMenu name={session.user.name} email={session.user.email} />
+          </div>
         </div>
       </header>
 

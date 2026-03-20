@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import JournalNew from "@/components/journal/new/JournalNew";
 import UserMenu from "@/components/UserMenu";
+import HelpButton from "@/components/HelpButton";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -50,7 +51,10 @@ export default async function JournalPage() {
               </Link>
             </nav>
           </div>
-          <UserMenu name={session.user.name} email={session.user.email} />
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <HelpButton />
+            <UserMenu name={session.user.name} email={session.user.email} />
+          </div>
         </div>
       </header>
 
