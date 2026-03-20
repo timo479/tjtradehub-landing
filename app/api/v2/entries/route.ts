@@ -16,21 +16,23 @@ async function checkAccess(userId: string) {
   return data && canAccessDashboard(data);
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
   const session = await auth();
   if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   if (!await checkAccess(session.user.id)) return NextResponse.json({ error: "Subscription required" }, { status: 403 });
 
-  const { data, error } = await db
+  const { searchParams } = new URL(req.url);
+  const journalId = searchParams.get("journal_id");
+
+  let query = db
     .from("trade_entries")
-    .select(`
-      *,
-      trade_field_values ( *, template_fields ( id, label, field_type ) ),
-      journal_templates ( id, name, version )
-    `)
+    .select(`*, trade_field_values ( *, template_fields ( id, label, field_type ) ), journal_templates ( id, name, version )`)
     .eq("user_id", session.user.id)
     .order("trade_date", { ascending: false });
 
+  if (journalId) query = query.eq("template_id", journalId);
+
+  const { data, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }

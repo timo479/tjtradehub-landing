@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import JournalV2 from "@/components/journal/v2/JournalV2";
+import JournalNew from "@/components/journal/new/JournalNew";
 import UserMenu from "@/components/UserMenu";
 import Link from "next/link";
 import Image from "next/image";
@@ -56,7 +56,7 @@ export default async function JournalPage() {
 
       {/* Content */}
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalV2 />
+        <JournalNew />
       </main>
     </div>
   );
