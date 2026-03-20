@@ -51,7 +51,7 @@ export default function BillingPage() {
   return (
     <div
       className="min-h-screen flex flex-col items-center justify-center px-6 py-16"
-      style={{ backgroundColor: "#000000" }}
+      style={{ backgroundColor: "#0a0a0a" }}
     >
       {/* Logo */}
       <Link href="/" className="flex items-center gap-3 mb-10">

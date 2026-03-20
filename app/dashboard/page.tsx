@@ -93,7 +93,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#000000" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#0a0a0a" }}>
       {/* Trial Banner */}
       {onTrial && !isSubscribed && (
         <div className="w-full px-6 py-3 flex items-center justify-between text-sm"

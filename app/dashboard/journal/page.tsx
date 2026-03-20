@@ -13,7 +13,7 @@ export default async function JournalPage() {
   if (!session?.user) redirect("/login");
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#000000" }}>
+    <div className="min-h-screen" style={{ backgroundColor: "#0a0a0a" }}>
       {/* Header */}
       <header style={{ borderBottom: "1px solid #1F2937" }} className="px-6 py-5">
         <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
