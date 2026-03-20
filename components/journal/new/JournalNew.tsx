@@ -101,6 +101,9 @@ export default function JournalNew() {
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [showInbox, setShowInbox] = useState(false);
+  const [bulkJournalId, setBulkJournalId] = useState("");
+  const [bulkMoving, setBulkMoving] = useState(false);
+  const [showBulkModal, setShowBulkModal] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -148,6 +151,26 @@ export default function JournalNew() {
     if (res.ok) { setSyncMsg(`✅ ${data.synced} new, ${data.skipped} skipped`); await load(); }
     else setSyncMsg(`⚠️ ${data.error ?? "Sync failed"}`);
     setSyncing(false);
+  };
+
+  const bulkMove = async () => {
+    if (!bulkJournalId) return;
+    setBulkMoving(true);
+    const res = await fetch("/api/v2/entries/bulk-review", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ journal_id: bulkJournalId, entry_ids: mt5Pending.map(e => e.id) }),
+    });
+    const data = await res.json();
+    setBulkMoving(false);
+    if (res.ok) {
+      setShowBulkModal(false);
+      setShowInbox(false);
+      setBulkJournalId("");
+      await load();
+    } else {
+      alert(data.error ?? "Failed");
+    }
   };
 
   // Trades for active journal
@@ -237,9 +260,16 @@ export default function JournalNew() {
             <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F59E0B", color: "#000", borderRadius: "50%", width: "22px", height: "22px", fontSize: "12px", fontWeight: 700 }}>{mt5Pending.length}</span>
             <span style={{ color: "#F59E0B", fontWeight: 600, fontSize: "14px" }}>MT5 trades waiting for review</span>
           </div>
-          <button onClick={() => setShowInbox(v => !v)} style={{ padding: "7px 16px", borderRadius: "8px", border: "1px solid rgba(245,158,11,0.4)", backgroundColor: showInbox ? "rgba(245,158,11,0.15)" : "transparent", color: "#F59E0B", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
-            {showInbox ? "Hide" : "Review →"}
-          </button>
+          <div style={{ display: "flex", gap: "8px" }}>
+            <button onClick={() => setShowBulkModal(true)}
+              style={{ padding: "7px 16px", borderRadius: "8px", border: "none", backgroundColor: "#F59E0B", color: "#000", cursor: "pointer", fontSize: "13px", fontWeight: 700 }}>
+              Move all to journal →
+            </button>
+            <button onClick={() => setShowInbox(v => !v)}
+              style={{ padding: "7px 16px", borderRadius: "8px", border: "1px solid rgba(245,158,11,0.4)", backgroundColor: showInbox ? "rgba(245,158,11,0.15)" : "transparent", color: "#F59E0B", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>
+              {showInbox ? "Hide" : "Review one by one"}
+            </button>
+          </div>
         </div>
       )}
 
@@ -337,6 +367,41 @@ export default function JournalNew() {
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Bulk Move Modal */}
+      {showBulkModal && (
+        <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={() => setShowBulkModal(false)}>
+          <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", width: "100%", maxWidth: "420px", padding: "28px" }} onClick={e => e.stopPropagation()}>
+            <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "17px", marginBottom: "8px" }}>Move all MT5 trades to journal</h3>
+            <p style={{ color: "#6B7280", fontSize: "13px", marginBottom: "20px" }}>
+              {mt5Pending.length} trade{mt5Pending.length !== 1 ? "s" : ""} will be moved. Trade data (Symbol, Direction, P&L etc.) is carried over automatically. You can add notes & emotions later via "Needs Review".
+            </p>
+            {journals.length === 0 ? (
+              <p style={{ color: "#F59E0B", fontSize: "13px" }}>No journals yet — create one first.</p>
+            ) : (
+              <>
+                <label style={{ color: "#9CA3AF", fontSize: "13px", display: "block", marginBottom: "8px" }}>Select Journal</label>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
+                  {journals.map(j => (
+                    <button key={j.id} onClick={() => setBulkJournalId(j.id)}
+                      style={{ padding: "12px 16px", borderRadius: "10px", border: `1px solid ${bulkJournalId === j.id ? "#8B5CF6" : "#1F2937"}`, backgroundColor: bulkJournalId === j.id ? "rgba(139,92,246,0.15)" : "transparent", color: bulkJournalId === j.id ? "#A78BFA" : "#9CA3AF", cursor: "pointer", textAlign: "left", fontSize: "14px", fontWeight: 600, transition: "all 0.15s" }}>
+                      {j.name}
+                      <span style={{ fontSize: "12px", fontWeight: 400, color: "#6B7280", marginLeft: "8px" }}>{j.instrument_type}</span>
+                    </button>
+                  ))}
+                </div>
+                <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                  <button onClick={() => setShowBulkModal(false)} style={{ padding: "9px 18px", borderRadius: "8px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>Cancel</button>
+                  <button onClick={bulkMove} disabled={!bulkJournalId || bulkMoving}
+                    style={{ padding: "9px 20px", borderRadius: "8px", border: "none", backgroundColor: "#F59E0B", color: "#000", fontWeight: 700, cursor: (!bulkJournalId || bulkMoving) ? "not-allowed" : "pointer", fontSize: "14px", opacity: (!bulkJournalId || bulkMoving) ? 0.6 : 1 }}>
+                    {bulkMoving ? "Moving..." : `Move ${mt5Pending.length} trades →`}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
         </div>
       )}
 
