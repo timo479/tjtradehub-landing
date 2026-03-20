@@ -53,9 +53,9 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const editing = !!entry;
   const fieldMap = useMemo(() => buildFieldMap(journal), [journal]);
 
-  const initDate = entry
-    ? new Date(entry.trade_date).toISOString().slice(0, 10)
-    : new Date().toISOString().slice(0, 10);
+  const toLocalDate = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  const initDate = entry ? toLocalDate(new Date(entry.trade_date)) : toLocalDate(new Date());
   const initTime = entry
     ? new Date(entry.trade_date).toTimeString().slice(0, 5)
     : new Date().toTimeString().slice(0, 5);

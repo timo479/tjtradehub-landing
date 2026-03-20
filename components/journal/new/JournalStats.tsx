@@ -164,7 +164,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
       <defs>
-        <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`sg2-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
@@ -176,7 +176,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
         </g>
       ))}
       <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="#374151" strokeWidth="1" />
-      <path d={fill} fill="url(#sg2)" />
+      <path d={fill} fill={`url(#sg2-${data.length})`} />
       <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
     </svg>

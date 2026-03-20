@@ -157,20 +157,25 @@ export default function JournalNew() {
   const bulkMove = async () => {
     if (!bulkJournalId) return;
     setBulkMoving(true);
-    const res = await fetch("/api/v2/entries/bulk-review", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ journal_id: bulkJournalId, entry_ids: mt5Pending.map(e => e.id) }),
-    });
-    const data = await res.json();
-    setBulkMoving(false);
-    if (res.ok) {
-      setShowBulkModal(false);
-      setShowInbox(false);
-      setBulkJournalId("");
-      await load();
-    } else {
-      alert(data.error ?? "Failed");
+    try {
+      const res = await fetch("/api/v2/entries/bulk-review", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ journal_id: bulkJournalId, entry_ids: mt5Pending.map(e => e.id) }),
+      });
+      const data = await res.json();
+      setBulkMoving(false);
+      if (res.ok) {
+        setShowBulkModal(false);
+        setShowInbox(false);
+        setBulkJournalId("");
+        await load();
+      } else {
+        alert(data.error ?? "Failed");
+      }
+    } catch {
+      setBulkMoving(false);
+      alert("Request failed. Please try again.");
     }
   };
 

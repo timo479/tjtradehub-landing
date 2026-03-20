@@ -181,7 +181,9 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     }
     if (conn.state === "DEPLOYING") {
       startPolling();
-      return;
+      return () => {
+        if (pollTimer.current) clearInterval(pollTimer.current);
+      };
     }
     if (conn.state === "DEPLOYED") {
       loadAccount();

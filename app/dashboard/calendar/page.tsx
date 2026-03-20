@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { canAccessDashboard } from "@/lib/trial";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -11,6 +12,7 @@ export const metadata = { title: "Market Calendar – TJ TradeHub" };
 export default async function CalendarPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
+  if (!canAccessDashboard({ trial_ends_at: session.user.trialEndsAt, subscription_status: session.user.subscriptionStatus, current_period_end: session.user.currentPeriodEnd })) redirect("/billing");
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0a0a0a" }}>

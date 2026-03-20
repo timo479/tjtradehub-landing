@@ -137,14 +137,14 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
       <defs>
-        <linearGradient id="eq-g" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`eq-g-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
       {yLabels.map((v, i) => <line key={i} x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke="#1F2937" strokeWidth="1" strokeDasharray="4,4" />)}
       <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="#374151" strokeWidth="1" />
-      <path d={fill} fill="url(#eq-g)" />
+      <path d={fill} fill={`url(#eq-g-${data.length})`} />
       <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
       {yLabels.map((v, i) => <text key={i} x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>)}
@@ -287,8 +287,8 @@ function WMonthly({ entries }: { entries: Entry[] }) {
 
 function WCalendar({ entries }: { entries: Entry[] }) {
   const today = new Date();
-  // Current month + next 2 months (Mar → Apr → May)
-  const months = [0, 1, 2].map(i => {
+  // Last 2 months + current month
+  const months = [-2, -1, 0].map(i => {
     const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
     return { y: d.getFullYear(), m: d.getMonth() };
   });

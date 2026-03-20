@@ -63,13 +63,13 @@ export async function POST(req: NextRequest) {
     if (newValues.length > 0) {
       await db.from("trade_field_values").insert(newValues.map(fv => ({ trade_id: entryId, ...fv })));
     }
-    await db.from("trade_entries").update({
+    const { error: updateErr } = await db.from("trade_entries").update({
       template_id: journal_id,
       template_version: 1,
       is_reviewed: true,
     }).eq("id", entryId);
 
-    moved++;
+    if (!updateErr) moved++;
   }
 
   return NextResponse.json({ moved });

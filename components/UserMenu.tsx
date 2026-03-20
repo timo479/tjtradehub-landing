@@ -25,8 +25,18 @@ export default function UserMenu({ name, email }: { name?: string | null; email?
   async function handleDelete() {
     if (confirmText !== "DELETE") return;
     setDeleting(true);
-    await fetch("/api/account", { method: "DELETE" });
-    await signOut({ callbackUrl: "/" });
+    try {
+      const res = await fetch("/api/account", { method: "DELETE" });
+      if (!res.ok) {
+        alert("Failed to delete account. Please try again.");
+        setDeleting(false);
+        return;
+      }
+      await signOut({ callbackUrl: "/" });
+    } catch {
+      alert("Something went wrong. Please try again.");
+      setDeleting(false);
+    }
   }
 
   return (
