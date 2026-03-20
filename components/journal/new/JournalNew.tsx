@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import JournalCreateModal from "./JournalCreateModal";
 import TradeWizard from "./TradeWizard";
 import Mt5ReviewModal from "../v2/Mt5ReviewModal";
+import JournalStats from "./JournalStats";
 import { TemplateDef } from "../v2/DynamicTradeForm";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -81,7 +82,7 @@ export default function JournalNew() {
   const [allTemplates, setAllTemplates] = useState<TemplateDef[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeJournal, setActiveJournal] = useState<Journal | null>(null);
-  const [view, setView] = useState<"journals" | "trades">("journals");
+  const [view, setView] = useState<"journals" | "trades" | "stats">("journals");
 
   // Trade list state
   const [filter, setFilter] = useState<Filter>("all");
@@ -423,15 +424,34 @@ export default function JournalNew() {
           <h1 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "20px" }}>{activeJournal?.name}</h1>
           <p style={{ color: "#6B7280", fontSize: "12px" }}>{journalTrades.length} trade{journalTrades.length !== 1 ? "s" : ""}</p>
         </div>
+        {/* View Tabs */}
+        <div style={{ display: "flex", gap: "4px", backgroundColor: "#0f1923", borderRadius: "10px", padding: "3px" }}>
+          <button onClick={() => setView("trades")}
+            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "trades" ? "#1F2937" : "transparent", color: view === "trades" ? "#F9FAFB" : "#6B7280", cursor: "pointer", fontSize: "13px", fontWeight: view === "trades" ? 600 : 400 }}>
+            Trades
+          </button>
+          <button onClick={() => setView("stats")}
+            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "stats" ? "#1F2937" : "transparent", color: view === "stats" ? "#A78BFA" : "#6B7280", cursor: "pointer", fontSize: "13px", fontWeight: view === "stats" ? 600 : 400 }}>
+            📊 Statistics
+          </button>
+        </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
           {syncMsg && <span style={{ fontSize: "12px", color: syncMsg.startsWith("✅") ? "#22c55e" : "#ef4444" }}>{syncMsg}</span>}
           <button onClick={mt5Sync} disabled={syncing} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 14px", borderRadius: "8px", border: "1px solid #00c896", backgroundColor: "transparent", color: "#00c896", cursor: syncing ? "not-allowed" : "pointer", fontSize: "13px", opacity: syncing ? 0.6 : 1 }}>
             <span style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#00c896", boxShadow: "0 0 6px #00c896", flexShrink: 0, animation: "pulse 1.8s infinite" }} />
             {syncing ? "Syncing..." : "MT5 Sync"}
           </button>
-          <button onClick={() => setShowWizard(true)} style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>+ Log Trade</button>
+          {view === "trades" && <button onClick={() => setShowWizard(true)} style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>+ Log Trade</button>}
         </div>
       </div>
+
+      {/* Statistics View */}
+      {view === "stats" && activeJournal && (
+        <JournalStats entries={journalTrades} journal={activeJournal} />
+      )}
+
+      {/* Trades View */}
+      {view === "trades" && <>
 
       {/* Quickview Stats */}
       {todayTrades.length > 0 && (
@@ -604,6 +624,8 @@ export default function JournalNew() {
       {showWizard && activeJournal && <TradeWizard journal={activeJournal} onClose={() => setShowWizard(false)} onSaved={async () => { setShowWizard(false); await load(); }} />}
       {editTrade && activeJournal && <TradeWizard journal={activeJournal} entry={editTrade} onClose={() => setEditTrade(null)} onSaved={async () => { setEditTrade(null); await load(); }} />}
       {reviewEntry && <Mt5ReviewModal entry={reviewEntry} templates={allTemplates as TemplateDef[]} onClose={() => setReviewEntry(null)} onSaved={async () => { setReviewEntry(null); await load(); }} />}
+
+      </> /* end trades view */}
 
       <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }`}</style>
     </div>
