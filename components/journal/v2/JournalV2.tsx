@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from "react";
 import TemplateBuilder from "./TemplateBuilder";
 import DynamicTradeForm, { TemplateDef } from "./DynamicTradeForm";
 import WidgetGrid from "./WidgetGrid";
+import Mt5ReviewModal from "./Mt5ReviewModal";
 
 interface FieldValue {
   id: string;
@@ -16,6 +17,8 @@ interface Entry {
   trade_date: string;
   template_id: string;
   template_version: number;
+  source: string;
+  is_reviewed: boolean;
   journal_templates: { id: string; name: string; version: number };
   trade_field_values: FieldValue[];
 }
@@ -107,6 +110,8 @@ export default function JournalV2() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [editState, setEditState] = useState<EditState | null>(null);
+  const [reviewEntry, setReviewEntry] = useState<Entry | null>(null);
+  const [showInbox, setShowInbox] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -198,6 +203,8 @@ export default function JournalV2() {
   };
 
   const card: React.CSSProperties = { backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", overflow: "hidden" };
+  const mt5Pending = entries.filter(e => e.source === "mt5" && !e.is_reviewed);
+  const reviewedEntries = entries.filter(e => !(e.source === "mt5" && !e.is_reviewed));
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "200px" }}>
@@ -225,6 +232,13 @@ export default function JournalV2() {
           </p>
         </div>
         <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+          {mt5Pending.length > 0 && (
+            <button onClick={() => setShowInbox(v => !v)}
+              style={{ padding: "8px 14px", borderRadius: "10px", border: `1px solid ${showInbox ? "rgba(245,158,11,0.5)" : "rgba(245,158,11,0.3)"}`, backgroundColor: showInbox ? "rgba(245,158,11,0.12)" : "rgba(245,158,11,0.06)", color: "#F59E0B", cursor: "pointer", fontSize: "13px", fontWeight: 600, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", backgroundColor: "#F59E0B", color: "#000", borderRadius: "50%", width: "18px", height: "18px", fontSize: "11px", fontWeight: 700 }}>{mt5Pending.length}</span>
+              MT5 to review
+            </button>
+          )}
           {entries.length > 0 && (
             <button onClick={exportCsv} style={{ padding: "8px 14px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>↓ CSV</button>
           )}
@@ -294,6 +308,47 @@ export default function JournalV2() {
         </div>
       )}
 
+      {/* MT5 Inbox */}
+      {view === "list" && showInbox && mt5Pending.length > 0 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          <h3 style={{ color: "#F59E0B", fontWeight: 600, fontSize: "13px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+            MT5 Inbox — {mt5Pending.length} trade{mt5Pending.length !== 1 ? "s" : ""} waiting for review
+          </h3>
+          {mt5Pending.map(entry => {
+            const symbol    = getField(entry, "Symbol");
+            const direction = getField(entry, "Direction");
+            const pnl       = getField(entry, "P&L");
+            const pnlNum    = pnl ? parseFloat(pnl) : null;
+            const date      = new Date(entry.trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "2-digit" });
+            return (
+              <div key={entry.id} style={{ backgroundColor: "#111827", border: "1px solid rgba(245,158,11,0.25)", borderRadius: "14px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+                <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#F59E0B", flexShrink: 0 }} />
+                <span style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "15px", minWidth: "80px" }}>{symbol ?? "—"}</span>
+                {direction && (
+                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "5px", backgroundColor: direction === "Long" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)", color: direction === "Long" ? "#22c55e" : "#ef4444" }}>
+                    {direction === "Long" ? "▲ LONG" : "▼ SHORT"}
+                  </span>
+                )}
+                {pnlNum !== null && (
+                  <span style={{ color: pnlNum >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: "15px" }}>
+                    {pnlNum >= 0 ? "+" : ""}{pnlNum.toFixed(2)}
+                  </span>
+                )}
+                <span style={{ color: "#6B7280", fontSize: "12px", marginLeft: "auto" }}>{date}</span>
+                <button onClick={() => setReviewEntry(entry)}
+                  style={{ padding: "7px 16px", borderRadius: "9px", border: "none", backgroundColor: "#F59E0B", color: "#000", fontWeight: 700, cursor: "pointer", fontSize: "12px" }}>
+                  Review →
+                </button>
+                <button onClick={() => { if (confirm("Delete this trade?")) deleteEntry(entry.id); }}
+                  style={{ padding: "7px 10px", borderRadius: "9px", border: "1px solid rgba(239,68,68,0.25)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "12px" }}>
+                  ✕
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Trade List */}
       {view === "list" && (
         <>
@@ -307,7 +362,7 @@ export default function JournalV2() {
                 Create template
               </button>
             </div>
-          ) : entries.length === 0 ? (
+          ) : reviewedEntries.length === 0 ? (
             <div style={{ ...card, padding: "60px 40px", textAlign: "center" }}>
               <p style={{ fontSize: "40px", marginBottom: "16px" }}>📈</p>
               <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>No trades logged yet.</p>
@@ -325,7 +380,7 @@ export default function JournalV2() {
                 ))}
               </div>
 
-              {entries.map(entry => {
+              {reviewedEntries.map(entry => {
                 const symbol     = getField(entry, "Symbol");
                 const direction  = getField(entry, "Direction");
                 const pnl        = getField(entry, "P&L");
@@ -458,6 +513,14 @@ export default function JournalV2() {
           initialValues={editState.initialValues}
           onClose={() => setEditState(null)}
           onSaved={async () => { setEditState(null); await load(); }}
+        />
+      )}
+      {reviewEntry && (
+        <Mt5ReviewModal
+          entry={reviewEntry}
+          templates={templates}
+          onClose={() => setReviewEntry(null)}
+          onSaved={async () => { setReviewEntry(null); setShowInbox(false); await load(); }}
         />
       )}
     </div>

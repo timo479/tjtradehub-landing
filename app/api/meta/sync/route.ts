@@ -241,6 +241,8 @@ export async function POST(req: Request) {
           template_version: 1,
           trade_date: tradeDate,
           meta_deal_id: deal.id,
+          source: "mt5",
+          is_reviewed: false,
         })
         .select()
         .single();
