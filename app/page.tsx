@@ -34,6 +34,7 @@ const jsonLd = {
   ],
 };
 import Hero from "@/components/Hero";
+import ScreenshotCarousel from "@/components/ScreenshotCarousel";
 import MT5Section from "@/components/MT5Section";
 import ProblemSection from "@/components/ProblemSection";
 import DifferentiatorSection from "@/components/DifferentiatorSection";
@@ -54,6 +55,7 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
+        <ScreenshotCarousel />
         <EarlyAccessBanner />
         <MT5Section />
         <ProblemSection />
