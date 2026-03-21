@@ -24,6 +24,7 @@ export const authConfig: NextAuthConfig = {
     session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
+        session.user.name = (token.name as string) ?? session.user.name;
         session.user.trialEndsAt = token.trialEndsAt as string;
         session.user.subscriptionStatus = token.subscriptionStatus as string;
         session.user.currentPeriodEnd = token.currentPeriodEnd as string | null;
