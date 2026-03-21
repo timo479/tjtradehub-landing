@@ -5,6 +5,8 @@ import TradeWizard from "./TradeWizard";
 import Mt5ReviewModal from "../v2/Mt5ReviewModal";
 import JournalStats from "./JournalStats";
 import { TemplateDef } from "../v2/DynamicTradeForm";
+import OnboardingTour from "@/components/OnboardingTour";
+import { JOURNAL_STEPS } from "@/components/tourSteps";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -76,7 +78,7 @@ function EquityCurve({ trades }: { trades: Trade[] }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 type Filter = "all" | "today" | "week" | "month" | "review";
 
-export default function JournalNew() {
+export default function JournalNew({ journalTourCompleted = false }: { journalTourCompleted?: boolean }) {
   const [journals, setJournals] = useState<Journal[]>([]);
   const [allEntries, setAllEntries] = useState<Trade[]>([]);
   const [allTemplates, setAllTemplates] = useState<TemplateDef[]>([]);
@@ -322,12 +324,13 @@ export default function JournalNew() {
       )}
 
       {/* Section Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+      <div data-tour="journal-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
         <h2 style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "20px" }}>My Journals</h2>
         <button onClick={() => setShowCreateJournal(true)} style={{ padding: "9px 18px", borderRadius: "8px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>+ New Journal</button>
       </div>
 
       {/* Journals Grid */}
+      <div data-tour="journal-grid">
       {journals.length === 0 ? (
         <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "60px 40px", textAlign: "center" }}>
           <p style={{ fontSize: "40px", marginBottom: "16px" }}>📓</p>
@@ -375,6 +378,7 @@ export default function JournalNew() {
           })}
         </div>
       )}
+      </div>
 
       {/* Bulk Move Modal */}
       {showBulkModal && (
@@ -415,6 +419,8 @@ export default function JournalNew() {
       {showCreateJournal && <JournalCreateModal onClose={() => setShowCreateJournal(false)} onSaved={async () => { setShowCreateJournal(false); await load(); }} />}
       {editJournal && <JournalCreateModal initial={editJournal} onClose={() => setEditJournal(null)} onSaved={async () => { setEditJournal(null); await load(); }} />}
       {reviewEntry && <Mt5ReviewModal entry={reviewEntry} templates={allTemplates as TemplateDef[]} onClose={() => setReviewEntry(null)} onSaved={async () => { setReviewEntry(null); setShowInbox(false); await load(); }} />}
+
+      <OnboardingTour tour="journal" steps={JOURNAL_STEPS} alreadyCompleted={journalTourCompleted} />
     </div>
   );
 

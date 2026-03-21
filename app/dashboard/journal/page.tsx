@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import { canAccessDashboard } from "@/lib/trial";
+import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import JournalNew from "@/components/journal/new/JournalNew";
 import UserMenu from "@/components/UserMenu";
@@ -13,6 +14,13 @@ export default async function JournalPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
   if (!canAccessDashboard({ trial_ends_at: session.user.trialEndsAt, subscription_status: session.user.subscriptionStatus, current_period_end: session.user.currentPeriodEnd })) redirect("/billing");
+
+  const { data: userRow } = await db
+    .from("users")
+    .select("journal_tour_completed")
+    .eq("id", session.user.id)
+    .single();
+  const journalTourCompleted = userRow?.journal_tour_completed ?? false;
 
   return (
     <div className="min-h-screen" style={{ backgroundColor: "#0a0a0a" }}>
@@ -62,7 +70,7 @@ export default async function JournalPage() {
 
       {/* Content */}
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalNew />
+        <JournalNew journalTourCompleted={journalTourCompleted} />
       </main>
     </div>
   );

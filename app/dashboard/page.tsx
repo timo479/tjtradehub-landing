@@ -8,6 +8,7 @@ import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import MetaConnect from "@/components/meta/MetaConnect";
+import DashboardTourWrapper from "@/components/DashboardTourWrapper";
 
 export const metadata = {
   title: "Dashboard – TJ TradeHub",
@@ -27,6 +28,13 @@ export default async function DashboardPage() {
     .from("trade_entries")
     .select("id, trade_date, trade_field_values(value, template_fields(label, field_type))")
     .eq("user_id", session.user.id);
+
+  const { data: userRow } = await db
+    .from("users")
+    .select("onboarding_completed")
+    .eq("id", session.user.id)
+    .single();
+  const onboardingCompleted = userRow?.onboarding_completed ?? false;
 
   const allEntries = rawEntries ?? [];
 
@@ -167,7 +175,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10" data-tour="stats-cards">
           {cards.map((card) => (
             <div key={card.label} className="rounded-2xl p-6"
               style={{ backgroundColor: "#111827", border: "1px solid #1F2937" }}>
@@ -179,19 +187,19 @@ export default async function DashboardPage() {
         </div>
 
         {/* MetaAPI */}
-        <div className="mb-8">
+        <div className="mb-8" data-tour="metaconnect">
           <MetaConnect isSubscribed={isSubscribed} />
         </div>
 
         {/* Statistiken Widget Grid */}
-        <div className="mb-10">
+        <div className="mb-10" data-tour="dashboard-stats">
           <DashboardStats />
         </div>
 
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
-            <div className="rounded-2xl p-6 transition-all" style={{
+            <div className="rounded-2xl p-6 transition-all" data-tour="quick-action-journal" style={{
               backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer",
             }}>
               <div className="flex items-center gap-4 mb-3">
@@ -213,7 +221,7 @@ export default async function DashboardPage() {
           </Link>
 
           <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
-            <div className="rounded-2xl p-6 transition-all" style={{ backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer" }}>
+            <div className="rounded-2xl p-6 transition-all" data-tour="quick-action-mt5" style={{ backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer" }}>
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: "rgba(34,197,94,0.1)" }}>
@@ -233,6 +241,8 @@ export default async function DashboardPage() {
           </Link>
         </div>
       </main>
+
+      <DashboardTourWrapper alreadyCompleted={onboardingCompleted} />
     </div>
   );
 }

@@ -31,4 +31,6 @@ export interface User {
   subscription_id: string | null;
   subscription_status: string;
   current_period_end: string | null;
+  onboarding_completed: boolean;
+  journal_tour_completed: boolean;
 }
