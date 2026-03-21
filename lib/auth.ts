@@ -56,6 +56,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.subscriptionStatus = (user as { subscriptionStatus: string }).subscriptionStatus;
         token.currentPeriodEnd = (user as { currentPeriodEnd: string | null }).currentPeriodEnd;
         token.refreshedAt = Math.floor(Date.now() / 1000);
+        // Always use DB name (overrides Google name)
+        const { data: dbUser } = await db.from("users").select("name").eq("id", user.id!).single();
+        if (dbUser) token.name = dbUser.name;
         return token;
       }
 
