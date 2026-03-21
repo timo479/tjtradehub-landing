@@ -40,6 +40,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           (user as Record<string, unknown>).currentPeriodEnd = null;
         } else {
           user.id = existing.id;
+          user.name = existing.name; // use DB name, not Google name
           (user as Record<string, unknown>).trialEndsAt = existing.trial_ends_at;
           (user as Record<string, unknown>).subscriptionStatus = existing.subscription_status;
           (user as Record<string, unknown>).currentPeriodEnd = existing.current_period_end;
