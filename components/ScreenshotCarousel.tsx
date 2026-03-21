@@ -147,50 +147,26 @@ export default function ScreenshotCarousel() {
           </div>
 
           {/* Screenshot */}
-          {slides[active].scrollable ? (
-            <div style={{
-              height: "580px",
-              overflowY: "auto",
-              backgroundColor: "#0a0a0a",
-              opacity: fading ? 0 : 1,
-              transition: "opacity 0.18s ease",
-              scrollbarWidth: "thin",
-              scrollbarColor: "rgba(139,92,246,0.4) transparent",
-            }}>
-              <Image
-                key={slides[active].id}
-                src={slides[active].image}
-                alt={slides[active].label}
-                width={1080}
-                height={1800}
-                sizes="(max-width: 768px) 100vw, 1080px"
-                style={{ width: "100%", height: "auto", display: "block" }}
-                priority={false}
-              />
-            </div>
-          ) : (
-            <div style={{
-              position: "relative",
-              aspectRatio: "16 / 9",
-              overflow: "hidden",
-              backgroundColor: "#0a0a0a",
-            }}>
-              <Image
-                key={slides[active].id}
-                src={slides[active].image}
-                alt={slides[active].label}
-                fill
-                sizes="(max-width: 768px) 100vw, 1080px"
-                style={{
-                  objectFit: "cover",
-                  objectPosition: "top center",
-                  opacity: fading ? 0 : 1,
-                  transition: "opacity 0.18s ease",
-                }}
-                priority={active === 0}
-              />
-            </div>
-          )}
+          <div style={{
+            height: "580px",
+            overflowY: "auto",
+            backgroundColor: "#0a0a0a",
+            opacity: fading ? 0 : 1,
+            transition: "opacity 0.18s ease",
+            scrollbarWidth: "thin",
+            scrollbarColor: "rgba(139,92,246,0.4) transparent",
+          }}>
+            <Image
+              key={slides[active].id}
+              src={slides[active].image}
+              alt={slides[active].label}
+              width={1080}
+              height={1800}
+              sizes="(max-width: 768px) 100vw, 1080px"
+              style={{ width: "100%", height: "auto", display: "block" }}
+              priority={active === 0}
+            />
+          </div>
         </div>
 
         {/* Slide description + progress dots */}
