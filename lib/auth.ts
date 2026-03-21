@@ -66,7 +66,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const { data: freshUser } = await db
         .from("users")
-        .select("subscription_status, current_period_end, trial_ends_at")
+        .select("subscription_status, current_period_end, trial_ends_at, name")
         .eq("id", token.id as string)
         .single();
 
@@ -74,6 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.subscriptionStatus = freshUser.subscription_status;
         token.currentPeriodEnd = freshUser.current_period_end;
         token.trialEndsAt = freshUser.trial_ends_at;
+        token.name = freshUser.name;
         token.refreshedAt = now;
       }
 
