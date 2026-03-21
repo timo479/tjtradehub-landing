@@ -79,8 +79,13 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
   const TOOLTIP_W = 340;
   const TOOLTIP_H = 220;
 
+  // If target element is very tall (>50% viewport), treat as centered modal
+  const winW = typeof window !== "undefined" ? window.innerWidth : 1440;
+  const winH = typeof window !== "undefined" ? window.innerHeight : 900;
+  const elementIsHuge = targetRect !== null && targetRect.height > winH * 0.5;
+
   let tooltipStyle: React.CSSProperties = {};
-  if (!step.target || !targetRect) {
+  if (!step.target || !targetRect || elementIsHuge) {
     tooltipStyle = {
       position: "fixed",
       top: "50%",
@@ -89,26 +94,29 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
     };
   } else {
     const placement = step.placement ?? "bottom";
-    const winW = typeof window !== "undefined" ? window.innerWidth : 1440;
     const left = Math.max(16, Math.min(
       targetRect.left + targetRect.width / 2 - TOOLTIP_W / 2,
       winW - TOOLTIP_W - 16,
     ));
     if (placement === "bottom") {
-      tooltipStyle = { position: "fixed", top: targetRect.bottom + PADDING, left };
+      const top = Math.min(targetRect.bottom + PADDING, winH - TOOLTIP_H - 16);
+      tooltipStyle = { position: "fixed", top, left };
     } else if (placement === "top") {
-      tooltipStyle = { position: "fixed", top: targetRect.top - TOOLTIP_H - PADDING, left };
+      let top = targetRect.top - TOOLTIP_H - PADDING;
+      // If off-screen top, flip to bottom
+      if (top < 16) top = Math.min(targetRect.bottom + PADDING, winH - TOOLTIP_H - 16);
+      tooltipStyle = { position: "fixed", top: Math.max(16, top), left };
     } else if (placement === "left") {
       tooltipStyle = {
         position: "fixed",
-        top: Math.max(16, targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2),
+        top: Math.max(16, Math.min(targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2, winH - TOOLTIP_H - 16)),
         left: Math.max(16, targetRect.left - TOOLTIP_W - PADDING),
       };
     } else {
       tooltipStyle = {
         position: "fixed",
-        top: Math.max(16, targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2),
-        left: targetRect.right + PADDING,
+        top: Math.max(16, Math.min(targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2, winH - TOOLTIP_H - 16)),
+        left: Math.min(targetRect.right + PADDING, winW - TOOLTIP_W - 16),
       };
     }
   }
@@ -126,7 +134,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
           <defs>
             <mask id={`tour-mask-${tour}`}>
               <rect width="100%" height="100%" fill="white" />
-              {targetRect && (
+              {targetRect && !elementIsHuge && (
                 <rect
                   x={targetRect.x - PADDING}
                   y={targetRect.y - PADDING}
@@ -144,7 +152,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
             fill="rgba(0,0,0,0.72)"
             mask={`url(#tour-mask-${tour})`}
           />
-          {targetRect && (
+          {targetRect && !elementIsHuge && (
             <rect
               x={targetRect.x - PADDING}
               y={targetRect.y - PADDING}
