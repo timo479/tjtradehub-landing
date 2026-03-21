@@ -1,5 +1,5 @@
 "use client";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { TourStep } from "./tourSteps";
 
 interface Props {
@@ -12,31 +12,100 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
   const [active, setActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [dontShowAgain, setDontShowAgain] = useState(false);
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
+  const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({
+    position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
+  });
+  const highlightedEl = useRef<HTMLElement | null>(null);
 
-  // Show once per login session (sessionStorage), permanently dismissed via DB flag
+  // Show once per login session
   const storageKey = `tour_shown_${tour}`;
   useEffect(() => {
     if (alreadyCompleted) return;
     if (sessionStorage.getItem(storageKey)) return;
     sessionStorage.setItem(storageKey, "1");
-    const timer = setTimeout(() => setActive(true), 700);
-    return () => clearTimeout(timer);
+    const t = setTimeout(() => setActive(true), 700);
+    return () => clearTimeout(t);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const updateRect = useCallback((step: TourStep) => {
-    if (!step.target) { setTargetRect(null); return; }
-    const el = document.querySelector(`[data-tour="${step.target}"]`);
-    if (!el) { setTargetRect(null); return; }
-    el.scrollIntoView({ behavior: "smooth", block: "center" });
-    setTimeout(() => setTargetRect(el.getBoundingClientRect()), 350);
+  // Remove highlight from previous element
+  const clearHighlight = useCallback(() => {
+    const el = highlightedEl.current;
+    if (!el) return;
+    el.style.outline = "";
+    el.style.outlineOffset = "";
+    el.style.position = "";
+    el.style.zIndex = "";
+    el.style.borderRadius = "";
+    highlightedEl.current = null;
   }, []);
+
+  // Apply highlight + compute tooltip position
+  const applyStep = useCallback((step: TourStep) => {
+    clearHighlight();
+
+    if (!step.target) {
+      setTooltipStyle({ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" });
+      return;
+    }
+
+    const el = document.querySelector<HTMLElement>(`[data-tour="${step.target}"]`);
+    if (!el) {
+      setTooltipStyle({ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" });
+      return;
+    }
+
+    // Highlight directly on the element — guaranteed correct position
+    el.style.position = "relative";
+    el.style.zIndex = "10001";
+    el.style.outline = "2px solid #8B5CF6";
+    el.style.outlineOffset = "3px";
+    highlightedEl.current = el;
+
+    el.scrollIntoView({ behavior: "smooth", block: "center" });
+
+    setTimeout(() => {
+      const rect = el.getBoundingClientRect();
+      const winW = window.innerWidth;
+      const winH = window.innerHeight;
+      const W = 360;
+      const H = 270;
+      const GAP = 14;
+      const elementIsHuge = rect.height > winH * 0.5;
+      const placement = step.placement ?? "bottom";
+
+      if (elementIsHuge) {
+        setTooltipStyle({ position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" });
+        return;
+      }
+
+      const left = Math.max(16, Math.min(rect.left + rect.width / 2 - W / 2, winW - W - 16));
+
+      let top: number;
+      if (placement === "bottom") {
+        top = Math.min(rect.bottom + GAP, winH - H - 16);
+      } else if (placement === "top") {
+        top = rect.top - H - GAP;
+        if (top < 16) top = Math.min(rect.bottom + GAP, winH - H - 16);
+        top = Math.max(16, top);
+      } else if (placement === "left") {
+        top = Math.max(16, Math.min(rect.top + rect.height / 2 - H / 2, winH - H - 16));
+        setTooltipStyle({ position: "fixed", top, left: Math.max(16, rect.left - W - GAP) });
+        return;
+      } else {
+        top = Math.max(16, Math.min(rect.top + rect.height / 2 - H / 2, winH - H - 16));
+        setTooltipStyle({ position: "fixed", top, left: Math.min(rect.right + GAP, winW - W - 16) });
+        return;
+      }
+
+      setTooltipStyle({ position: "fixed", top, left });
+    }, 500);
+  }, [clearHighlight]);
 
   useEffect(() => {
     if (!active) return;
-    updateRect(steps[currentStep]);
-  }, [active, currentStep, steps, updateRect]);
+    applyStep(steps[currentStep]);
+  }, [active, currentStep, steps, applyStep]);
 
   const saveDismiss = useCallback(async () => {
     try {
@@ -48,13 +117,13 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
     } catch {}
   }, [tour]);
 
-  const close = useCallback(async (saveFlag: boolean) => {
-    if (saveFlag) await saveDismiss();
+  const close = useCallback(async (save: boolean) => {
+    clearHighlight();
+    if (save) await saveDismiss();
     setActive(false);
-  }, [saveDismiss]);
-
-  // X button: close + save if checkbox is ticked
-  const handleDismiss = () => close(dontShowAgain);
+    setCurrentStep(0);
+    setDontShowAgain(false);
+  }, [clearHighlight, saveDismiss]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
@@ -72,106 +141,49 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
 
   const step = steps[currentStep];
   const isLast = currentStep === steps.length - 1;
-  const PADDING = 14;
-  const TOOLTIP_W = 360;
-  const TOOLTIP_H = 270; // including "don't show again"
-
-  const winW = typeof window !== "undefined" ? window.innerWidth : 1440;
-  const winH = typeof window !== "undefined" ? window.innerHeight : 900;
-  const elementIsHuge = targetRect !== null && targetRect.height > winH * 0.5;
-
-  // ── Tooltip position ────────────────────────────────────────────────────────
-  let tooltipStyle: React.CSSProperties = {};
-  if (!step.target || !targetRect || elementIsHuge) {
-    tooltipStyle = { position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)" };
-  } else {
-    const placement = step.placement ?? "bottom";
-    const cx = targetRect.left + targetRect.width / 2;
-    const left = Math.max(16, Math.min(cx - TOOLTIP_W / 2, winW - TOOLTIP_W - 16));
-
-    if (placement === "bottom") {
-      const top = Math.min(targetRect.bottom + PADDING, winH - TOOLTIP_H - 16);
-      tooltipStyle = { position: "fixed", top, left };
-    } else if (placement === "top") {
-      let top = targetRect.top - TOOLTIP_H - PADDING;
-      if (top < 16) top = Math.min(targetRect.bottom + PADDING, winH - TOOLTIP_H - 16);
-      tooltipStyle = { position: "fixed", top: Math.max(16, top), left };
-    } else if (placement === "left") {
-      tooltipStyle = {
-        position: "fixed",
-        top: Math.max(16, Math.min(targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2, winH - TOOLTIP_H - 16)),
-        left: Math.max(16, targetRect.left - TOOLTIP_W - PADDING),
-      };
-    } else {
-      tooltipStyle = {
-        position: "fixed",
-        top: Math.max(16, Math.min(targetRect.top + targetRect.height / 2 - TOOLTIP_H / 2, winH - TOOLTIP_H - 16)),
-        left: Math.min(targetRect.right + PADDING, winW - TOOLTIP_W - 16),
-      };
-    }
-  }
 
   return (
     <>
-      {/* ── Overlay ──────────────────────────────────────────────────────────── */}
-      <div style={{ position: "fixed", inset: 0, zIndex: 10000, pointerEvents: "none" }}>
-        <svg width="100%" height="100%" style={{ position: "absolute", inset: 0 }} xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <mask id={`tour-mask-${tour}`}>
-              <rect width="100%" height="100%" fill="white" />
-              {targetRect && !elementIsHuge && (
-                <rect
-                  x={targetRect.x - PADDING} y={targetRect.y - PADDING}
-                  width={targetRect.width + PADDING * 2} height={targetRect.height + PADDING * 2}
-                  rx="12" fill="black"
-                />
-              )}
-            </mask>
-          </defs>
-          <rect width="100%" height="100%" fill="rgba(0,0,0,0.75)" mask={`url(#tour-mask-${tour})`} />
-          {targetRect && !elementIsHuge && (
-            <rect
-              x={targetRect.x - PADDING} y={targetRect.y - PADDING}
-              width={targetRect.width + PADDING * 2} height={targetRect.height + PADDING * 2}
-              rx="12" fill="none" stroke="#8B5CF6" strokeWidth="2"
-            />
-          )}
-        </svg>
-      </div>
+      {/* Dim overlay – no SVG mask needed, element pops via z-index */}
+      <div
+        style={{
+          position: "fixed", inset: 0, zIndex: 10000,
+          backgroundColor: "rgba(0,0,0,0.72)",
+          pointerEvents: "auto",
+        }}
+        onClick={() => close(dontShowAgain)}
+      />
 
-      {/* ── Tooltip card ─────────────────────────────────────────────────────── */}
+      {/* Tooltip card */}
       <div
         style={{
           ...tooltipStyle,
-          zIndex: 10001,
-          width: `${TOOLTIP_W}px`,
+          zIndex: 10002,
+          width: "360px",
           backgroundColor: "#0f1117",
           border: "1px solid #2d2f3e",
           borderRadius: "18px",
           boxShadow: "0 32px 64px rgba(0,0,0,0.8), 0 0 0 1px rgba(139,92,246,0.15)",
           overflow: "hidden",
         }}
+        onClick={e => e.stopPropagation()}
       >
         {/* Purple top accent bar */}
-        <div style={{ height: "3px", background: "linear-gradient(90deg, #7C3AED, #A78BFA, #7C3AED)" }} />
+        <div style={{ height: "3px", background: "linear-gradient(90deg,#7C3AED,#A78BFA,#7C3AED)" }} />
 
         <div style={{ padding: "20px 22px 22px" }}>
           {/* Header row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              {/* Step dots */}
+              {/* Animated step dots */}
               <div style={{ display: "flex", gap: "5px" }}>
                 {steps.map((_, i) => (
-                  <div
-                    key={i}
-                    style={{
-                      width: i === currentStep ? "18px" : "6px",
-                      height: "6px",
-                      borderRadius: "3px",
-                      backgroundColor: i <= currentStep ? "#8B5CF6" : "#1F2937",
-                      transition: "width 0.25s, background-color 0.25s",
-                    }}
-                  />
+                  <div key={i} style={{
+                    width: i === currentStep ? "18px" : "6px",
+                    height: "6px", borderRadius: "3px",
+                    backgroundColor: i <= currentStep ? "#8B5CF6" : "#1F2937",
+                    transition: "width 0.25s, background-color 0.25s",
+                  }} />
                 ))}
               </div>
               <span style={{ color: "#6B7280", fontSize: "11px", fontWeight: 500 }}>
@@ -179,18 +191,17 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
               </span>
             </div>
             <button
-              onClick={handleDismiss}
-              title="Close"
+              onClick={() => close(dontShowAgain)}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 width: "26px", height: "26px", borderRadius: "8px",
                 background: "rgba(255,255,255,0.05)", border: "1px solid #2d2f3e",
-                color: "#6B7280", cursor: "pointer", fontSize: "16px", lineHeight: 1,
+                color: "#6B7280", cursor: "pointer", fontSize: "14px", lineHeight: 1,
                 transition: "background 0.15s, color 0.15s",
               }}
               onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.1)"; (e.currentTarget as HTMLButtonElement).style.color = "#F9FAFB"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.color = "#6B7280"; }}
-              aria-label="Close tour"
+              aria-label="Close"
             >
               ✕
             </button>
@@ -209,9 +220,9 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
           {/* Divider */}
           <div style={{ height: "1px", backgroundColor: "#1F2937", marginBottom: "16px" }} />
 
-          {/* Bottom row: Don't show again + navigation */}
+          {/* Bottom row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-            {/* Don't show again – always visible */}
+            {/* Don't show again */}
             <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer", flexShrink: 0 }}>
               <div
                 onClick={() => setDontShowAgain(v => !v)}
@@ -232,7 +243,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
               <span style={{ color: "#6B7280", fontSize: "12px", userSelect: "none" }}>Don&apos;t show again</span>
             </label>
 
-            {/* Nav buttons */}
+            {/* Nav */}
             <div style={{ display: "flex", gap: "8px" }}>
               {currentStep > 0 && (
                 <button
@@ -241,10 +252,9 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
                     padding: "7px 15px", borderRadius: "8px",
                     border: "1px solid #2d2f3e", backgroundColor: "transparent",
                     color: "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: 500,
-                    transition: "background 0.15s, color 0.15s",
                   }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; (e.currentTarget as HTMLButtonElement).style.color = "#F9FAFB"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "transparent"; (e.currentTarget as HTMLButtonElement).style.color = "#9CA3AF"; }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#F9FAFB"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#9CA3AF"; }}
                 >
                   ← Back
                 </button>
@@ -252,12 +262,10 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
               <button
                 onClick={handleNext}
                 style={{
-                  padding: "7px 18px", borderRadius: "8px",
-                  border: "none",
-                  background: "linear-gradient(135deg, #7C3AED, #8B5CF6)",
+                  padding: "7px 18px", borderRadius: "8px", border: "none",
+                  background: "linear-gradient(135deg,#7C3AED,#8B5CF6)",
                   color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px",
                   boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
-                  transition: "opacity 0.15s, box-shadow 0.15s",
                 }}
                 onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.9"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
