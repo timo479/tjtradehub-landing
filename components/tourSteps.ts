@@ -9,36 +9,30 @@ export const DASHBOARD_STEPS: TourStep[] = [
   {
     target: null,
     title: "Welcome to TJ TradeHub 👋",
-    description: "Let's take a quick tour of the key features. You can skip at any time.",
+    description: "Your all-in-one platform to track, analyze, and improve your trading. This quick tour shows you everything in under a minute.",
   },
   {
     target: "stats-cards",
-    title: "Your Performance at a Glance",
-    description: "These cards show your trading stats: trades this month, win rate, total P&L, and average rating — all updated in real-time.",
+    title: "Your Trading Stats",
+    description: "See your key metrics at a glance — trades this month, win rate, total P&L, and average rating. All calculated automatically from your journal entries.",
     placement: "bottom",
   },
   {
     target: "metaconnect",
     title: "MT4 / MT5 Auto-Sync",
-    description: "Connect your MetaTrader account to automatically import trades in real-time. No manual entry needed.",
-    placement: "top",
-  },
-  {
-    target: "dashboard-stats",
-    title: "Statistics Widget",
-    description: "Deep-dive into your performance with detailed charts and analytics built from your journal data.",
-    placement: "top",
+    description: "Connect your MetaTrader account once and your trades sync automatically — no manual entry needed. Supports both MT4 and MT5.",
+    placement: "bottom",
   },
   {
     target: "quick-action-journal",
-    title: "Your Trading Journal",
-    description: "Log trades manually, track emotions, follow your rules checklist, and review your performance over time.",
+    title: "Trading Journal",
+    description: "Log trades manually, track your emotions, follow your rules checklist, and review setups. Your journal is the core of your improvement process.",
     placement: "top",
   },
   {
     target: "quick-action-mt5",
-    title: "MT5 Sync Status",
-    description: "See the live status of your MetaTrader sync. Trades are imported automatically whenever you're active.",
+    title: "Live Sync Status",
+    description: "See your MetaTrader sync status in real-time. New trades from MT4/MT5 appear automatically in your journal inbox.",
     placement: "top",
   },
 ];
@@ -46,29 +40,24 @@ export const DASHBOARD_STEPS: TourStep[] = [
 export const JOURNAL_STEPS: TourStep[] = [
   {
     target: null,
-    title: "Welcome to the Journal 📓",
-    description: "Your trading journal helps you track, analyze, and improve your trades systematically.",
+    title: "Your Trading Journal 📓",
+    description: "This is where improvement happens. Track every trade, review your decisions, and build the data you need to become consistently profitable.",
   },
   {
     target: "journal-header",
-    title: "Create Your First Journal",
-    description: "Create separate journals for different strategies or instruments. Click '+ New Journal' to get started.",
+    title: "Create Separate Journals",
+    description: "Use different journals for different strategies or instruments — e.g. 'Scalping EUR/USD' or 'Swing Trades'. Click '+ New Journal' to get started.",
     placement: "bottom",
   },
   {
     target: "journal-grid",
-    title: "Your Journal Cards",
-    description: "Each journal card shows key stats like win rate, P&L, and trade count. Click any card to view and manage its trades.",
+    title: "Your Journal Overview",
+    description: "Each card shows win rate, P&L and trade count at a glance. Click any journal to open it and view your trades.",
     placement: "bottom",
   },
   {
     target: null,
-    title: "Log a Trade Manually",
-    description: "Open any journal, then click '+ Log Trade' to record a trade with all details: symbol, direction, P&L, emotions, and more.",
-  },
-  {
-    target: null,
-    title: "You're All Set! 🎉",
-    description: "Start logging your trades and build the insights you need to become a consistently profitable trader.",
+    title: "Log & Analyze Trades",
+    description: "Inside a journal, click '+ Log Trade' to record a trade. Add your setup, emotions, screenshots and rating. The more detail, the better your insights.",
   },
 ];
