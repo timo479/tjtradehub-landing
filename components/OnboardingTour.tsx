@@ -14,12 +14,16 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
 
-  // Show on every page load – only DB flag prevents it
+  // Show once per login session (sessionStorage), permanently dismissed via DB flag
+  const storageKey = `tour_shown_${tour}`;
   useEffect(() => {
     if (alreadyCompleted) return;
+    if (sessionStorage.getItem(storageKey)) return;
+    sessionStorage.setItem(storageKey, "1");
     const timer = setTimeout(() => setActive(true), 700);
     return () => clearTimeout(timer);
-  }, [alreadyCompleted]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const updateRect = useCallback((step: TourStep) => {
     if (!step.target) { setTargetRect(null); return; }
