@@ -14,11 +14,13 @@ const securityHeaders = [
     key: "Content-Security-Policy",
     value: [
       "default-src 'self'",
-      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-      "style-src 'self' 'unsafe-inline'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://s3.tradingview.com https://www.tradingview.com",
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
-      "font-src 'self' https://fonts.gstatic.com",
-      "connect-src 'self' https://*.supabase.co https://api.stripe.com",
+      "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
+      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.tradingview.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.allorigins.win",
+      "frame-src 'self' https://*.tradingview.com https://s3.tradingview.com",
+      "worker-src 'self' blob:",
     ].join("; "),
   },
 ];
