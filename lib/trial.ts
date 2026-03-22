@@ -22,5 +22,6 @@ export function hasActiveSubscription(
 export function canAccessDashboard(
   user: Pick<User, "trial_ends_at" | "subscription_status" | "current_period_end">
 ): boolean {
+  if (user.subscription_status === "lifetime") return true;
   return isTrialActive(user) || hasActiveSubscription(user);
 }

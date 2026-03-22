@@ -6,6 +6,7 @@ declare module "next-auth" {
     trialEndsAt: string;
     subscriptionStatus: string;
     currentPeriodEnd: string | null;
+    role: string;
   }
 
   interface Session {
@@ -17,6 +18,7 @@ declare module "next-auth" {
       trialEndsAt: string;
       subscriptionStatus: string;
       currentPeriodEnd: string | null;
+      role: string;
     };
   }
 }
@@ -27,5 +29,6 @@ declare module "next-auth/jwt" {
     trialEndsAt: string;
     subscriptionStatus: string;
     currentPeriodEnd: string | null;
+    role: string;
   }
 }

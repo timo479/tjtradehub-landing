@@ -18,6 +18,7 @@ export const authConfig: NextAuthConfig = {
         token.currentPeriodEnd = (
           user as { currentPeriodEnd: string | null }
         ).currentPeriodEnd;
+        token.role = (user as { role: string }).role ?? "user";
       }
       return token;
     },
@@ -28,6 +29,7 @@ export const authConfig: NextAuthConfig = {
         session.user.trialEndsAt = token.trialEndsAt as string;
         session.user.subscriptionStatus = token.subscriptionStatus as string;
         session.user.currentPeriodEnd = token.currentPeriodEnd as string | null;
+        session.user.role = (token.role as string) ?? "user";
       }
       return session;
     },

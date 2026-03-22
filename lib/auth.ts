@@ -18,7 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Check if user exists
         const { data: existing } = await db
           .from("users")
-          .select("id, trial_ends_at, subscription_status, current_period_end")
+          .select("id, name, trial_ends_at, subscription_status, current_period_end, is_banned, role")
           .eq("email", user.email)
           .single();
 
@@ -38,12 +38,15 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           (user as Record<string, unknown>).trialEndsAt = newUser.trial_ends_at;
           (user as Record<string, unknown>).subscriptionStatus = newUser.subscription_status;
           (user as Record<string, unknown>).currentPeriodEnd = null;
+          (user as Record<string, unknown>).role = newUser.role ?? "user";
         } else {
+          if (existing.is_banned) return false;
           user.id = existing.id;
           user.name = existing.name; // use DB name, not Google name
           (user as Record<string, unknown>).trialEndsAt = existing.trial_ends_at;
           (user as Record<string, unknown>).subscriptionStatus = existing.subscription_status;
           (user as Record<string, unknown>).currentPeriodEnd = existing.current_period_end;
+          (user as Record<string, unknown>).role = existing.role ?? "user";
         }
       }
       return true;
@@ -55,6 +58,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.trialEndsAt = (user as { trialEndsAt: string }).trialEndsAt;
         token.subscriptionStatus = (user as { subscriptionStatus: string }).subscriptionStatus;
         token.currentPeriodEnd = (user as { currentPeriodEnd: string | null }).currentPeriodEnd;
+        token.role = (user as { role: string }).role ?? "user";
         token.refreshedAt = Math.floor(Date.now() / 1000);
         // Always use DB name (overrides Google name)
         const { data: dbUser } = await db.from("users").select("name").eq("id", user.id!).single();
@@ -69,15 +73,17 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const { data: freshUser } = await db
         .from("users")
-        .select("subscription_status, current_period_end, trial_ends_at, name")
+        .select("subscription_status, current_period_end, trial_ends_at, name, role, is_banned")
         .eq("id", token.id as string)
         .single();
 
       if (freshUser) {
+        if (freshUser.is_banned) return null;
         token.subscriptionStatus = freshUser.subscription_status;
         token.currentPeriodEnd = freshUser.current_period_end;
         token.trialEndsAt = freshUser.trial_ends_at;
         token.name = freshUser.name;
+        token.role = freshUser.role ?? "user";
         token.refreshedAt = now;
       }
 
@@ -122,6 +128,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           throw new Error("Please verify your email before signing in.");
         }
 
+        if (user.is_banned) {
+          throw new Error("Your account has been suspended.");
+        }
+
         return {
           id: user.id,
           email: user.email,
@@ -129,6 +139,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           trialEndsAt: user.trial_ends_at,
           subscriptionStatus: user.subscription_status,
           currentPeriodEnd: user.current_period_end,
+          role: user.role ?? "user",
         };
       },
     }),

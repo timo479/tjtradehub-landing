@@ -33,4 +33,6 @@ export interface User {
   current_period_end: string | null;
   onboarding_completed: boolean;
   journal_tour_completed: boolean;
+  role: string;
+  is_banned: boolean;
 }

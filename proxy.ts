@@ -16,7 +16,8 @@ export default auth((req) => {
 
   const isProtected =
     nextUrl.pathname.startsWith("/dashboard") ||
-    nextUrl.pathname.startsWith("/billing");
+    nextUrl.pathname.startsWith("/billing") ||
+    nextUrl.pathname.startsWith("/admin");
 
   // Redirect logged-in users away from auth pages
   if (isAuthPage && isLoggedIn) {
@@ -26,6 +27,14 @@ export default auth((req) => {
   // Redirect unauthenticated users away from protected pages
   if (isProtected && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", nextUrl));
+  }
+
+  // Admin-only: redirect non-admins to /dashboard
+  if (nextUrl.pathname.startsWith("/admin") && isLoggedIn) {
+    const role = (session?.user as { role?: string })?.role;
+    if (role !== "admin") {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
   }
 
   // Redirect to billing if trial expired and no active subscription
@@ -46,5 +55,5 @@ export default auth((req) => {
 });
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/billing/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/billing/:path*", "/admin/:path*", "/login", "/register"],
 };
