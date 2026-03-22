@@ -98,6 +98,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   const [showWizard, setShowWizard] = useState(false);
   const [editTrade, setEditTrade] = useState<Trade | null>(null);
   const [detailTrade, setDetailTrade] = useState<Trade | null>(null);
+  const [detailScreenshots, setDetailScreenshots] = useState<{id:string;url:string;filename:string}[]>([]);
   const [reviewEntry, setReviewEntry] = useState<Trade | null>(null);
 
   // MT5 sync
@@ -129,6 +130,13 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    if (!detailTrade) { setDetailScreenshots([]); return; }
+    fetch(`/api/v2/entries/${detailTrade.id}/screenshots`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setDetailScreenshots);
+  }, [detailTrade]);
 
   const openJournal = (j: Journal) => {
     setActiveJournal(j); setView("trades"); setFilter("all"); setSearch("");
@@ -563,7 +571,13 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                       </div>
                     </td>
                     <td style={{ padding: "12px 16px" }} onClick={e => e.stopPropagation()}>
-                      <div style={{ display: "flex", gap: "6px" }}>
+                      <div style={{ display: "flex", gap: "6px", alignItems: "center" }}>
+                        {(trade.trade_screenshots?.length ?? 0) > 0 && (
+                          <span title={`${trade.trade_screenshots!.length} screenshot${trade.trade_screenshots!.length > 1 ? "s" : ""}`} style={{ display: "flex", alignItems: "center", gap: "3px", padding: "3px 7px", borderRadius: "6px", backgroundColor: "rgba(139,92,246,0.1)", color: "#A78BFA", fontSize: "11px" }}>
+                            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg>
+                            {trade.trade_screenshots!.length}
+                          </span>
+                        )}
                         <button onClick={() => setEditTrade(trade)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(139,92,246,0.3)", backgroundColor: "transparent", color: "#A78BFA", cursor: "pointer", fontSize: "12px" }}>✎</button>
                         <button onClick={() => deleteTrade(trade.id)} style={{ padding: "5px 10px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.25)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "12px" }}>✕</button>
                       </div>
@@ -622,6 +636,19 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
               })()}
               {/* Notes */}
               {getField(detailTrade, "Notes") && <div><p style={{ color: "#6B7280", fontSize: "11px", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: "4px" }}>Notes</p><p style={{ color: "#D1D5DB", fontSize: "14px", lineHeight: 1.6 }}>{getField(detailTrade, "Notes")}</p></div>}
+              {/* Screenshots */}
+              {detailScreenshots.length > 0 && (
+                <div>
+                  <p style={{ color: "#6B7280", fontSize: "11px", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: "8px" }}>Screenshots</p>
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "8px" }}>
+                    {detailScreenshots.map(s => (
+                      <a key={s.id} href={s.url} target="_blank" rel="noopener noreferrer" style={{ display: "block", borderRadius: "8px", overflow: "hidden", aspectRatio: "16/9", backgroundColor: "#0f1923" }}>
+                        <img src={s.url} alt={s.filename} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "opacity 0.2s" }} onMouseEnter={e => (e.currentTarget.style.opacity="0.8")} onMouseLeave={e => (e.currentTarget.style.opacity="1")} />
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
               <div style={{ display: "flex", gap: "8px", justifyContent: "flex-end", paddingTop: "8px" }}>
                 <button onClick={() => { setEditTrade(detailTrade); setDetailTrade(null); }} style={{ padding: "8px 18px", borderRadius: "8px", border: "1px solid rgba(139,92,246,0.4)", backgroundColor: "transparent", color: "#A78BFA", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}>✎ Edit</button>
                 <button onClick={() => { deleteTrade(detailTrade.id); setDetailTrade(null); }} style={{ padding: "8px 16px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.25)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "13px" }}>Delete</button>

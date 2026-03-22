@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 
 interface Rule { id: string; text: string; }
 interface FieldDef { id: string; label: string; field_type: string; }
@@ -17,10 +17,17 @@ interface TradeFieldValue {
   template_fields: { label: string };
 }
 
+interface Screenshot {
+  id: string;
+  url: string;
+  filename: string;
+}
+
 interface Entry {
   id: string;
   trade_date: string;
   trade_field_values: TradeFieldValue[];
+  screenshots?: Screenshot[];
 }
 
 interface Props {
@@ -99,6 +106,11 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [slideBack, setSlideBack] = useState(false);
+  const [savedEntryId, setSavedEntryId] = useState<string | null>(entry?.id ?? null);
+  const [screenshots, setScreenshots] = useState<Screenshot[]>(entry?.screenshots ?? []);
+  const [uploading, setUploading] = useState(false);
+  const [dragOver, setDragOver] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const goTo = (n: number) => {
     setSlideBack(n < step);
@@ -147,10 +159,40 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     const res = await fetch(url, { method: editing ? "PUT" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
     const data = await res.json();
     if (!res.ok) { setError(data.error ?? "Failed to save"); setSaving(false); return; }
-    onSaved();
+    const entryId = editing ? entry!.id : data.id;
+    setSavedEntryId(entryId);
+    setSaving(false);
+    goTo(4);
   };
 
-  const stepLabel = ["Trade", "Numbers", "Reflection"];
+  const uploadScreenshot = useCallback(async (file: File) => {
+    if (!savedEntryId) return;
+    if (screenshots.length >= 5) { setError("Max 5 screenshots per trade"); return; }
+    if (!file.type.startsWith("image/")) { setError("Only images allowed"); return; }
+    if (file.size > 10 * 1024 * 1024) { setError("File too large (max 10MB)"); return; }
+    setUploading(true);
+    setError(null);
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(`/api/v2/entries/${savedEntryId}/screenshots`, { method: "POST", body: fd });
+    const data = await res.json();
+    if (!res.ok) setError(data.error ?? "Upload failed");
+    else setScreenshots(prev => [...prev, data]);
+    setUploading(false);
+  }, [savedEntryId, screenshots.length]);
+
+  const deleteScreenshot = async (screenshotId: string) => {
+    if (!savedEntryId) return;
+    await fetch(`/api/v2/entries/${savedEntryId}/screenshots?screenshot_id=${screenshotId}`, { method: "DELETE" });
+    setScreenshots(prev => prev.filter(s => s.id !== screenshotId));
+  };
+
+  const handleFiles = (files: FileList | null) => {
+    if (!files) return;
+    Array.from(files).forEach(f => uploadScreenshot(f));
+  };
+
+  const stepLabel = ["Trade", "Numbers", "Reflection", "Screenshots"];
   const panelKey = `step-${step}`;
 
   return (
@@ -177,7 +219,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
                   </div>
                   <span style={{ fontSize: "11px", fontWeight: 500, color: done ? "#22c55e" : active ? "#F9FAFB" : "#6B7280", whiteSpace: "nowrap" }}>{label}</span>
                 </div>
-                {i < 2 && <div style={{ height: "2px", width: "60px", margin: "17px 8px 0", backgroundColor: done ? "#22c55e" : "#1F2937", transition: "background 0.25s" }} />}
+                {i < 3 && <div style={{ height: "2px", width: "60px", margin: "17px 8px 0", backgroundColor: done ? "#22c55e" : "#1F2937", transition: "background 0.25s" }} />}
               </div>
             );
           })}
@@ -314,20 +356,101 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
 
             {error && <div style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "8px", padding: "10px 14px", color: "#ef4444", fontSize: "13px" }}>{error}</div>}
           </>}
+
+          {/* STEP 4 – Screenshots */}
+          {step === 4 && <>
+            <div style={{ textAlign: "center", paddingBottom: "4px" }}>
+              <div style={{ color: "#22c55e", fontSize: "32px", marginBottom: "8px" }}>✓</div>
+              <p style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "15px", margin: "0 0 4px" }}>Trade saved!</p>
+              <p style={{ color: "#6B7280", fontSize: "13px", margin: 0 }}>Add screenshots of your chart (optional)</p>
+            </div>
+
+            {/* Upload zone */}
+            <div
+              onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={e => { e.preventDefault(); setDragOver(false); handleFiles(e.dataTransfer.files); }}
+              onClick={() => fileInputRef.current?.click()}
+              style={{
+                border: `2px dashed ${dragOver ? "#8B5CF6" : "#374151"}`,
+                borderRadius: "12px", padding: "28px 16px",
+                textAlign: "center", cursor: "pointer",
+                backgroundColor: dragOver ? "rgba(139,92,246,0.08)" : "#1a2332",
+                transition: "all 0.2s",
+              }}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                multiple
+                style={{ display: "none" }}
+                onChange={e => handleFiles(e.target.files)}
+              />
+              {uploading ? (
+                <p style={{ color: "#8B5CF6", fontSize: "14px", margin: 0 }}>Uploading...</p>
+              ) : (
+                <>
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" style={{ margin: "0 auto 8px", display: "block" }}>
+                    <rect x="3" y="3" width="18" height="18" rx="2" stroke="#6B7280" strokeWidth="1.5"/>
+                    <circle cx="8.5" cy="8.5" r="1.5" fill="#6B7280"/>
+                    <path d="M21 15l-5-5L5 21" stroke="#6B7280" strokeWidth="1.5" strokeLinecap="round"/>
+                  </svg>
+                  <p style={{ color: "#9CA3AF", fontSize: "13px", margin: 0 }}>
+                    Drop images here or <span style={{ color: "#8B5CF6" }}>click to upload</span>
+                  </p>
+                  <p style={{ color: "#4B5563", fontSize: "11px", margin: "4px 0 0" }}>
+                    PNG, JPG, WebP · max 10MB · up to 5 screenshots
+                  </p>
+                </>
+              )}
+            </div>
+
+            {/* Thumbnails */}
+            {screenshots.length > 0 && (
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "8px" }}>
+                {screenshots.map(s => (
+                  <div key={s.id} style={{ position: "relative", borderRadius: "8px", overflow: "hidden", aspectRatio: "16/9", backgroundColor: "#0f172a" }}>
+                    <img src={s.url} alt={s.filename} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                    <button
+                      onClick={() => deleteScreenshot(s.id)}
+                      style={{
+                        position: "absolute", top: "4px", right: "4px",
+                        width: "20px", height: "20px", borderRadius: "50%",
+                        backgroundColor: "rgba(0,0,0,0.7)", border: "none",
+                        color: "#ef4444", cursor: "pointer", fontSize: "12px",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}
+                    >×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {error && <div style={{ backgroundColor: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "8px", padding: "10px 14px", color: "#ef4444", fontSize: "13px" }}>{error}</div>}
+          </>}
         </div>
 
         {/* Nav */}
         <div style={{ padding: "16px 28px", borderTop: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-          {step > 1
+          {step > 1 && step < 4
             ? <button onClick={() => goTo(step - 1)} style={{ padding: "10px 20px", borderRadius: "10px", border: "1px solid #374151", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>← Back</button>
             : <div />}
-          {step < 3
-            ? <button onClick={() => goTo(step + 1)} style={{ padding: "10px 22px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
-                {step === 1 ? "Numbers →" : "Reflection →"}
-              </button>
-            : <button onClick={save} disabled={saving} style={{ padding: "10px 24px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", opacity: saving ? 0.7 : 1 }}>
-                {saving ? "Saving..." : editing ? "Save Changes ✓" : "Save Trade ✓"}
-              </button>}
+          {step < 3 && (
+            <button onClick={() => goTo(step + 1)} style={{ padding: "10px 22px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
+              {step === 1 ? "Numbers →" : "Reflection →"}
+            </button>
+          )}
+          {step === 3 && (
+            <button onClick={save} disabled={saving} style={{ padding: "10px 24px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: saving ? "not-allowed" : "pointer", fontSize: "14px", opacity: saving ? 0.7 : 1 }}>
+              {saving ? "Saving..." : editing ? "Save Changes ✓" : "Save Trade ✓"}
+            </button>
+          )}
+          {step === 4 && (
+            <button onClick={onSaved} style={{ padding: "10px 24px", borderRadius: "10px", border: "none", backgroundColor: "#22c55e", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>
+              Done ✓
+            </button>
+          )}
         </div>
       </div>
 

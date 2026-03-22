@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
 
   let query = db
     .from("trade_entries")
-    .select(`*, trade_field_values ( *, template_fields ( id, label, field_type ) ), journal_templates ( id, name, version )`)
+    .select(`*, trade_field_values ( *, template_fields ( id, label, field_type ) ), journal_templates ( id, name, version ), trade_screenshots ( id )`)
     .eq("user_id", session.user.id)
     .order("trade_date", { ascending: false });
 
