@@ -20,7 +20,7 @@ export default async function ChartsPage() {
   const chartsTourCompleted = userRow?.charts_tour_completed ?? false;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#0a0a0a" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#000000" }}>
       {/* Header */}
       <header style={{ borderBottom: "1px solid #1F2937", flexShrink: 0 }} className="px-6 py-5">
         <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
