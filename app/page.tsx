@@ -37,6 +37,7 @@ import Hero from "@/components/Hero";
 import ScreenshotCarousel from "@/components/ScreenshotCarousel";
 import MT5Section from "@/components/MT5Section";
 import ChartsVideoSection from "@/components/ChartsVideoSection";
+import CalculatorsSection from "@/components/CalculatorsSection";
 import ProblemSection from "@/components/ProblemSection";
 import DifferentiatorSection from "@/components/DifferentiatorSection";
 import BuiltForSection from "@/components/BuiltForSection";
@@ -60,6 +61,7 @@ export default function Home() {
         <EarlyAccessBanner />
         <MT5Section />
         <ChartsVideoSection />
+        <CalculatorsSection />
         <ProblemSection />
         <DifferentiatorSection />
         <BuiltForSection />
