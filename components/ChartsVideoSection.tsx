@@ -269,12 +269,15 @@ export default function ChartsVideoSection() {
             onClick={e => e.stopPropagation()}
             style={{
               position: "relative",
-              width: "100vw",
-              height: "100vh",
+              width: "calc(100vw - 40px)",
+              height: "calc(100vh - 40px)",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              backgroundColor: "#000",
+              backgroundColor: "#0a0a0a",
+              borderRadius: "16px",
+              border: "1px solid rgba(139,92,246,0.25)",
+              overflow: "hidden",
             }}
           >
             <video
