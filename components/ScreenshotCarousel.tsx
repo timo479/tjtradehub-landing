@@ -196,7 +196,7 @@ export default function ScreenshotCarousel() {
             {/* Screenshot */}
             <div style={{ position: "relative" }}>
               <div style={{
-                height: "580px",
+                maxHeight: "580px",
                 overflowY: "auto",
                 backgroundColor: "#050507",
                 opacity: fading ? 0 : 1,
@@ -215,10 +215,10 @@ export default function ScreenshotCarousel() {
                   priority={active === 0}
                 />
               </div>
-              {/* Fade out bottom */}
+              {/* Fade out bottom – for tall/scrollable images */}
               <div style={{
                 position: "absolute", bottom: 0, left: 0, right: 0,
-                height: "140px", pointerEvents: "none",
+                height: "100px", pointerEvents: "none",
                 background: "linear-gradient(to bottom, transparent, #050507)",
               }} />
             </div>
@@ -267,8 +267,8 @@ export default function ScreenshotCarousel() {
             onClick={e => e.stopPropagation()}
             style={{
               position: "relative",
-              width: "calc(100vw - 40px)",
-              height: "calc(100vh - 40px)",
+              width: "min(1100px, calc(100vw - 80px))",
+              maxHeight: "calc(100vh - 80px)",
               borderRadius: "16px",
               overflow: "hidden",
               border: "1px solid rgba(139,92,246,0.25)",
@@ -326,7 +326,6 @@ export default function ScreenshotCarousel() {
 
             {/* Full image scrollable */}
             <div style={{
-              flex: 1,
               overflowY: "auto",
               backgroundColor: "#050507",
               scrollbarWidth: "thin",
