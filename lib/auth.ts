@@ -18,7 +18,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         // Check if user exists
         const { data: existing } = await db
           .from("users")
-          .select("id, name, trial_ends_at, subscription_status, current_period_end, is_banned, role")
+          .select("*")
           .eq("email", user.email)
           .single();
 
@@ -32,6 +32,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             password_hash: "",
             trial_ends_at: trialEnds.toISOString(),
             subscription_status: "trialing",
+            email_verified: true,
           }).select().single();
           if (!newUser) return false;
           user.id = newUser.id;
@@ -42,7 +43,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         } else {
           if (existing.is_banned) return false;
           user.id = existing.id;
-          user.name = existing.name; // use DB name, not Google name
+          user.name = existing.name || user.name || user.email?.split("@")[0];
           (user as Record<string, unknown>).trialEndsAt = existing.trial_ends_at;
           (user as Record<string, unknown>).subscriptionStatus = existing.subscription_status;
           (user as Record<string, unknown>).currentPeriodEnd = existing.current_period_end;
@@ -73,7 +74,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
 
       const { data: freshUser } = await db
         .from("users")
-        .select("subscription_status, current_period_end, trial_ends_at, name, role, is_banned")
+        .select("*")
         .eq("id", token.id as string)
         .single();
 
