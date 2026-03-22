@@ -571,6 +571,62 @@ const WIDGETS: WidgetDef[] = [
 ];
 
 const STORAGE_KEY = "tj-widget-prefs-v2";
+const LAYOUT_KEY  = "tj-widget-layout-v1";
+
+type Layout = "1col" | "auto" | "2col" | "3col";
+
+const LAYOUTS: { id: Layout; label: string; icon: React.ReactNode }[] = [
+  {
+    id: "1col", label: "Single column",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="7" width="14" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: "auto", label: "Auto (mixed)",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: "2col", label: "2 columns",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="2" y="2" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="10" y="2" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="2" y="12" width="6" height="4" rx="1.5" fill="currentColor" />
+        <rect x="10" y="12" width="6" height="4" rx="1.5" fill="currentColor" />
+      </svg>
+    ),
+  },
+  {
+    id: "3col", label: "3 columns",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+        <rect x="1" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="6.75" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="12.5" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="1" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="6.75" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="12.5" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="1" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="6.75" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
+        <rect x="12.5" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
+      </svg>
+    ),
+  },
+];
 
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
 
@@ -589,14 +645,22 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
+      const savedLayout = localStorage.getItem(LAYOUT_KEY) as Layout | null;
+      if (savedLayout) setLayout(savedLayout);
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
+
+  const changeLayout = (l: Layout) => {
+    setLayout(l);
+    localStorage.setItem(LAYOUT_KEY, l);
+  };
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -610,32 +674,91 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
   if (!loaded) return null;
 
-  // Build rows: pair half-width widgets, full-width go solo
-  const rows: WidgetDef[][] = [];
-  let i = 0;
-  while (i < activeWidgets.length) {
-    const w = activeWidgets[i];
-    if (w.size === "full") { rows.push([w]); i++; }
-    else {
-      const next = activeWidgets[i + 1];
-      if (next && next.size === "half") { rows.push([w, next]); i += 2; }
-      else { rows.push([w]); i++; }
+  // Build widget grid based on layout
+  const getCols = () => {
+    if (layout === "1col") return 1;
+    if (layout === "2col") return 2;
+    if (layout === "3col") return 3;
+    return null; // auto
+  };
+
+  const renderWidgets = () => {
+    const cols = getCols();
+    if (cols !== null) {
+      // Fixed column layout — chunk widgets into rows of `cols`
+      const rows: WidgetDef[][] = [];
+      for (let i = 0; i < activeWidgets.length; i += cols) {
+        rows.push(activeWidgets.slice(i, i + cols));
+      }
+      return rows.map((row, ri) => (
+        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
+          {row.map(w => (
+            <div key={w.id} style={card}>
+              <SectionTitle>{w.icon} {w.name}</SectionTitle>
+              <w.component entries={entries} />
+            </div>
+          ))}
+        </div>
+      ));
     }
-  }
+    // Auto layout: pair halves, full stays solo
+    const rows: WidgetDef[][] = [];
+    let i = 0;
+    while (i < activeWidgets.length) {
+      const w = activeWidgets[i];
+      if (w.size === "full") { rows.push([w]); i++; }
+      else {
+        const next = activeWidgets[i + 1];
+        if (next && next.size === "half") { rows.push([w, next]); i += 2; }
+        else { rows.push([w]); i++; }
+      }
+    }
+    return rows.map((row, ri) => (
+      <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
+        {row.map(w => (
+          <div key={w.id} style={card}>
+            <SectionTitle>{w.icon} {w.name}</SectionTitle>
+            <w.component entries={entries} />
+          </div>
+        ))}
+      </div>
+    ));
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
         <p style={{ color: "#6B7280", fontSize: "13px" }}>
           {active.length} of {WIDGETS.length} widgets active
         </p>
-        <button
-          onClick={() => setEditOpen(true)}
-          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
-          <span>⊞</span> Edit Statistics
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Layout switcher */}
+          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+            {LAYOUTS.map(l => (
+              <button
+                key={l.id}
+                title={l.label}
+                onClick={() => changeLayout(l.id)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
+                  backgroundColor: layout === l.id ? "#1F2937" : "transparent",
+                  color: layout === l.id ? "#8B5CF6" : "#4B5563",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+              >
+                {l.icon}
+              </button>
+            ))}
+          </div>
+          <button
+            onClick={() => setEditOpen(true)}
+            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+            <span>⊞</span> Edit Statistics
+          </button>
+        </div>
       </div>
 
       {entries.length === 0 && (
@@ -646,16 +769,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       )}
 
       {/* Widget Rows */}
-      {entries.length > 0 && rows.map((row, ri) => (
-        <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
-          {row.map(w => (
-            <div key={w.id} style={card}>
-              <SectionTitle>{w.icon} {w.name}</SectionTitle>
-              <w.component entries={entries} />
-            </div>
-          ))}
-        </div>
-      ))}
+      {entries.length > 0 && renderWidgets()}
 
       {/* Edit Panel Overlay */}
       {editOpen && (
