@@ -195,8 +195,15 @@ export default function AdminPage() {
                           <div className="font-medium text-white">{user.name || "—"}</div>
                           <div className="text-xs text-zinc-500">{user.email}</div>
                         </td>
-                        <td className="px-4 py-3 text-xs text-zinc-500 font-mono">
-                          {user.id.slice(0, 8)}…
+                        <td className="px-4 py-3">
+                          <button
+                            onClick={() => navigator.clipboard.writeText(user.id)}
+                            title={user.id}
+                            className="text-xs text-zinc-500 font-mono hover:text-white transition-colors group flex items-center gap-1"
+                          >
+                            {user.id.slice(0, 8)}…
+                            <svg className="opacity-0 group-hover:opacity-100 transition-opacity" width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                          </button>
                         </td>
                         <td className="px-4 py-3 text-zinc-400">
                           {new Date(user.created_at).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" })}
