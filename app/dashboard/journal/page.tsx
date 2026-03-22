@@ -23,7 +23,7 @@ export default async function JournalPage() {
   const journalTourCompleted = userRow?.journal_tour_completed ?? false;
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: "#000000" }}>
+    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
       {/* Header */}
       <header style={{ borderBottom: "1px solid #1F2937" }} className="px-6 py-5">
         <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
