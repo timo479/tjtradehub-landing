@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
+import CalculatorClient from "./CalculatorClient";
 
 export const metadata = { title: "Risk Calculator – TJ TradeHub" };
 
@@ -51,12 +52,7 @@ export default async function CalculatorPage() {
         </div>
       </header>
 
-      {/* Calculator iframe */}
-      <iframe
-        src="/calculator-embed/index.html"
-        style={{ flex: 1, border: "none", width: "100%", display: "block" }}
-        title="TJ Risk Calculator"
-      />
+      <CalculatorClient />
     </div>
   );
 }

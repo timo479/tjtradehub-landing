@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TJ Drawdown & Compound</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    :root{
+      --v:#8B5CF6;--vd:#7C3AED;--vdim:rgba(139,92,246,0.15);
+      --g:#22c55e;--r:#ef4444;--o:#f59e0b;--b:#60a5fa;
+      --bg:#000;--bgc:linear-gradient(145deg,#0f0f18,#090909);
+      --bgi:rgba(0,0,0,0.35);--br:rgba(255,255,255,0.06);
+      --tx:#f1f5f9;--mu:#64748b;--sc:#94a3b8;
+    }
+    html,body{font-family:'Inter',sans-serif;background:radial-gradient(ellipse at 50% 0%,rgba(139,92,246,.1) 0%,transparent 55%),#000;color:var(--tx);min-height:100vh;line-height:1.5;}
+    @keyframes border-pulse{0%,100%{border-color:rgba(139,92,246,.45);box-shadow:inset 0 0 80px rgba(139,92,246,.04),0 0 30px rgba(139,92,246,.25),0 0 60px rgba(139,92,246,.1);}50%{border-color:rgba(139,92,246,.9);box-shadow:inset 0 0 100px rgba(139,92,246,.08),0 0 60px rgba(139,92,246,.55),0 0 120px rgba(139,92,246,.25);}}
+    body::after{content:'';position:fixed;inset:0;border:3px solid rgba(139,92,246,.45);pointer-events:none;z-index:500;animation:border-pulse 3s ease-in-out infinite;border-radius:2px;}
+
+    .header{position:sticky;top:0;z-index:100;background:linear-gradient(180deg,rgba(6,2,14,.98),rgba(0,0,0,.92));border-bottom:1px solid rgba(139,92,246,.2);backdrop-filter:blur(20px);height:58px;padding:0 28px;display:flex;align-items:center;justify-content:space-between;}
+    .logo{font-size:17px;font-weight:800;letter-spacing:-.02em;}
+    .logo span{background:linear-gradient(135deg,#c4b5fd,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+    .htags{display:flex;gap:6px;}
+    .htag{font-size:9px;font-weight:700;border-radius:4px;padding:2px 8px;letter-spacing:.1em;text-transform:uppercase;}
+    .htag-v{color:rgba(139,92,246,.8);background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.3);}
+    .htag-g{color:rgba(34,197,94,.8);background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.25);}
+    .hbtn{padding:5px 14px;border-radius:8px;border:1px solid var(--br);background:rgba(255,255,255,.04);color:var(--sc);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+    .hbtn:hover{border-color:rgba(139,92,246,.4);color:#c4b5fd;}
+
+    .tabs{display:flex;border-bottom:1px solid rgba(255,255,255,.06);padding:0 28px;background:rgba(0,0,0,.6);backdrop-filter:blur(10px);}
+    .tab{padding:12px 20px;font-size:13px;font-weight:600;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .2s;user-select:none;}
+    .tab:hover{color:var(--sc);}
+    .tab.active{color:#c4b5fd;border-bottom-color:var(--v);}
+
+    .page{display:none;}
+    .page.active{display:block;}
+    .main{max-width:980px;margin:0 auto;padding:24px 20px 60px;display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start;}
+
+    .card{background:var(--bgc);border:1px solid var(--br);border-radius:16px;padding:20px 22px;margin-bottom:14px;box-shadow:0 4px 32px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04);transition:border-color .2s;}
+    .card:hover{border-color:rgba(139,92,246,.18);}
+    .card:last-child{margin-bottom:0;}
+    .card-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+    .card-title{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;}
+
+    .fg{margin-bottom:12px;}
+    .fg:last-child{margin-bottom:0;}
+    .frow{display:flex;gap:10px;}
+    .frow .fg{flex:1;min-width:0;}
+    .lbl{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px;}
+    .lbl-opt{font-weight:400;text-transform:none;letter-spacing:0;font-size:10px;}
+    .iwrap{position:relative;}
+    .ipfx{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:13px;pointer-events:none;}
+    .isfx{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--mu);font-size:11px;pointer-events:none;}
+    input[type="number"],input[type="range"],select{width:100%;background:var(--bgi);border:1px solid var(--br);border-radius:10px;color:var(--tx);font-family:'Inter',sans-serif;font-size:14px;padding:9px 13px;outline:none;transition:all .2s;-moz-appearance:textfield;box-shadow:inset 0 2px 4px rgba(0,0,0,.2);}
+    input[type="number"]::-webkit-inner-spin-button,input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none;}
+    input.pfx{padding-left:28px;}input.sfx{padding-right:34px;}
+    input[type="number"]:focus,select:focus{border-color:rgba(139,92,246,.5);background:rgba(139,92,246,.06);box-shadow:0 0 0 3px rgba(139,92,246,.12),inset 0 2px 4px rgba(0,0,0,.2);}
+    input::placeholder{color:rgba(100,116,139,.5);}
+    select{cursor:pointer;}
+    select option{background:#1a1a2e;}
+
+    /* SLIDER */
+    input[type="range"]{-webkit-appearance:none;appearance:none;height:6px;border-radius:3px;padding:0;background:rgba(255,255,255,.08);border:none;box-shadow:none;cursor:pointer;}
+    input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:linear-gradient(135deg,#c4b5fd,#8B5CF6);cursor:pointer;box-shadow:0 0 10px rgba(139,92,246,.5);border:2px solid rgba(139,92,246,.3);transition:box-shadow .2s;}
+    input[type="range"]::-webkit-slider-thumb:hover{box-shadow:0 0 20px rgba(139,92,246,.8);}
+    .slider-labels{display:flex;justify-content:space-between;font-size:10px;color:var(--mu);margin-top:5px;}
+
+    /* TOGGLE SWITCH */
+    .toggle-wrap{display:flex;align-items:center;gap:8px;}
+    .toggle-lbl{font-size:11px;color:var(--sc);}
+    .toggle{position:relative;width:36px;height:20px;cursor:pointer;}
+    .toggle input{opacity:0;width:0;height:0;}
+    .toggle-slider{position:absolute;inset:0;background:rgba(255,255,255,.1);border-radius:10px;transition:.2s;border:1px solid var(--br);}
+    .toggle-slider::before{content:'';position:absolute;width:14px;height:14px;left:2px;bottom:2px;background:var(--sc);border-radius:50%;transition:.2s;}
+    .toggle input:checked + .toggle-slider{background:var(--vdim);border-color:rgba(139,92,246,.4);}
+    .toggle input:checked + .toggle-slider::before{transform:translateX(16px);background:#c4b5fd;}
+
+    /* PRESET BUTTONS */
+    .preset-row{display:flex;gap:5px;margin-bottom:7px;flex-wrap:wrap;}
+    .preset-btn{padding:4px 10px;border-radius:7px;border:1px solid var(--br);background:rgba(0,0,0,.3);color:var(--sc);font-size:11px;font-weight:600;cursor:pointer;transition:all .2s;font-family:'Inter',sans-serif;}
+    .preset-btn:hover{border-color:rgba(139,92,246,.3);color:var(--tx);}
+    .preset-btn.active{background:rgba(139,92,246,.15);border-color:rgba(139,92,246,.4);color:#c4b5fd;}
+
+    /* ══ DRAWDOWN PAGE ══ */
+    .dd-hero{text-align:center;padding:20px 16px 22px;background:linear-gradient(145deg,#110c1e,#0a0a0f);border:1px solid rgba(139,92,246,.3);border-radius:16px;margin-bottom:14px;position:relative;overflow:hidden;box-shadow:0 0 60px rgba(139,92,246,.06),inset 0 1px 0 rgba(139,92,246,.15);}
+    .dd-hero::before{content:'';position:absolute;top:-30px;left:50%;transform:translateX(-50%);width:260px;height:80px;background:radial-gradient(ellipse,rgba(139,92,246,.15),transparent 70%);pointer-events:none;}
+    .dd-loss-lbl{font-size:10px;font-weight:700;color:rgba(239,68,68,.6);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;}
+    .dd-loss-val{font-size:68px;font-weight:800;line-height:1;background:linear-gradient(135deg,#fca5a5,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(239,68,68,.4));font-variant-numeric:tabular-nums;}
+    .dd-arrow{font-size:24px;color:var(--mu);margin:6px 0;}
+    .dd-rec-lbl{font-size:10px;font-weight:700;color:rgba(34,197,94,.6);text-transform:uppercase;letter-spacing:.12em;margin-bottom:5px;}
+    .dd-rec-val{font-size:68px;font-weight:800;line-height:1;background:linear-gradient(135deg,#86efac,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 20px rgba(34,197,94,.4));font-variant-numeric:tabular-nums;}
+    .dd-sub{font-size:11px;color:var(--mu);margin-top:8px;line-height:1.7;}
+
+    /* RECOVERY TIME BADGE */
+    .rec-time-badge{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;margin-top:10px;}
+    .rtb-lbl{font-size:11px;color:rgba(34,197,94,.8);}
+    .rtb-val{font-size:16px;font-weight:800;color:#22c55e;}
+
+    /* BARS */
+    .bar-row{margin-bottom:12px;}
+    .bar-label{display:flex;justify-content:space-between;font-size:11px;font-weight:600;margin-bottom:5px;}
+    .bar-track{height:12px;background:rgba(255,255,255,.05);border-radius:6px;overflow:visible;position:relative;}
+    .bar-fill{height:100%;border-radius:6px;transition:width .4s cubic-bezier(.4,0,.2,1);min-width:4px;}
+    .bar-fill.loss{background:linear-gradient(90deg,rgba(239,68,68,.8),rgba(239,68,68,.5));box-shadow:0 0 12px rgba(239,68,68,.3);}
+    .bar-fill.rec{background:linear-gradient(90deg,rgba(34,197,94,.5),rgba(34,197,94,.8));box-shadow:0 0 12px rgba(34,197,94,.3);}
+
+    /* STREAK */
+    .streak-result{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:14px;}
+    .scard{border-radius:11px;padding:11px 13px;border:1px solid;}
+    .scard-dd{background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.15);}
+    .scard-bal{background:rgba(139,92,246,.05);border-color:rgba(139,92,246,.18);}
+    .scard-rec{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.15);}
+    .scard-trades{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.15);}
+    .sc-l{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+    .scard-dd .sc-l{color:rgba(239,68,68,.55);}
+    .scard-bal .sc-l{color:rgba(139,92,246,.6);}
+    .scard-rec .sc-l{color:rgba(34,197,94,.55);}
+    .scard-trades .sc-l{color:rgba(245,158,11,.55);}
+    .sc-v{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;}
+
+    /* TABLE */
+    .dd-table{width:100%;border-collapse:collapse;}
+    .dd-table th{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.07em;padding:6px 10px;text-align:left;border-bottom:1px solid rgba(255,255,255,.07);}
+    .dd-table td{padding:7px 10px;font-size:12px;font-variant-numeric:tabular-nums;border-bottom:1px solid rgba(255,255,255,.04);}
+    .dd-table tr:last-child td{border-bottom:none;}
+    .dd-table tr.hl td{background:rgba(139,92,246,.1);}
+    .td-loss{color:#f87171;font-weight:700;}
+    .td-rec{color:#4ade80;font-weight:700;}
+    .td-sev{font-size:10px;padding:2px 7px;border-radius:4px;font-weight:600;}
+    .sev-low{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2);}
+    .sev-med{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
+    .sev-high{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
+    .sev-crit{background:rgba(139,92,246,.12);color:#c4b5fd;border:1px solid rgba(139,92,246,.3);}
+
+    /* ══ COMPOUND PAGE ══ */
+    .final-grid{display:grid;gap:9px;margin-bottom:14px;}
+    .final-grid.single{grid-template-columns:1fr;}
+    .final-grid.dual{grid-template-columns:1fr 1fr;}
+    .fb-card{text-align:center;padding:16px;background:rgba(139,92,246,.04);border:1px solid rgba(139,92,246,.12);border-radius:14px;}
+    .fb-card.s2{background:rgba(34,197,94,.04);border-color:rgba(34,197,94,.15);}
+    .fb-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.12em;margin-bottom:6px;}
+    .fb-card .fb-lbl{color:rgba(139,92,246,.6);}
+    .fb-card.s2 .fb-lbl{color:rgba(34,197,94,.6);}
+    .fb-val{font-size:52px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums;}
+    .fb-card .fb-val{background:linear-gradient(135deg,#e2d9fb,#a78bfa,#818cf8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(139,92,246,.5));}
+    .fb-card.s2 .fb-val{background:linear-gradient(135deg,#86efac,#22c55e);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;filter:drop-shadow(0 0 18px rgba(34,197,94,.4));}
+    .final-grid.dual .fb-val{font-size:36px;}
+    .fb-sub{font-size:10px;color:var(--mu);margin-top:5px;}
+
+    .rule72{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:rgba(139,92,246,.06);border:1px solid rgba(139,92,246,.18);border-radius:10px;margin-bottom:12px;}
+    .rule72-lbl{font-size:11px;color:rgba(139,92,246,.8);font-weight:600;}
+    .rule72-val{font-size:16px;font-weight:800;color:#c4b5fd;}
+
+    .milestone-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px;}
+    .mcard{border-radius:12px;padding:11px 13px;border:1px solid;}
+    .mcard-2x{background:rgba(34,197,94,.05);border-color:rgba(34,197,94,.15);}
+    .mcard-5x{background:rgba(245,158,11,.05);border-color:rgba(245,158,11,.15);}
+    .mcard-10x{background:rgba(139,92,246,.06);border-color:rgba(139,92,246,.2);}
+    .mcard-tgt{background:rgba(96,165,250,.05);border-color:rgba(96,165,250,.2);}
+    .mc-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px;}
+    .mcard-2x .mc-lbl{color:rgba(34,197,94,.6);}
+    .mcard-5x .mc-lbl{color:rgba(245,158,11,.6);}
+    .mcard-10x .mc-lbl{color:rgba(139,92,246,.6);}
+    .mcard-tgt .mc-lbl{color:rgba(96,165,250,.7);}
+    .mc-val{font-size:20px;font-weight:800;font-variant-numeric:tabular-nums;}
+    .mcard-2x .mc-val{color:#22c55e;}
+    .mcard-5x .mc-val{color:#f59e0b;}
+    .mcard-10x .mc-val{color:#a78bfa;}
+    .mcard-tgt .mc-val{color:#60a5fa;}
+    .mc-sub{font-size:10px;color:var(--mu);margin-top:3px;}
+
+    /* COMPARE SECTION */
+    .compare-section{display:none;padding-top:12px;border-top:1px solid rgba(255,255,255,.05);margin-top:12px;}
+    .compare-section.open{display:block;}
+    .compare-toggle-btn{padding:4px 12px;border-radius:7px;border:1px solid rgba(34,197,94,.3);background:rgba(34,197,94,.08);color:#22c55e;font-size:11px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .2s;}
+    .compare-toggle-btn:hover{background:rgba(34,197,94,.15);}
+    .compare-toggle-btn.active{background:rgba(34,197,94,.2);border-color:rgba(34,197,94,.5);}
+
+    /* BREAK-EVEN */
+    .be-result{padding:10px 14px;background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);border-radius:10px;margin-top:12px;display:none;}
+    .be-result.vis{display:block;}
+    .be-row{display:flex;justify-content:space-between;font-size:11px;margin-bottom:5px;}
+    .be-row:last-child{margin-bottom:0;border-top:1px solid rgba(245,158,11,.1);padding-top:5px;}
+    .be-key{color:var(--mu);}
+    .be-val{font-weight:700;color:#fbbf24;}
+
+    /* CHART */
+    .chart-wrap{background:linear-gradient(145deg,#0c0a14,#080808);border:1px solid rgba(139,92,246,.2);border-radius:14px;padding:16px;box-shadow:0 4px 32px rgba(0,0,0,.5);}
+    .chart-hdr{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;}
+    .chart-title-lbl{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.1em;}
+    .chart-legend{display:flex;gap:12px;}
+    .legend-item{display:flex;align-items:center;gap:5px;font-size:10px;color:var(--sc);}
+    .legend-dot{width:8px;height:8px;border-radius:50%;}
+    canvas{display:block;width:100%;border-radius:6px;}
+    .chart-empty{text-align:center;padding:50px 0;color:var(--mu);font-size:12px;}
+
+    .note{font-size:11px;color:var(--mu);line-height:1.7;padding-top:10px;border-top:1px solid rgba(255,255,255,.05);margin-top:10px;}
+
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:transparent;}
+    ::-webkit-scrollbar-thumb{background:rgba(139,92,246,.3);border-radius:3px;}
+    ::-webkit-scrollbar-thumb:hover{background:rgba(139,92,246,.6);}
+
+    @media(max-width:680px){
+      .main{grid-template-columns:1fr;padding:14px 14px 48px;}
+      .col-right{order:-1;}
+      .dd-loss-val,.dd-rec-val,.fb-val{font-size:48px;}
+      .final-grid.dual .fb-val{font-size:30px;}
+      .hbtn{display:none;}
+    }
+  </style>
+</head>
+<body>
+
+<header class="header">
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="logo">TJ <span>Tools</span></div>
+    <div class="htags">
+      <span class="htag htag-v">Drawdown</span>
+      <span class="htag htag-g">Compound</span>
+    </div>
+  </div>
+  <button class="hbtn" id="btn-share">🔗 Share</button>
+</header>
+
+<div class="tabs">
+  <div class="tab active" id="tab-dd" onclick="switchTab('dd')">📉 Drawdown Recovery</div>
+  <div class="tab" id="tab-cp" onclick="switchTab('cp')">📈 Compound Planner</div>
+</div>
+
+<!-- ══ DRAWDOWN PAGE ══ -->
+<div class="page active" id="page-dd">
+  <div class="main">
+
+    <div class="col-left">
+      <div class="card">
+        <div class="card-title">Drawdown</div>
+        <div class="fg">
+          <label class="lbl">Drawdown Amount</label>
+          <input type="range" id="dd-slider" min="1" max="99" value="20" step="1">
+          <div class="slider-labels"><span>−1%</span><span>−25%</span><span>−50%</span><span>−75%</span><span>−99%</span></div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="lbl">Drawdown %</label>
+            <div class="iwrap">
+              <input type="number" id="dd-input" class="sfx" value="20" min="0.1" max="99.9" step="0.1">
+              <span class="isfx">%</span>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="lbl">Balance <span class="lbl-opt">(opt.)</span></label>
+            <div class="iwrap">
+              <span class="ipfx">$</span>
+              <input type="number" id="dd-balance" class="pfx" placeholder="10000" step="100">
+            </div>
+          </div>
+        </div>
+
+        <!-- Recovery Time -->
+        <div class="fg" style="margin-top:4px;">
+          <label class="lbl">Recovery Rate</label>
+          <div class="frow">
+            <div class="fg">
+              <div class="iwrap">
+                <input type="number" id="dd-ret" class="sfx" value="3" min="0.01" step="0.1" placeholder="3">
+                <span class="isfx">%</span>
+              </div>
+            </div>
+            <div class="fg">
+              <select id="dd-period">
+                <option value="day">per day</option>
+                <option value="week">per week</option>
+                <option value="month" selected>per month</option>
+                <option value="year">per year</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="rec-time-badge">
+          <span class="rtb-lbl">⏱ Time to recover at this rate</span>
+          <span class="rtb-val" id="rec-time-val">—</span>
+        </div>
+      </div>
+
+      <!-- Losing Streak -->
+      <div class="card">
+        <div class="card-title">Losing Streak Calculator</div>
+        <p style="font-size:11px;color:var(--mu);line-height:1.65;margin-bottom:14px;">How deep does your account fall after X consecutive losing trades?</p>
+        <div class="frow">
+          <div class="fg">
+            <label class="lbl">Risk per Trade</label>
+            <div class="iwrap">
+              <input type="number" id="streak-risk" class="sfx" value="2" min="0.1" max="100" step="0.1">
+              <span class="isfx">%</span>
+            </div>
+          </div>
+          <div class="fg">
+            <label class="lbl">Losing Trades</label>
+            <input type="number" id="streak-n" value="5" min="1" max="100" step="1">
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Starting Balance <span class="lbl-opt">(opt.)</span></label>
+          <div class="iwrap">
+            <span class="ipfx">$</span>
+            <input type="number" id="streak-bal" class="pfx" placeholder="10000" step="100">
+          </div>
+        </div>
+        <div class="streak-result">
+          <div class="scard scard-dd"><div class="sc-l">Total Drawdown</div><div class="sc-v" id="streak-dd" style="color:#f87171;">—</div></div>
+          <div class="scard scard-bal"><div class="sc-l">Remaining Bal.</div><div class="sc-v" id="streak-rem" style="color:#a78bfa;">—</div></div>
+          <div class="scard scard-rec"><div class="sc-l">Recovery Needed</div><div class="sc-v" id="streak-rec" style="color:#4ade80;">—</div></div>
+          <div class="scard scard-trades"><div class="sc-l">Wins to Recover</div><div class="sc-v" id="streak-wins" style="color:#fbbf24;">—</div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="dd-hero">
+        <div class="dd-loss-lbl">You Lost</div>
+        <div class="dd-loss-val" id="dd-loss-display">−20%</div>
+        <div class="dd-arrow">↓</div>
+        <div class="dd-rec-lbl">You Need to Recover</div>
+        <div class="dd-rec-val" id="dd-rec-display">+25%</div>
+        <div class="dd-sub" id="dd-sub">Enter balance for dollar amounts</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Visual Asymmetry</div>
+        <div class="bar-row">
+          <div class="bar-label"><span style="color:#f87171;">Loss</span><span style="color:#f87171;" id="bar-loss-pct">−20%</span></div>
+          <div class="bar-track"><div class="bar-fill loss" id="bar-loss" style="width:20%"></div></div>
+        </div>
+        <div class="bar-row" style="margin-bottom:0;">
+          <div class="bar-label"><span style="color:#4ade80;">Recovery Needed</span><span style="color:#4ade80;" id="bar-rec-pct">+25%</span></div>
+          <div class="bar-track"><div class="bar-fill rec" id="bar-rec" style="width:25%"></div></div>
+        </div>
+        <p class="note">The deeper the loss, the more disproportionate the recovery required — this asymmetry is why risk management is critical.</p>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Reference Table</div>
+        <table class="dd-table">
+          <thead><tr><th>Loss</th><th>Recovery Needed</th><th>Level</th></tr></thead>
+          <tbody id="dd-table-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ COMPOUND PAGE ══ -->
+<div class="page" id="page-cp">
+  <div class="main">
+
+    <div class="col-left">
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Account</div>
+        <div class="fg">
+          <label class="lbl">Starting Balance</label>
+          <div class="iwrap"><span class="ipfx">$</span><input type="number" id="cp-bal" class="pfx" value="10000" min="1" step="100"></div>
+        </div>
+        <div class="frow">
+          <div class="fg">
+            <label class="lbl">Return / Period</label>
+            <div class="iwrap"><input type="number" id="cp-ret" class="sfx" value="3" min="0.01" step="0.1"><span class="isfx">%</span></div>
+          </div>
+          <div class="fg">
+            <label class="lbl">Period</label>
+            <select id="cp-period">
+              <option value="day">Daily</option>
+              <option value="week">Weekly</option>
+              <option value="month" selected>Monthly</option>
+              <option value="year">Yearly</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Quick Presets</label>
+          <div class="preset-row">
+            <button class="preset-btn" data-r="0.5" data-p="day">0.5%/d</button>
+            <button class="preset-btn" data-r="1" data-p="day">1%/d</button>
+            <button class="preset-btn active" data-r="3" data-p="month">3%/mo</button>
+            <button class="preset-btn" data-r="5" data-p="month">5%/mo</button>
+            <button class="preset-btn" data-r="10" data-p="month">10%/mo</button>
+            <button class="preset-btn" data-r="20" data-p="year">20%/yr</button>
+          </div>
+        </div>
+        <div class="fg">
+          <label class="lbl">Monthly Withdrawal <span class="lbl-opt">(opt.)</span></label>
+          <div class="iwrap"><span class="ipfx">$</span><input type="number" id="cp-withdrawal" class="pfx" value="0" min="0" step="100" placeholder="0"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px;">Projection</div>
+        <div class="frow">
+          <div class="fg">
+            <label class="lbl">Number of Periods</label>
+            <div class="iwrap"><input type="number" id="cp-n" class="sfx" value="24" min="1" max="1200" step="1"><span class="isfx" id="cp-n-unit">mo</span></div>
+          </div>
+          <div class="fg">
+            <label class="lbl">Target Balance <span class="lbl-opt">(opt.)</span></label>
+            <div class="iwrap"><span class="ipfx">$</span><input type="number" id="cp-target" class="pfx" placeholder="e.g. 100000" step="100"></div>
+          </div>
+        </div>
+
+        <!-- Drawdown Simulation -->
+        <div class="fg" style="margin-top:4px;">
+          <div class="toggle-wrap" style="margin-bottom:10px;">
+            <label class="toggle"><input type="checkbox" id="sim-toggle" onchange="updateCompound()"><span class="toggle-slider"></span></label>
+            <span class="toggle-lbl" style="font-size:11px;font-weight:600;color:var(--sc);">Simulate bad periods</span>
+          </div>
+          <div id="sim-fields" style="display:none;">
+            <div class="frow">
+              <div class="fg">
+                <label class="lbl">Every N periods</label>
+                <input type="number" id="sim-freq" value="12" min="1" step="1">
+              </div>
+              <div class="fg">
+                <label class="lbl">Apply drawdown</label>
+                <div class="iwrap"><input type="number" id="sim-dd" class="sfx" value="20" min="1" max="99" step="1"><span class="isfx">%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Break-Even -->
+      <div class="card">
+        <div class="card-hdr" style="margin-bottom:0;">
+          <span class="card-title">Break-Even After Costs</span>
+          <button class="compare-toggle-btn" id="be-toggle" onclick="toggleBreakEven()">Show</button>
+        </div>
+        <div id="be-fields" style="display:none;padding-top:14px;">
+          <div class="frow">
+            <div class="fg">
+              <label class="lbl">Spread (pips)</label>
+              <input type="number" id="be-spread" value="1.5" min="0" step="0.1">
+            </div>
+            <div class="fg">
+              <label class="lbl">Commission/lot</label>
+              <div class="iwrap"><span class="ipfx">$</span><input type="number" id="be-comm" class="pfx" value="7" min="0" step="0.5"></div>
+            </div>
+          </div>
+          <div class="frow">
+            <div class="fg">
+              <label class="lbl">Lots per Trade</label>
+              <input type="number" id="be-lots" value="0.1" min="0.01" step="0.01">
+            </div>
+            <div class="fg">
+              <label class="lbl">Trades / Period</label>
+              <input type="number" id="be-trades" value="20" min="1" step="1">
+            </div>
+          </div>
+          <div class="be-result vis" id="be-result">
+            <div class="be-row"><span class="be-key">Spread cost/trade</span><span class="be-val" id="be-spread-cost">—</span></div>
+            <div class="be-row"><span class="be-key">Commission/trade (RT)</span><span class="be-val" id="be-comm-cost">—</span></div>
+            <div class="be-row"><span class="be-key">Total cost / period</span><span class="be-val" id="be-total-cost">—</span></div>
+            <div class="be-row"><span class="be-key" style="color:#fbbf24;font-weight:700;">Break-even return %</span><span class="be-val" id="be-pct">—</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Compare Scenario -->
+      <div class="card">
+        <div class="card-hdr" style="margin-bottom:0;">
+          <span class="card-title">Compare Scenario</span>
+          <button class="compare-toggle-btn" id="compare-btn" onclick="toggleCompare()">+ Add</button>
+        </div>
+        <div class="compare-section" id="compare-section">
+          <div class="frow">
+            <div class="fg">
+              <label class="lbl">Return / Period</label>
+              <div class="iwrap"><input type="number" id="cp-ret2" class="sfx" value="5" min="0.01" step="0.1"><span class="isfx">%</span></div>
+            </div>
+            <div class="fg">
+              <label class="lbl">Label</label>
+              <input type="text" id="cp-label2" value="Scenario B" style="background:var(--bgi);border:1px solid var(--br);border-radius:10px;color:var(--tx);font-family:'Inter',sans-serif;font-size:14px;padding:9px 13px;outline:none;width:100%;transition:all .2s;" placeholder="Scenario B">
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-right">
+      <div class="final-grid single" id="final-grid">
+        <div class="fb-card" id="fb-card1">
+          <div class="fb-lbl" id="fb-lbl1">Balance after 24 months</div>
+          <div class="fb-val" id="fb-val1">—</div>
+          <div class="fb-sub" id="fb-sub1">—</div>
+        </div>
+        <div class="fb-card s2" id="fb-card2" style="display:none;">
+          <div class="fb-lbl" id="fb-lbl2">Scenario B</div>
+          <div class="fb-val" id="fb-val2">—</div>
+          <div class="fb-sub" id="fb-sub2">—</div>
+        </div>
+      </div>
+
+      <div class="rule72" id="rule72-row">
+        <span class="rule72-lbl">⚡ Rule of 72 — Doubles every</span>
+        <span class="rule72-val" id="rule72-val">24 mo</span>
+      </div>
+
+      <div class="milestone-grid">
+        <div class="mcard mcard-2x"><div class="mc-lbl">2× · $<span id="m2x-t">20k</span></div><div class="mc-val" id="m2x-v">—</div><div class="mc-sub" id="m2x-s">—</div></div>
+        <div class="mcard mcard-5x"><div class="mc-lbl">5× · $<span id="m5x-t">50k</span></div><div class="mc-val" id="m5x-v">—</div><div class="mc-sub" id="m5x-s">—</div></div>
+        <div class="mcard mcard-10x"><div class="mc-lbl">10× · $<span id="m10x-t">100k</span></div><div class="mc-val" id="m10x-v">—</div><div class="mc-sub" id="m10x-s">—</div></div>
+        <div class="mcard mcard-tgt" id="mcard-tgt" style="display:none;"><div class="mc-lbl">Target · $<span id="mtgt-t">—</span></div><div class="mc-val" id="mtgt-v">—</div><div class="mc-sub" id="mtgt-s">—</div></div>
+      </div>
+
+      <div class="chart-wrap">
+        <div class="chart-hdr">
+          <span class="chart-title-lbl">Growth Curve</span>
+          <div class="chart-legend" id="chart-legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#a78bfa;"></div><span id="legend1">Scenario A</span></div>
+            <div class="legend-item" id="legend-item2" style="display:none;"><div class="legend-dot" style="background:#22c55e;"></div><span id="legend2">Scenario B</span></div>
+          </div>
+        </div>
+        <div id="chart-empty" class="chart-empty">Enter values to see growth</div>
+        <canvas id="cp-chart" style="display:none;"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══ HELPERS ════════════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const PSHORT = {day:'d',week:'wk',month:'mo',year:'yr'};
+const PLONG  = {day:'day',week:'week',month:'month',year:'year'};
+let compareEnabled = false;
+let beEnabled      = false;
+let animId         = null;
+
+function fmt(n) {
+  if(n>=1e9)return(n/1e9).toFixed(2)+'B';
+  if(n>=1e6)return(n/1e6).toFixed(2)+'M';
+  if(n>=1e3)return(n/1e3).toFixed(1)+'k';
+  return n.toFixed(0);
+}
+function fmtP(n,period) {
+  const p=PLONG[period]||'month';
+  return n===1?`1 ${p}`:`${n} ${PSHORT[period]||'mo'}`;
+}
+function nv(id,def=0){return parseFloat($(id)?.value)||def;}
+
+// ═══ TAB ════════════════════════════════════════════════════════
+function switchTab(t) {
+  document.querySelectorAll('.tab').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(el=>el.classList.remove('active'));
+  $('tab-'+t).classList.add('active');
+  $('page-'+t).classList.add('active');
+  if(t==='cp'){updateCompound();triggerAnim();}
+}
+
+// ═══ DRAWDOWN ════════════════════════════════════════════════════
+const DD_ROWS=[5,10,15,20,25,30,35,40,50,60,70,80,90];
+function calcRec(dd){return(1/(1-dd/100)-1)*100;}
+function severity(dd){if(dd<=15)return['Low','sev-low'];if(dd<=30)return['Medium','sev-med'];if(dd<=60)return['High','sev-high'];return['Critical','sev-crit'];}
+
+function buildDDTable(){
+  $('dd-table-body').innerHTML=DD_ROWS.map(dd=>{
+    const rec=calcRec(dd);const[sl,sc]=severity(dd);
+    return`<tr data-dd="${dd}"><td class="td-loss">−${dd}%</td><td class="td-rec">+${rec.toFixed(1)}%</td><td><span class="td-sev ${sc}">${sl}</span></td></tr>`;
+  }).join('');
+}
+
+function updateDD(){
+  const dd=Math.min(99.9,Math.max(0.1,nv('dd-input',20)));
+  const bal=nv('dd-balance',0);
+  const ret=nv('dd-ret',3);
+  const period=$('dd-period').value;
+  const rec=calcRec(dd);
+
+  $('dd-loss-display').textContent=`−${dd.toFixed(1)}%`;
+  $('dd-rec-display').textContent=`+${rec.toFixed(1)}%`;
+
+  // Dollar amounts
+  if(bal>0){
+    const lost=bal*(dd/100),newBal=bal-lost,recAmt=newBal*(rec/100);
+    $('dd-sub').textContent=`$${fmt(bal)} → $${fmt(newBal)} after loss · Need +$${fmt(recAmt)} to recover`;
+  }else{
+    $('dd-sub').textContent='Enter balance above to see dollar amounts';
+  }
+
+  // Recovery time
+  if(ret>0){
+    const n=Math.log(1/(1-dd/100))/Math.log(1+ret/100);
+    const np=Math.ceil(n);
+    $('rec-time-val').textContent=fmtP(np,period);
+  }else{
+    $('rec-time-val').textContent='—';
+  }
+
+  // Bars
+  const maxV=Math.max(dd,rec,100);
+  $('bar-loss').style.width=(dd/maxV*100)+'%';
+  $('bar-rec').style.width=(rec/maxV*100)+'%';
+  $('bar-loss-pct').textContent=`−${dd.toFixed(1)}%`;
+  $('bar-rec-pct').textContent=`+${rec.toFixed(1)}%`;
+
+  // Table highlight
+  document.querySelectorAll('#dd-table-body tr').forEach(tr=>{
+    tr.classList.toggle('hl',Math.abs(parseFloat(tr.dataset.dd)-dd)<3);
+  });
+
+  // Sync slider
+  $('dd-slider').value=Math.round(dd);
+}
+
+function updateStreak(){
+  const risk=nv('streak-risk',2);
+  const n=Math.max(1,Math.round(nv('streak-n',5)));
+  const bal=nv('streak-bal',0);
+
+  const surviving=Math.pow(1-risk/100,n);
+  const dd=(1-surviving)*100;
+  const rec=calcRec(dd);
+  const remBal=bal>0?bal*surviving:null;
+
+  // Wins to recover: need to gain rec% starting from (100-dd)%, risking risk% per win
+  // Wins needed ≈ log(1/(1-dd/100)) / log(1+risk/100)
+  const winsNeeded=Math.ceil(Math.log(1/(1-dd/100))/Math.log(1+risk/100));
+
+  $('streak-dd').textContent=`−${dd.toFixed(1)}%`;
+  $('streak-rem').textContent=remBal!==null?`$${fmt(remBal)}`:`${(surviving*100).toFixed(1)}%`;
+  $('streak-rec').textContent=`+${rec.toFixed(1)}%`;
+  $('streak-wins').textContent=winsNeeded+'';
+}
+
+// Drawdown events
+$('dd-slider').addEventListener('input',e=>{$('dd-input').value=e.target.value;updateDD();});
+$('dd-input').addEventListener('input',e=>{$('dd-slider').value=Math.min(99,Math.max(1,parseFloat(e.target.value)||20));updateDD();});
+['dd-balance','dd-ret','dd-period'].forEach(id=>$(id)?.addEventListener('change'===id?'change':'input',updateDD));
+$('dd-period').addEventListener('change',updateDD);
+['streak-risk','streak-n','streak-bal'].forEach(id=>$(id)?.addEventListener('input',updateStreak));
+
+// ═══ COMPOUND ════════════════════════════════════════════════════
+function buildData(balance,ret,n,withdrawal,simDD,simFreq){
+  const step=Math.max(1,Math.ceil(n/300));
+  const data=[];
+  let bal=balance;
+  for(let i=0;i<=n;i++){
+    if(i>0){
+      bal=bal*(1+ret/100)-withdrawal;
+      if(simDD>0&&simFreq>0&&i%simFreq===0) bal=bal*(1-simDD/100);
+      if(bal<0)bal=0;
+    }
+    if(i%step===0||i===n) data.push({x:i,y:bal});
+  }
+  return data;
+}
+
+function periodsTo(balance,ret,target,withdrawal,simDD,simFreq){
+  if(target<=balance)return 0;
+  let bal=balance;
+  for(let i=1;i<=10000;i++){
+    bal=bal*(1+ret/100)-withdrawal;
+    if(simDD>0&&simFreq>0&&i%simFreq===0) bal=bal*(1-simDD/100);
+    if(bal<=0)return null;
+    if(bal>=target)return i;
+  }
+  return null;
+}
+
+function updateCompound(){
+  const bal    =nv('cp-bal',10000);
+  const ret    =nv('cp-ret',3);
+  const period =$('cp-period').value;
+  const n      =Math.min(Math.max(1,Math.round(nv('cp-n',24))),1200);
+  const target =nv('cp-target',0);
+  const wdraw  =nv('cp-withdrawal',0);
+  const simOn  =$('sim-toggle').checked;
+  const simFreq=simOn?Math.max(1,Math.round(nv('sim-freq',12))):0;
+  const simDD  =simOn?nv('sim-dd',20):0;
+  const pShort =PSHORT[period]||'mo';
+
+  $('cp-n-unit').textContent=pShort;
+  $('sim-fields').style.display=simOn?'block':'none';
+
+  // Final balance scenario 1
+  const data1=buildData(bal,ret,n,wdraw,simDD,simFreq);
+  const finalBal1=data1[data1.length-1].y;
+  const gain1=(finalBal1-bal)/bal*100;
+  $('fb-lbl1').textContent=`Balance after ${fmtP(n,period)}`;
+  $('fb-val1').textContent='$'+fmt(finalBal1);
+  $('fb-sub1').textContent=`$${fmt(bal)} → $${fmt(finalBal1)} · +${gain1.toFixed(1)}% total`+(wdraw>0?` · −$${fmt(wdraw*n)} withdrawn`:'');
+  $('legend1').textContent=`${ret}%/${pShort}${wdraw>0?` −$${fmt(wdraw)}/mo`:''}${simOn?` +sim`:''}`;
+
+  // Rule of 72
+  const dbl=Math.round(72/ret);
+  $('rule72-val').textContent=fmtP(dbl,period);
+
+  // Milestones
+  function setM(prefix,mult){
+    const tgt=bal*mult;
+    const p=periodsTo(bal,ret,tgt,wdraw,simDD,simFreq);
+    $(prefix+'-t').textContent=fmt(tgt);
+    $(prefix+'-v').textContent=p!==null?fmtP(p,period):'> range';
+    $(prefix+'-s').textContent=p!==null?`≈ $${fmt(tgt)}`:'Not reached';
+  }
+  setM('m2x',2); setM('m5x',5); setM('m10x',10);
+  if(target>bal){
+    const tp=periodsTo(bal,ret,target,wdraw,simDD,simFreq);
+    $('mtgt-t').textContent=fmt(target);
+    $('mtgt-v').textContent=tp!==null?fmtP(tp,period):'> range';
+    $('mtgt-s').textContent=tp!==null?`to reach $${fmt(target)}`:'Not reached in range';
+    $('mcard-tgt').style.display='';
+  }else{
+    $('mcard-tgt').style.display='none';
+  }
+
+  // Scenario 2
+  let data2=null;
+  if(compareEnabled){
+    const ret2=nv('cp-ret2',5);
+    const label2=$('cp-label2').value||'Scenario B';
+    data2=buildData(bal,ret2,n,wdraw,simDD,simFreq);
+    const finalBal2=data2[data2.length-1].y;
+    const gain2=(finalBal2-bal)/bal*100;
+    $('fb-val2').textContent='$'+fmt(finalBal2);
+    $('fb-lbl2').textContent=label2;
+    $('fb-sub2').textContent=`+${gain2.toFixed(1)}% total`;
+    $('legend2').textContent=`${ret2}%/${pShort}`;
+    $('legend-item2').style.display='flex';
+  }else{
+    $('legend-item2').style.display='none';
+  }
+
+  $('fb-card2').style.display=compareEnabled?'':'none';
+  $('final-grid').className='final-grid '+(compareEnabled?'dual':'single');
+
+  // Break-even
+  updateBreakEven(bal,n);
+
+  // Draw chart with animation
+  pendingData1=data1; pendingData2=data2;
+  pendingN=n; pendingPeriod=period; pendingBal=bal; pendingTarget=target;
+  triggerAnim();
+}
+
+// ═══ CHART ═══════════════════════════════════════════════════════
+let pendingData1=null,pendingData2=null,pendingN=24,pendingPeriod='month',pendingBal=10000,pendingTarget=0;
+let animProgress=0;
+
+function triggerAnim(){
+  if(animId)cancelAnimationFrame(animId);
+  animProgress=0;
+  animStep();
+}
+
+function animStep(){
+  animProgress=Math.min(1,animProgress+0.04);
+  drawChart(animProgress);
+  if(animProgress<1) animId=requestAnimationFrame(animStep);
+}
+
+function drawChart(progress=1){
+  const canvas=$('cp-chart'),empty=$('chart-empty');
+  if(!pendingData1||pendingData1.length<2){canvas.style.display='none';empty.style.display='block';return;}
+  canvas.style.display='block';empty.style.display='none';
+
+  const dpr=window.devicePixelRatio||1;
+  const W=canvas.parentElement.clientWidth-32;
+  const H=Math.max(160,Math.min(220,W*0.45));
+  canvas.width=W*dpr; canvas.height=H*dpr;
+  canvas.style.width=W+'px'; canvas.style.height=H+'px';
+  const ctx=canvas.getContext('2d');
+  ctx.scale(dpr,dpr); ctx.clearRect(0,0,W,H);
+
+  const data1=pendingData1,data2=pendingData2;
+  const n=pendingN,period=pendingPeriod;
+  const pShort=PSHORT[period]||'mo';
+  const target=pendingTarget;
+
+  // Value range
+  const allY=[...data1.map(d=>d.y),...(data2?data2.map(d=>d.y):[])];
+  const maxY=Math.max(...allY)*1.05;
+  const minY=pendingBal*0.95;
+  const yRange=maxY-minY||1;
+
+  const PAD={top:10,right:14,bottom:34,left:58};
+  const cW=W-PAD.left-PAD.right;
+  const cH=H-PAD.top-PAD.bottom;
+
+  const toX=i=>PAD.left+(i/n)*cW;
+  const toY=v=>PAD.top+cH-((v-minY)/yRange)*cH;
+
+  // Grid
+  ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){
+    const v=minY+(yRange/4)*i; const y=toY(v);
+    ctx.strokeStyle='rgba(255,255,255,0.04)';
+    ctx.beginPath();ctx.moveTo(PAD.left,y);ctx.lineTo(PAD.left+cW,y);ctx.stroke();
+    ctx.fillStyle='rgba(100,116,139,0.7)';ctx.font=`500 9px Inter,sans-serif`;ctx.textAlign='right';
+    ctx.fillText('$'+fmt(v),PAD.left-4,y+3);
+  }
+  const xSteps=Math.min(6,n);
+  for(let i=0;i<=xSteps;i++){
+    const x=Math.round(n/xSteps*i); const px=toX(x);
+    ctx.strokeStyle='rgba(255,255,255,0.03)';
+    ctx.beginPath();ctx.moveTo(px,PAD.top);ctx.lineTo(px,PAD.top+cH);ctx.stroke();
+    ctx.fillStyle='rgba(100,116,139,0.6)';ctx.textAlign='center';ctx.font=`500 9px Inter,sans-serif`;
+    ctx.fillText(x+pShort,px,H-6);
+  }
+
+  // Target line
+  if(target>minY&&target<maxY){
+    const ty=toY(target);
+    ctx.strokeStyle='rgba(96,165,250,0.35)'; ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(PAD.left,ty);ctx.lineTo(PAD.left+cW,ty);ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle='rgba(96,165,250,0.7)'; ctx.textAlign='right'; ctx.font='500 9px Inter,sans-serif';
+    ctx.fillText('Target',PAD.left+cW,ty-4);
+  }
+
+  function drawLine(data,color,gradColor,progress){
+    const pts=data.filter(d=>d.x<=n*progress);
+    if(pts.length<2)return;
+
+    // Gradient fill
+    const grad=ctx.createLinearGradient(0,PAD.top,0,PAD.top+cH);
+    grad.addColorStop(0,gradColor.replace('X','0.3'));
+    grad.addColorStop(1,gradColor.replace('X','0.01'));
+    ctx.beginPath();
+    ctx.moveTo(toX(pts[0].x),toY(pts[0].y));
+    pts.forEach(d=>ctx.lineTo(toX(d.x),toY(d.y)));
+    ctx.lineTo(toX(pts[pts.length-1].x),toY(minY));
+    ctx.lineTo(toX(pts[0].x),toY(minY));
+    ctx.closePath(); ctx.fillStyle=grad; ctx.fill();
+
+    // Line
+    ctx.beginPath();
+    ctx.moveTo(toX(pts[0].x),toY(pts[0].y));
+    pts.forEach(d=>ctx.lineTo(toX(d.x),toY(d.y)));
+    ctx.strokeStyle=color; ctx.lineWidth=2.5; ctx.lineJoin='round'; ctx.setLineDash([]); ctx.stroke();
+
+    // End dot
+    const last=pts[pts.length-1];
+    ctx.beginPath();ctx.arc(toX(last.x),toY(last.y),4.5,0,Math.PI*2);
+    ctx.fillStyle=color;ctx.fill();
+    ctx.strokeStyle='rgba(0,0,0,0.5)';ctx.lineWidth=1.5;ctx.stroke();
+  }
+
+  // Milestone dots
+  function drawMilestoneDots(data,ret,progress){
+    const marks=[[2,'#22c55e','2×'],[5,'#f59e0b','5×'],[10,'#a78bfa','10×']];
+    if(target>pendingBal)marks.push([target/pendingBal,'#60a5fa','T']);
+    marks.forEach(([mult,col,lbl])=>{
+      const tgt=pendingBal*mult;
+      const pt=data.find(d=>d.y>=tgt&&d.x/n<=progress);
+      if(!pt)return;
+      const px=toX(pt.x),py=toY(pt.y);
+      ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);
+      ctx.fillStyle=col;ctx.fill();
+      ctx.strokeStyle='rgba(0,0,0,0.6)';ctx.lineWidth=1.5;ctx.stroke();
+      ctx.fillStyle=col;ctx.font='bold 9px Inter,sans-serif';ctx.textAlign='center';
+      ctx.fillText(lbl,px,py-9);
+    });
+  }
+
+  if(data2) drawLine(data2,'#22c55e','rgba(34,197,94,X)',progress);
+  drawLine(data1,'#a78bfa','rgba(139,92,246,X)',progress);
+  drawMilestoneDots(data1,nv('cp-ret',3),progress);
+}
+
+// ═══ BREAK-EVEN ══════════════════════════════════════════════════
+function updateBreakEven(balance,n){
+  if(!beEnabled)return;
+  const spread=nv('be-spread',1.5);
+  const comm=nv('be-comm',7);
+  const lots=nv('be-lots',0.1);
+  const trades=nv('be-trades',20);
+
+  const spreadCost=spread*lots*10; // spread in pips * lots * $10/pip (approx)
+  const commCost=comm*lots*2;      // round-trip commission
+  const totalPerPeriod=(spreadCost+commCost)*trades;
+  const bePct=balance>0?(totalPerPeriod/balance*100):0;
+
+  $('be-spread-cost').textContent='$'+spreadCost.toFixed(2);
+  $('be-comm-cost').textContent='$'+commCost.toFixed(2);
+  $('be-total-cost').textContent='$'+totalPerPeriod.toFixed(2)+'/period';
+  $('be-pct').textContent=bePct.toFixed(3)+'%';
+}
+
+function toggleBreakEven(){
+  beEnabled=!beEnabled;
+  $('be-fields').style.display=beEnabled?'block':'none';
+  $('be-toggle').textContent=beEnabled?'Hide':'Show';
+  $('be-toggle').classList.toggle('active',beEnabled);
+  if(beEnabled)updateCompound();
+}
+
+// ═══ COMPARE ════════════════════════════════════════════════════
+function toggleCompare(){
+  compareEnabled=!compareEnabled;
+  $('compare-section').classList.toggle('open',compareEnabled);
+  $('compare-btn').textContent=compareEnabled?'Remove':'+ Add';
+  $('compare-btn').classList.toggle('active',compareEnabled);
+  updateCompound();
+}
+
+// ═══ SHARE LINK ═════════════════════════════════════════════════
+$('btn-share').addEventListener('click',()=>{
+  const state={
+    dd:$('dd-input').value, ddBal:$('dd-balance').value,
+    ddRet:$('dd-ret').value, ddPeriod:$('dd-period').value,
+    sRisk:$('streak-risk').value, sN:$('streak-n').value,
+    cpBal:$('cp-bal').value, cpRet:$('cp-ret').value,
+    cpPeriod:$('cp-period').value, cpN:$('cp-n').value,
+    cpTarget:$('cp-target').value, cpWdraw:$('cp-withdrawal').value,
+    simOn:$('sim-toggle').checked, simFreq:$('sim-freq').value, simDD:$('sim-dd').value,
+    cpRet2:$('cp-ret2').value, compare:compareEnabled,
+  };
+  const url=location.href.split('#')[0]+'#'+btoa(JSON.stringify(state));
+  navigator.clipboard?.writeText(url).then(()=>{
+    const btn=$('btn-share'), o=btn.textContent;
+    btn.textContent='✓ Copied!';
+    setTimeout(()=>btn.textContent=o,2000);
+  });
+});
+
+function loadFromHash(){
+  try{
+    if(!location.hash)return;
+    const state=JSON.parse(atob(location.hash.slice(1)));
+    if(state.dd)    $('dd-input').value=state.dd,$('dd-slider').value=Math.round(state.dd);
+    if(state.ddBal) $('dd-balance').value=state.ddBal;
+    if(state.ddRet) $('dd-ret').value=state.ddRet;
+    if(state.ddPeriod) $('dd-period').value=state.ddPeriod;
+    if(state.sRisk) $('streak-risk').value=state.sRisk;
+    if(state.sN)    $('streak-n').value=state.sN;
+    if(state.cpBal) $('cp-bal').value=state.cpBal;
+    if(state.cpRet) $('cp-ret').value=state.cpRet;
+    if(state.cpPeriod) $('cp-period').value=state.cpPeriod;
+    if(state.cpN)   $('cp-n').value=state.cpN;
+    if(state.cpTarget) $('cp-target').value=state.cpTarget;
+    if(state.cpWdraw)  $('cp-withdrawal').value=state.cpWdraw;
+    if(state.simOn) $('sim-toggle').checked=state.simOn;
+    if(state.simFreq) $('sim-freq').value=state.simFreq;
+    if(state.simDD) $('sim-dd').value=state.simDD;
+    if(state.cpRet2) $('cp-ret2').value=state.cpRet2;
+    if(state.compare){ compareEnabled=true; $('compare-section').classList.add('open'); $('compare-btn').textContent='Remove'; $('compare-btn').classList.add('active'); }
+  }catch(e){}
+}
+
+// ═══ PRESET BUTTONS ═════════════════════════════════════════════
+document.querySelectorAll('.preset-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.preset-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    $('cp-ret').value=btn.dataset.r;
+    $('cp-period').value=btn.dataset.p;
+    updateCompound();
+  });
+});
+
+// ═══ INPUT EVENTS ════════════════════════════════════════════════
+['cp-bal','cp-ret','cp-n','cp-target','cp-withdrawal','cp-ret2','be-spread','be-comm','be-lots','be-trades','sim-freq','sim-dd'].forEach(id=>{
+  $(id)?.addEventListener('input',updateCompound);
+});
+$('cp-period').addEventListener('change',updateCompound);
+$('cp-label2')?.addEventListener('input',updateCompound);
+
+window.addEventListener('resize',()=>{
+  if($('page-cp').classList.contains('active')) drawChart(1);
+});
+
+// ═══ INIT ════════════════════════════════════════════════════════
+loadFromHash();
+buildDDTable();
+updateDD();
+updateStreak();
+updateCompound();
+</script>
+</body>
+</html>
