@@ -1,17 +1,11 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
-// TJTradeHub nav: py-5(20+20) + logo(36) + border(1) = 77px
-const NAV_H = 77;
+const NAV_H = 77; // TJTradeHub header (py-5 + logo + border)
+const NEWS_STEP = 3; // index of the tools/news step
 
-// Charts app uses position:sticky (all in normal flow):
-// ticker-strip: top=0,  h=70
-// .header:      top=70, h=56
-// .symbol-bar:  top=126, padding=10+10, tabs(26)+gap(10)+chips(26) = 82+1border = 83
-// .session-bar: top=209, padding=8+8, content~30 = 46
-// .chart-grid:  top=255
-
-interface Region { top: number; height: number }
+// rightFrom: px from right edge → partial-width highlight
+interface Region { top: number; height: number; rightFrom?: number }
 interface Step { region: Region | null; title: string; description: string; }
 
 const STEPS: Step[] = [
@@ -27,8 +21,15 @@ const STEPS: Step[] = [
   },
   {
     region: { top: NAV_H + 70, height: 56 },
-    title: "Timeframes, Layout & Tools",
-    description: "Switch between 1m and Weekly. Set 1, 2 or 3 chart columns. Change timezone, save watchlist presets, and open Calendar, Heatmap, News or Screener.",
+    title: "Timeframes, Layout & Settings",
+    description: "Switch between 1m and Weekly. Set 1, 2 or 3 chart columns. Change timezone, adjust chart height and save watchlist presets.",
+  },
+  {
+    // tools-bar is the last ~260px on the right side of the header
+    // auto-opens news panel (height 420px) → region covers header + panel
+    region: { top: NAV_H + 70, height: 56 + 420, rightFrom: 260 },
+    title: "Calendar, Heatmap, News & Screener",
+    description: "Click 📰 for the live News Feed, 📅 for the Economic Calendar, 🔥 for the Market Heatmap, or 🔍 for the Screener — all powered by TradingView.",
   },
   {
     region: { top: NAV_H + 126, height: 83 },
@@ -47,17 +48,44 @@ const STEPS: Step[] = [
   },
 ];
 
+const DIM = "rgba(0,0,0,0.72)";
+
+function getIframe() {
+  return document.querySelector("iframe") as HTMLIFrameElement | null;
+}
+
+function toggleNewsPanel(open: boolean) {
+  try {
+    const doc = getIframe()?.contentWindow?.document;
+    if (!doc) return;
+    const panel = doc.getElementById("news-panel");
+    if (!panel) return;
+    const isOpen = panel.style.display !== "none";
+    if (open && !isOpen) doc.getElementById("btn-news-toggle")?.click();
+    if (!open && isOpen) doc.getElementById("btn-news-toggle")?.click();
+  } catch {}
+}
+
 export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyCompleted: boolean }) {
   const [active, setActive] = useState(false);
   const [step, setStep] = useState(0);
   const [dontShow, setDontShow] = useState(false);
 
-  const storageKey = "tour_shown_charts";
-
   useEffect(() => {
     const t = setTimeout(() => setActive(true), 700);
     return () => clearTimeout(t);
   }, []);
+
+  // Auto open/close news panel
+  useEffect(() => {
+    if (!active) return;
+    if (step === NEWS_STEP) {
+      // slight delay so iframe has time to be ready
+      setTimeout(() => toggleNewsPanel(true), 300);
+    } else {
+      toggleNewsPanel(false);
+    }
+  }, [active, step]);
 
   const saveDismiss = useCallback(async () => {
     try {
@@ -70,6 +98,7 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
   }, []);
 
   const close = useCallback(async (save: boolean) => {
+    toggleNewsPanel(false);
     if (save) await saveDismiss();
     setActive(false);
     setStep(0);
@@ -88,33 +117,49 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
   const current = STEPS[step];
   const region = current.region;
   const isLast = step === STEPS.length - 1;
+  const winW = window.innerWidth;
+  const winH = window.innerHeight;
 
-  // Tooltip vertical position
+  const leftEdge = region?.rightFrom ? Math.max(0, winW - region.rightFrom) : 0;
+
   const tooltipTop = region
-    ? (region.top + region.height + 14 > window.innerHeight - 260
+    ? (region.top + region.height + 14 > winH - 260
         ? region.top - 260 - 14
         : region.top + region.height + 14)
     : undefined;
 
+  // For right-aligned regions, shift tooltip left so it stays visible
+  const tooltipLeft = region?.rightFrom
+    ? Math.min(leftEdge - 10, winW - 380)
+    : undefined;
+
   return (
     <>
-      {/* Overlay panels – leave the highlighted region visible */}
       {region ? (
         <>
           {/* Top dim */}
           <div onClick={() => close(dontShow)} style={{
-            position: "fixed", top: 0, left: 0, right: 0,
-            height: region.top,
-            backgroundColor: "rgba(0,0,0,0.72)", zIndex: 10000,
+            position: "fixed", top: 0, left: 0, right: 0, height: region.top,
+            backgroundColor: DIM, zIndex: 10000,
           }} />
           {/* Bottom dim */}
           <div onClick={() => close(dontShow)} style={{
             position: "fixed", top: region.top + region.height, left: 0, right: 0, bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.72)", zIndex: 10000,
+            backgroundColor: DIM, zIndex: 10000,
           }} />
-          {/* Purple border on highlighted region */}
+          {/* Left dim (for partial-width) */}
+          {region.rightFrom && (
+            <div onClick={() => close(dontShow)} style={{
+              position: "fixed", top: region.top, left: 0, width: leftEdge, height: region.height,
+              backgroundColor: DIM, zIndex: 10000,
+            }} />
+          )}
+          {/* Highlight border */}
           <div style={{
-            position: "fixed", top: region.top, left: 0, right: 0,
+            position: "fixed",
+            top: region.top,
+            left: region.rightFrom ? leftEdge : 0,
+            right: 0,
             height: region.height,
             border: "2px solid #8B5CF6",
             boxShadow: "0 0 20px rgba(139,92,246,0.4), 0 0 40px rgba(139,92,246,0.15), inset 0 0 20px rgba(139,92,246,0.05)",
@@ -123,8 +168,7 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
         </>
       ) : (
         <div onClick={() => close(dontShow)} style={{
-          position: "fixed", inset: 0,
-          backgroundColor: "rgba(0,0,0,0.72)", zIndex: 10000,
+          position: "fixed", inset: 0, backgroundColor: DIM, zIndex: 10000,
         }} />
       )}
 
@@ -136,7 +180,12 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
           zIndex: 10002,
           width: "360px",
           ...(region
-            ? { top: tooltipTop, left: "50%", transform: "translateX(-50%)" }
+            ? {
+                top: tooltipTop,
+                ...(tooltipLeft !== undefined
+                  ? { left: Math.max(12, tooltipLeft), transform: "none" }
+                  : { left: "50%", transform: "translateX(-50%)" }),
+              }
             : { top: "50%", left: "50%", transform: "translate(-50%, -50%)" }),
           backgroundColor: "#0f1117",
           border: "1px solid #2d2f3e",
@@ -145,18 +194,15 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
           overflow: "hidden",
         }}
       >
-        {/* Purple top bar */}
         <div style={{ height: "3px", background: "linear-gradient(90deg,#7C3AED,#A78BFA,#7C3AED)" }} />
 
         <div style={{ padding: "20px 22px 22px" }}>
-          {/* Header row */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ display: "flex", gap: "5px" }}>
                 {STEPS.map((_, i) => (
                   <div key={i} style={{
-                    width: i === step ? "18px" : "6px",
-                    height: "6px", borderRadius: "3px",
+                    width: i === step ? "18px" : "6px", height: "6px", borderRadius: "3px",
                     backgroundColor: i <= step ? "#8B5CF6" : "#1F2937",
                     transition: "width 0.25s, background-color 0.25s",
                   }} />
@@ -166,15 +212,12 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
                 {step + 1} / {STEPS.length}
               </span>
             </div>
-            <button
-              onClick={() => close(dontShow)}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                width: "26px", height: "26px", borderRadius: "8px",
-                background: "rgba(255,255,255,0.05)", border: "1px solid #2d2f3e",
-                color: "#6B7280", cursor: "pointer", fontSize: "14px",
-              }}
-            >✕</button>
+            <button onClick={() => close(dontShow)} style={{
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "26px", height: "26px", borderRadius: "8px",
+              background: "rgba(255,255,255,0.05)", border: "1px solid #2d2f3e",
+              color: "#6B7280", cursor: "pointer", fontSize: "14px",
+            }}>✕</button>
           </div>
 
           <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", marginBottom: "7px", lineHeight: 1.3 }}>
@@ -188,16 +231,13 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
 
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
             <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" }}>
-              <div
-                onClick={() => setDontShow(v => !v)}
-                style={{
-                  width: "16px", height: "16px", borderRadius: "4px",
-                  border: `1.5px solid ${dontShow ? "#8B5CF6" : "#374151"}`,
-                  backgroundColor: dontShow ? "#8B5CF6" : "transparent",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
-                }}
-              >
+              <div onClick={() => setDontShow(v => !v)} style={{
+                width: "16px", height: "16px", borderRadius: "4px",
+                border: `1.5px solid ${dontShow ? "#8B5CF6" : "#374151"}`,
+                backgroundColor: dontShow ? "#8B5CF6" : "transparent",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
+              }}>
                 {dontShow && (
                   <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
                     <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
