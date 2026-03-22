@@ -155,7 +155,7 @@ export default async function DashboardPage() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <HelpButton />
-            <UserMenu name={name} email={session.user.email} />
+            <UserMenu name={name} email={session.user.email} subscriptionStatus={subscriptionStatus} />
           </div>
         </div>
       </header>

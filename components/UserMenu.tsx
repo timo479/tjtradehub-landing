@@ -3,12 +3,28 @@
 import { useState, useRef, useEffect } from "react";
 import { signOut } from "next-auth/react";
 
-export default function UserMenu({ name, email }: { name?: string | null; email?: string | null }) {
+export default function UserMenu({ name, email, subscriptionStatus }: { name?: string | null; email?: string | null; subscriptionStatus?: string }) {
   const [open, setOpen] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmText, setConfirmText] = useState("");
   const [deleting, setDeleting] = useState(false);
+  const [portalLoading, setPortalLoading] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  const isSubscribed = subscriptionStatus === "active";
+
+  async function handleManageBilling() {
+    setPortalLoading(true);
+    try {
+      const res = await fetch("/api/stripe/portal", { method: "POST" });
+      const data = await res.json();
+      if (data.url) window.location.href = data.url;
+    } catch {
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setPortalLoading(false);
+    }
+  }
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
@@ -78,6 +94,31 @@ export default function UserMenu({ name, email }: { name?: string | null; email?
 
           {!showConfirm ? (
             <>
+              {/* Manage Subscription */}
+              {isSubscribed && (
+                <button
+                  onClick={handleManageBilling}
+                  disabled={portalLoading}
+                  style={{
+                    width: "100%", padding: "11px 16px", textAlign: "left",
+                    background: "none", border: "none", cursor: "pointer",
+                    color: "#9CA3AF", fontSize: "14px", display: "flex",
+                    alignItems: "center", gap: "10px", opacity: portalLoading ? 0.6 : 1,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#1F2937")}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <rect x="1" y="4" width="22" height="16" rx="2" stroke="#9CA3AF" strokeWidth="2"/>
+                    <path d="M1 10h22" stroke="#9CA3AF" strokeWidth="2"/>
+                  </svg>
+                  {portalLoading ? "Opening…" : "Manage Subscription"}
+                </button>
+              )}
+
+              {/* Divider */}
+              {isSubscribed && <div style={{ height: "1px", backgroundColor: "#1F2937", margin: "0 16px" }} />}
+
               {/* Sign Out */}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
