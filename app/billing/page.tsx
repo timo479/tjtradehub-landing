@@ -182,17 +182,9 @@ export default function BillingPage() {
         </ul>
       </div>
 
-      <Link
-        href="/dashboard"
-        className="mt-6 text-sm transition-colors"
-        style={{ color: "#6B7280" }}
-      >
-        ← Back to dashboard
-      </Link>
-
       <button
         onClick={() => signOut({ callbackUrl: "/login" })}
-        className="mt-3 text-sm transition-colors"
+        className="mt-6 text-sm transition-colors"
         style={{ color: "#4B5563", background: "none", border: "none", cursor: "pointer" }}
       >
         Sign out
