@@ -1,17 +1,18 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 
-// TJTradeHub nav header height in px
-const NAV_H = 76;
+// TJTradeHub nav: py-5(20+20) + logo(36) + border(1) = 77px
+const NAV_H = 77;
 
-// Positions within the iframe (from style.css) + NAV_H offset
+// Charts app uses position:sticky (all in normal flow):
+// ticker-strip: top=0,  h=70
+// .header:      top=70, h=56
+// .symbol-bar:  top=126, padding=10+10, tabs(26)+gap(10)+chips(26) = 82+1border = 83
+// .session-bar: top=209, padding=8+8, content~30 = 46
+// .chart-grid:  top=255
+
 interface Region { top: number; height: number }
-
-interface Step {
-  region: Region | null;
-  title: string;
-  description: string;
-}
+interface Step { region: Region | null; title: string; description: string; }
 
 const STEPS: Step[] = [
   {
@@ -20,7 +21,7 @@ const STEPS: Step[] = [
     description: "Real-time charts for 65+ symbols across Forex, Indices, Crypto, Metals and Commodities — all powered by TradingView and built directly into your dashboard.",
   },
   {
-    region: { top: NAV_H, height: 70 },
+    region: { top: NAV_H + 0, height: 70 },
     title: "Live Ticker Strip",
     description: "Real-time prices for S&P 500, NASDAQ, Gold, EUR/USD, BTC and more — always visible as you analyse the markets.",
   },
@@ -30,17 +31,17 @@ const STEPS: Step[] = [
     description: "Switch between 1m and Weekly. Set 1, 2 or 3 chart columns. Change timezone, save watchlist presets, and open Calendar, Heatmap, News or Screener.",
   },
   {
-    region: { top: NAV_H + 126, height: 88 },
+    region: { top: NAV_H + 126, height: 83 },
     title: "65+ Symbols",
     description: "Choose from Indices, Forex, Metals, Crypto or Commodities. Add any custom TradingView ticker. Mark favourites for instant access.",
   },
   {
-    region: { top: NAV_H + 214, height: 44 },
+    region: { top: NAV_H + 209, height: 46 },
     title: "Trading Sessions",
     description: "Track Asia, London and New York live — open/closed status with countdown timers. Create your own custom sessions with individual colours.",
   },
   {
-    region: { top: NAV_H + 258, height: 320 },
+    region: { top: NAV_H + 255, height: 340 },
     title: "TradingView Charts",
     description: "Professional candlestick charts with the full TradingView toolset. Drag to reorder, double-click for fullscreen, add notes per chart.",
   },
@@ -116,7 +117,7 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
             position: "fixed", top: region.top, left: 0, right: 0,
             height: region.height,
             border: "2px solid #8B5CF6",
-            boxShadow: "0 0 0 1px rgba(139,92,246,0.2), inset 0 0 0 1px rgba(139,92,246,0.1)",
+            boxShadow: "0 0 20px rgba(139,92,246,0.4), 0 0 40px rgba(139,92,246,0.15), inset 0 0 20px rgba(139,92,246,0.05)",
             zIndex: 10001, pointerEvents: "none",
           }} />
         </>
