@@ -662,6 +662,18 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
     localStorage.setItem(LAYOUT_KEY, l);
   };
 
+  // Expand/restore main element width based on layout
+  useEffect(() => {
+    const main = document.querySelector("main") as HTMLElement | null;
+    if (!main) return;
+    if (layout === "2col" || layout === "3col") {
+      main.style.maxWidth = "none";
+    } else {
+      main.style.maxWidth = "1200px";
+    }
+    return () => { main.style.maxWidth = "1200px"; };
+  }, [layout]);
+
   const toggle = (id: string) => {
     setActive(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];

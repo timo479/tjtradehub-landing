@@ -714,6 +714,16 @@ const WIDGETS: WidgetDef[] = [
 ];
 
 const STORAGE_KEY = "tj-stats-prefs-v1";
+const LAYOUT_KEY   = "tj-widget-layout-v1";
+
+type Layout = "1col" | "auto" | "2col" | "3col";
+
+const LAYOUTS: { id: Layout; label: string; icon: React.ReactNode }[] = [
+  { id: "1col", label: "Single column", icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor"/></svg> },
+  { id: "auto", label: "Auto (mixed)",  icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor"/></svg> },
+  { id: "2col", label: "2 columns",     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="2" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="12" width="6" height="4" rx="1.5" fill="currentColor"/></svg> },
+  { id: "3col", label: "3 columns",     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="1" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="1" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/></svg> },
+];
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -732,11 +742,29 @@ export default function JournalStats({ entries, journal }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [loaded, setLoaded] = useState(false);
+  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
-    try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch { /* ignore */ }
+    try {
+      const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s));
+      const l = localStorage.getItem(LAYOUT_KEY) as Layout | null; if (l) setLayout(l);
+    } catch { /* ignore */ }
     setLoaded(true);
   }, []);
+
+  const changeLayout = (l: Layout) => { setLayout(l); localStorage.setItem(LAYOUT_KEY, l); };
+
+  // Expand/restore main element width based on layout
+  useEffect(() => {
+    const main = document.querySelector("main") as HTMLElement | null;
+    if (!main) return;
+    if (layout === "2col" || layout === "3col") {
+      main.style.maxWidth = "none";
+    } else {
+      main.style.maxWidth = "1200px";
+    }
+    return () => { main.style.maxWidth = "1200px"; };
+  }, [layout]);
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -749,17 +777,32 @@ export default function JournalStats({ entries, journal }: Props) {
   const filtered = useMemo(() => applyPeriod(entries, period, customFrom, customTo), [entries, period, customFrom, customTo]);
   const activeWidgets = useMemo(() => WIDGETS.filter(w => active.includes(w.id)), [active]);
 
-  const rows: WidgetDef[][] = [];
-  let i = 0;
-  while (i < activeWidgets.length) {
-    const w = activeWidgets[i];
-    if (w.size === "full") { rows.push([w]); i++; }
-    else {
-      const next = activeWidgets[i + 1];
-      if (next && next.size === "half") { rows.push([w, next]); i += 2; }
-      else { rows.push([w]); i++; }
+  const getCols = () => { if (layout === "1col") return 1; if (layout === "2col") return 2; if (layout === "3col") return 3; return null; };
+
+  const renderWidgets = () => {
+    const cols = getCols();
+    if (cols !== null) {
+      const rows: WidgetDef[][] = [];
+      for (let i = 0; i < activeWidgets.length; i += cols) rows.push(activeWidgets.slice(i, i + cols));
+      return rows.map((row, ri) => (
+        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
+          {row.map(w => <div key={w.id} style={card}><SectionTitle>{w.icon} {w.name}</SectionTitle><w.component entries={filtered} journal={journal} /></div>)}
+        </div>
+      ));
     }
-  }
+    const rows: WidgetDef[][] = [];
+    let i = 0;
+    while (i < activeWidgets.length) {
+      const w = activeWidgets[i];
+      if (w.size === "full") { rows.push([w]); i++; }
+      else { const next = activeWidgets[i + 1]; if (next && next.size === "half") { rows.push([w, next]); i += 2; } else { rows.push([w]); i++; } }
+    }
+    return rows.map((row, ri) => (
+      <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
+        {row.map(w => <div key={w.id} style={card}><SectionTitle>{w.icon} {w.name}</SectionTitle><w.component entries={filtered} journal={journal} /></div>)}
+      </div>
+    ));
+  };
 
   if (!loaded) return null;
 
@@ -785,8 +828,16 @@ export default function JournalStats({ entries, journal }: Props) {
             <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={inpStyle} />
           </div>
         )}
-        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ color: "#6B7280", fontSize: "13px" }}>{filtered.length} trade{filtered.length !== 1 ? "s" : ""}</span>
+          {/* Layout switcher */}
+          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+            {LAYOUTS.map(l => (
+              <button key={l.id} title={l.label} onClick={() => changeLayout(l.id)} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer", backgroundColor: layout === l.id ? "#1F2937" : "transparent", color: layout === l.id ? "#8B5CF6" : "#4B5563", transition: "background 0.15s, color 0.15s" }}>
+                {l.icon}
+              </button>
+            ))}
+          </div>
           <button onClick={() => setEditOpen(true)}
             style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
             ⊞ Edit Widgets
@@ -803,16 +854,7 @@ export default function JournalStats({ entries, journal }: Props) {
       )}
 
       {/* Widget Rows */}
-      {filtered.length > 0 && rows.map((row, ri) => (
-        <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
-          {row.map(w => (
-            <div key={w.id} style={card}>
-              <SectionTitle>{w.icon} {w.name}</SectionTitle>
-              <w.component entries={filtered} journal={journal} />
-            </div>
-          ))}
-        </div>
-      ))}
+      {filtered.length > 0 && renderWidgets()}
 
       {/* Edit Widgets Side Panel */}
       {editOpen && (
