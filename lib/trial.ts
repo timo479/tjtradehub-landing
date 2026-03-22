@@ -12,6 +12,7 @@ export function getDaysRemaining(user: Pick<User, "trial_ends_at">): number {
 export function hasActiveSubscription(
   user: Pick<User, "subscription_status" | "current_period_end">
 ): boolean {
+  if (user.subscription_status === "lifetime") return true;
   if (user.subscription_status === "active") {
     if (!user.current_period_end) return true;
     return new Date(user.current_period_end) > new Date();

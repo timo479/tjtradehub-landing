@@ -21,7 +21,7 @@ export default async function DashboardPage() {
   const { name, trialEndsAt, subscriptionStatus } = session.user;
   const onTrial = isTrialActive({ trial_ends_at: trialEndsAt });
   const daysLeft = getDaysRemaining({ trial_ends_at: trialEndsAt });
-  const isSubscribed = subscriptionStatus === "active";
+  const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
 
   // Fetch entries from JournalV2
   const { data: rawEntries } = await db
