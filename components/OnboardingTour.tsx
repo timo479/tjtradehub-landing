@@ -3,7 +3,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { TourStep } from "./tourSteps";
 
 interface Props {
-  tour: "dashboard" | "journal";
+  tour: "dashboard" | "journal" | "charts";
   steps: TourStep[];
   alreadyCompleted: boolean;
 }

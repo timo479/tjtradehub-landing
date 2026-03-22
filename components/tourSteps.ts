@@ -37,6 +37,34 @@ export const DASHBOARD_STEPS: TourStep[] = [
   },
 ];
 
+export const CHARTS_STEPS: TourStep[] = [
+  {
+    target: null,
+    title: "Welcome to TJ Charts 📈",
+    description: "Real-time charts for 65+ symbols across Forex, Indices, Crypto, Metals and Commodities — all powered by TradingView and built directly into your dashboard.",
+  },
+  {
+    target: null,
+    title: "Live Ticker Strip",
+    description: "The ticker at the top shows real-time prices for all major instruments — S&P 500, NASDAQ, Gold, EUR/USD, BTC and more. Always visible as you work.",
+  },
+  {
+    target: null,
+    title: "Multi-Symbol Layouts",
+    description: "Display 1, 2 or 3 charts side by side. Switch timeframes from 1 minute to Weekly with one click, and adjust the chart height to fit your screen.",
+  },
+  {
+    target: null,
+    title: "Trading Sessions",
+    description: "Track the Asia, London and New York sessions live with open/closed status and countdown timers. Create custom sessions with your own colors and hours.",
+  },
+  {
+    target: null,
+    title: "Calendar, Heatmap & Screener",
+    description: "Open the Economic Calendar, Market Heatmap, News Feed or Screener with one click. Save your favourite watchlists as presets for instant access.",
+  },
+];
+
 export const JOURNAL_STEPS: TourStep[] = [
   {
     target: null,

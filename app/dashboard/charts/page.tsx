@@ -1,14 +1,23 @@
 import { auth } from "@/lib/auth";
+import { db } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
+import ChartsTourWrapper from "@/components/ChartsTourWrapper";
 
 export const metadata = { title: "Charts – TJ TradeHub" };
 
 export default async function ChartsPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
+
+  const { data: userRow } = await db
+    .from("users")
+    .select("charts_tour_completed")
+    .eq("id", session!.user.id)
+    .single();
+  const chartsTourCompleted = userRow?.charts_tour_completed ?? false;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#0a0a0a" }}>
@@ -57,6 +66,8 @@ export default async function ChartsPage() {
         title="TJ Charts"
         allow="notifications"
       />
+
+      <ChartsTourWrapper alreadyCompleted={chartsTourCompleted} />
     </div>
   );
 }

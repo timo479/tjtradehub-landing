@@ -9,11 +9,11 @@ export async function POST(req: Request) {
   const body = await req.json();
   const { tour } = body;
 
-  if (tour !== "dashboard" && tour !== "journal") {
+  if (tour !== "dashboard" && tour !== "journal" && tour !== "charts") {
     return NextResponse.json({ error: "Invalid tour" }, { status: 400 });
   }
 
-  const field = tour === "dashboard" ? "onboarding_completed" : "journal_tour_completed";
+  const field = tour === "dashboard" ? "onboarding_completed" : tour === "journal" ? "journal_tour_completed" : "charts_tour_completed";
 
   await db
     .from("users")
