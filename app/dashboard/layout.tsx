@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
 import { canAccessDashboard } from "@/lib/trial";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
 
 export default async function DashboardLayout({
   children,
@@ -23,5 +24,12 @@ export default async function DashboardLayout({
     redirect("/billing");
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {session.user.isImpersonating && (
+        <ImpersonationBanner email={session.user.email ?? ""} />
+      )}
+      {children}
+    </>
+  );
 }

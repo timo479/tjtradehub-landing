@@ -7,6 +7,7 @@ declare module "next-auth" {
     subscriptionStatus: string;
     currentPeriodEnd: string | null;
     role: string;
+    isImpersonating?: boolean;
   }
 
   interface Session {
@@ -19,6 +20,7 @@ declare module "next-auth" {
       subscriptionStatus: string;
       currentPeriodEnd: string | null;
       role: string;
+      isImpersonating?: boolean;
     };
   }
 }
@@ -30,5 +32,6 @@ declare module "next-auth/jwt" {
     subscriptionStatus: string;
     currentPeriodEnd: string | null;
     role: string;
+    isImpersonating?: boolean;
   }
 }

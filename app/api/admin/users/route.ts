@@ -4,32 +4,19 @@ import { db } from "@/lib/db";
 
 export async function GET() {
   const session = await auth();
-
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+  if (!session?.user?.id) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const role = (session.user as { role?: string }).role;
-  if (role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
+  if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
   const { data: users, error } = await db
     .from("users")
-    .select(
-      "id, email, name, created_at, subscription_status, current_period_end, trial_ends_at, stripe_customer_id, subscription_id, is_banned, role, meta_last_active"
-    )
+    .select("id, email, name, created_at, subscription_status, current_period_end, trial_ends_at, stripe_customer_id, subscription_id, is_banned, role, meta_last_active, admin_note, last_login_at")
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return NextResponse.json({ error: "DB error" }, { status: 500 });
-  }
+  if (error) return NextResponse.json({ error: "DB error" }, { status: 500 });
 
-  // Get trade counts per user
-  const { data: tradeCounts } = await db
-    .from("trade_entries")
-    .select("user_id");
-
+  // Trade counts per user
+  const { data: tradeCounts } = await db.from("trade_entries").select("user_id");
   const countMap: Record<string, number> = {};
   if (tradeCounts) {
     for (const row of tradeCounts) {
@@ -42,5 +29,32 @@ export async function GET() {
     trade_count: countMap[u.id] ?? 0,
   }));
 
-  return NextResponse.json({ users: result });
+  // Revenue stats (non-admins only)
+  const nonAdmins = result.filter((u) => u.role !== "admin");
+  const activeUsers = nonAdmins.filter((u) => u.subscription_status === "active");
+  const mrr = activeUsers.length * 29;
+  const nowTs = Date.now();
+  const expiredNonConverted = nonAdmins.filter(
+    (u) =>
+      u.subscription_status === "trialing" &&
+      new Date(u.trial_ends_at).getTime() < nowTs
+  ).length;
+  const converted = nonAdmins.filter(
+    (u) => u.subscription_status === "active" || u.subscription_status === "canceled"
+  ).length;
+  const conversionBase = converted + expiredNonConverted;
+  const conversionRate = conversionBase > 0 ? Math.round((converted / conversionBase) * 100) : 0;
+
+  // Registrations per day (last 14 days)
+  const regByDay: Record<string, number> = {};
+  for (const u of nonAdmins) {
+    const day = u.created_at.slice(0, 10);
+    regByDay[day] = (regByDay[day] ?? 0) + 1;
+  }
+
+  return NextResponse.json({
+    users: result,
+    revenue: { mrr, conversionRate },
+    regByDay,
+  });
 }

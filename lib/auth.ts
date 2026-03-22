@@ -60,10 +60,12 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.subscriptionStatus = (user as { subscriptionStatus: string }).subscriptionStatus;
         token.currentPeriodEnd = (user as { currentPeriodEnd: string | null }).currentPeriodEnd;
         token.role = (user as { role: string }).role ?? "user";
+        token.isImpersonating = (user as { isImpersonating?: boolean }).isImpersonating ?? false;
         token.refreshedAt = Math.floor(Date.now() / 1000);
-        // Always use DB name (overrides Google name)
+        // Update last_login_at + fetch name
         const { data: dbUser } = await db.from("users").select("name").eq("id", user.id!).single();
         if (dbUser) token.name = dbUser.name;
+        await db.from("users").update({ last_login_at: new Date().toISOString() }).eq("id", user.id!);
         return token;
       }
 
@@ -95,6 +97,34 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID!,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    }),
+    Credentials({
+      id: "impersonate",
+      credentials: { token: { type: "text" } },
+      authorize: async (credentials) => {
+        if (!credentials?.token) return null;
+        const { data: user } = await db
+          .from("users")
+          .select("*")
+          .eq("impersonate_token", credentials.token)
+          .gt("impersonate_token_expires", new Date().toISOString())
+          .single();
+        if (!user) return null;
+        await db.from("users").update({
+          impersonate_token: null,
+          impersonate_token_expires: null,
+        }).eq("id", user.id);
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          trialEndsAt: user.trial_ends_at,
+          subscriptionStatus: user.subscription_status,
+          currentPeriodEnd: user.current_period_end,
+          role: "user",
+          isImpersonating: true,
+        };
+      },
     }),
     Credentials({
       credentials: {
