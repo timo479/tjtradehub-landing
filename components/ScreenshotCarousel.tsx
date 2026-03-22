@@ -6,21 +6,33 @@ const slides = [
   {
     id: "dashboard",
     label: "Dashboard",
-    description: "Performance overview at a glance",
+    description: "Performance overview — stats, equity curve, MT5 sync and more at a glance",
     image: "/screenshots/ss-dashboard.png",
   },
   {
     id: "journal",
     label: "Trade Journal",
-    description: "Log and review every trade",
+    description: "Log every trade with setup, emotions, rules checklist and screenshots",
     image: "/screenshots/ss-journal.png",
   },
   {
     id: "analytics",
     label: "Analytics",
-    description: "Deep-dive into what makes you profitable",
+    description: "Deep-dive statistics: equity curve, win rate, rule compliance, setup performance and more",
     image: "/screenshots/ss-stats.png",
     scrollable: true,
+  },
+  {
+    id: "calculator",
+    label: "Risk Calculator",
+    description: "Calculate exact position size, risk amount and R:R ratio for any MT5 instrument",
+    image: "/screenshots/ss-calculator.png",
+  },
+  {
+    id: "drawdown",
+    label: "Drawdown Tool",
+    description: "Know exactly how much you need to recover from any drawdown — and how long it takes",
+    image: "/screenshots/ss-drawdown.png",
   },
 ];
 
