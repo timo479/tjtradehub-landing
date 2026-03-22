@@ -248,36 +248,35 @@ export default function ChartsVideoSection() {
           onClick={closeLightbox}
           style={{
             position: "fixed", inset: 0, zIndex: 99999,
-            backgroundColor: "rgba(0,0,0,0.92)",
+            backgroundColor: "rgba(0,0,0,0.96)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            padding: "24px",
           }}
         >
+          {/* Close button */}
+          <button
+            onClick={closeLightbox}
+            style={{
+              position: "absolute", top: "16px", right: "16px", zIndex: 10,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              width: "40px", height: "40px", borderRadius: "10px",
+              background: "rgba(255,255,255,0.08)", border: "1px solid #2d2f3e",
+              color: "#9CA3AF", cursor: "pointer", fontSize: "20px",
+            }}
+          >
+            ✕
+          </button>
           <div
             onClick={e => e.stopPropagation()}
             style={{
               position: "relative",
-              width: "100%",
-              maxWidth: "1400px",
-              borderRadius: "16px",
-              overflow: "hidden",
-              border: "1px solid rgba(139,92,246,0.4)",
-              boxShadow: "0 40px 120px rgba(0,0,0,0.9), 0 0 0 1px rgba(139,92,246,0.1)",
+              width: "100vw",
+              height: "100vh",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              backgroundColor: "#000",
             }}
           >
-            {/* Close button */}
-            <button
-              onClick={closeLightbox}
-              style={{
-                position: "absolute", top: "12px", right: "12px", zIndex: 10,
-                display: "flex", alignItems: "center", justifyContent: "center",
-                width: "36px", height: "36px", borderRadius: "10px",
-                background: "rgba(0,0,0,0.7)", border: "1px solid #2d2f3e",
-                color: "#9CA3AF", cursor: "pointer", fontSize: "18px",
-              }}
-            >
-              ✕
-            </button>
             <video
               ref={modalVideoRef}
               autoPlay
@@ -285,7 +284,7 @@ export default function ChartsVideoSection() {
               loop
               playsInline
               controls
-              style={{ width: "100%", display: "block" }}
+              style={{ maxWidth: "100%", maxHeight: "100%", display: "block" }}
             >
               <source src="/videos/charts-tour.mp4" type="video/mp4" />
             </video>
