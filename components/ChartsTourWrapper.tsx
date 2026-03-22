@@ -54,13 +54,8 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
   const storageKey = "tour_shown_charts";
 
   useEffect(() => {
-    const force = new URLSearchParams(window.location.search).get("tour") === "1";
-    if (!force && alreadyCompleted) return;
-    if (!force && sessionStorage.getItem(storageKey)) return;
-    if (!force) sessionStorage.setItem(storageKey, "1");
     const t = setTimeout(() => setActive(true), 700);
     return () => clearTimeout(t);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const saveDismiss = useCallback(async () => {
