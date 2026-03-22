@@ -121,7 +121,7 @@ export default function CalculatorsSection() {
                   style={{
                     position: "absolute",
                     inset: 0,
-                    background: "linear-gradient(to bottom, transparent 40%, #0d0d14 100%)",
+                    background: "linear-gradient(to bottom, transparent 20%, #0d0d14 70%)",
                   }}
                 />
                 {/* Badge overlay */}

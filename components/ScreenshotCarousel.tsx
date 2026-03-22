@@ -159,25 +159,33 @@ export default function ScreenshotCarousel() {
           </div>
 
           {/* Screenshot */}
-          <div style={{
-            height: "580px",
-            overflowY: "auto",
-            backgroundColor: "#0a0a0a",
-            opacity: fading ? 0 : 1,
-            transition: "opacity 0.18s ease",
-            scrollbarWidth: "thin",
-            scrollbarColor: "rgba(139,92,246,0.4) transparent",
-          }}>
-            <Image
-              key={slides[active].id}
-              src={slides[active].image}
-              alt={slides[active].label}
-              width={1080}
-              height={1800}
-              sizes="(max-width: 768px) 100vw, 1080px"
-              style={{ width: "100%", height: "auto", display: "block" }}
-              priority={active === 0}
-            />
+          <div style={{ position: "relative" }}>
+            <div style={{
+              height: "580px",
+              overflowY: "auto",
+              backgroundColor: "#050507",
+              opacity: fading ? 0 : 1,
+              transition: "opacity 0.18s ease",
+              scrollbarWidth: "thin",
+              scrollbarColor: "rgba(139,92,246,0.4) transparent",
+            }}>
+              <Image
+                key={slides[active].id}
+                src={slides[active].image}
+                alt={slides[active].label}
+                width={1080}
+                height={1800}
+                sizes="(max-width: 768px) 100vw, 1080px"
+                style={{ width: "100%", height: "auto", display: "block" }}
+                priority={active === 0}
+              />
+            </div>
+            {/* Fade out bottom gray area */}
+            <div style={{
+              position: "absolute", bottom: 0, left: 0, right: 0,
+              height: "120px", pointerEvents: "none",
+              background: "linear-gradient(to bottom, transparent, #050507)",
+            }} />
           </div>
         </div>
 
