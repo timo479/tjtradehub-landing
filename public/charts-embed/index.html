@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TJ Charts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- TICKER STRIP -->
+  <div id="ticker-strip">
+    <div class="tradingview-widget-container" id="ticker-widget"></div>
+  </div>
+
+  <!-- HEADER -->
+  <header class="header">
+    <div class="header-inner">
+
+      <div class="tf-bar">
+        <button class="tf-btn" data-tf="1">1m</button>
+        <button class="tf-btn" data-tf="5">5m</button>
+        <button class="tf-btn" data-tf="15">15m</button>
+        <button class="tf-btn active" data-tf="60">1h</button>
+        <button class="tf-btn" data-tf="240">4h</button>
+        <button class="tf-btn" data-tf="D">D</button>
+        <button class="tf-btn" data-tf="W">W</button>
+      </div>
+
+      <div class="layout-bar">
+        <button class="layout-btn" data-cols="2" title="2 columns">⊞</button>
+        <button class="layout-btn" data-cols="3" title="3 columns">⊟</button>
+        <button class="layout-btn active" data-cols="1" title="1 column">▬</button>
+      </div>
+
+      <select class="height-select" id="height-select" title="Chart height">
+        <option value="S">S</option>
+        <option value="auto" selected>M</option>
+        <option value="L">L</option>
+      </select>
+
+      <select class="tz-select" id="tz-select">
+        <option value="UTC">UTC</option>
+        <option value="Europe/Berlin">Berlin</option>
+        <option value="Europe/London">London</option>
+        <option value="America/New_York">New York</option>
+        <option value="America/Chicago">Chicago</option>
+        <option value="Asia/Tokyo">Tokyo</option>
+        <option value="Asia/Singapore">Singapore</option>
+        <option value="Australia/Sydney">Sydney</option>
+      </select>
+
+      <div class="preset-bar" id="preset-bar">
+        <div class="preset-slots" id="preset-slots"></div>
+        <button class="preset-save-btn" id="btn-save-preset" title="Save current view as preset">💾 Save</button>
+      </div>
+
+      <div class="data-btns">
+        <button class="tool-btn" id="btn-export" title="Export all data">💾</button>
+        <label class="tool-btn lbl-import" title="Import data" tabindex="0">📂<input type="file" id="import-file" accept=".json" style="display:none;"></label>
+      </div>
+
+      <div class="tools-bar">
+        <button class="tool-btn" id="btn-cal-toggle"      title="Economic Calendar">📅</button>
+        <button class="tool-btn" id="btn-heatmap-toggle"  title="Market Heatmap">🔥</button>
+        <button class="tool-btn" id="btn-news-toggle"     title="News Feed">📰</button>
+        <button class="tool-btn" id="btn-screener-toggle" title="Screener">🔍</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- TOOL PANELS -->
+  <div id="cal-panel"      class="tool-panel" style="display:none;"><div class="tool-panel-inner"><div class="tradingview-widget-container" id="cal-widget"      style="height:420px;"></div></div></div>
+  <div id="heatmap-panel"  class="tool-panel" style="display:none;"><div class="tool-panel-inner"><div class="tradingview-widget-container" id="heatmap-widget"  style="height:500px;"></div></div></div>
+  <div id="news-panel"     class="tool-panel" style="display:none;"><div class="tool-panel-inner"><div class="tradingview-widget-container" id="news-widget"     style="height:420px;"></div></div></div>
+  <div id="screener-panel" class="tool-panel" style="display:none;">
+    <div class="tool-panel-inner">
+      <div class="screener-market-bar">
+        <button class="screener-market-btn active" data-market="forex">Forex</button>
+        <button class="screener-market-btn" data-market="america">Stocks</button>
+        <button class="screener-market-btn" data-market="crypto">Crypto</button>
+      </div>
+      <div class="tradingview-widget-container" id="screener-widget" style="height:500px;"></div>
+    </div>
+  </div>
+
+  <!-- SYMBOL SELECTOR -->
+  <div class="symbol-bar">
+    <div class="symbol-bar-inner">
+
+      <div class="symbol-bar-top">
+        <div class="cat-tabs">
+          <button class="cat-tab" data-cat="all">🌐 All</button>
+          <button class="cat-tab" data-cat="favs">★ Favorites</button>
+          <button class="cat-tab active" data-cat="indices">📈 Indices</button>
+          <button class="cat-tab" data-cat="forex">💱 Forex</button>
+          <button class="cat-tab" data-cat="metals">🥇 Metals</button>
+          <button class="cat-tab" data-cat="crypto">🪙 Crypto</button>
+          <button class="cat-tab" data-cat="commodities">🛢 Commod.</button>
+          <button class="cat-tab" data-cat="custom">＋ Custom</button>
+        </div>
+        <div class="symbol-bar-controls">
+          <select class="sort-select" id="sort-select" title="Sort symbols">
+            <option value="default">Sort: Default</option>
+            <option value="az">A → Z</option>
+            <option value="pct">% Change</option>
+          </select>
+          <input type="text" class="sym-search" id="sym-search" placeholder="Search symbol..." />
+        </div>
+      </div>
+
+      <div class="symbol-chips" id="symbol-chips"></div>
+
+      <div class="custom-sym-row" id="custom-sym-row" style="display:none;">
+        <input type="text" class="form-input sym-custom-input" id="sym-custom-input" placeholder="e.g. NASDAQ:AAPL, NYSE:TSLA..." />
+        <button class="btn btn-primary btn-sm" id="btn-sym-custom-add">Add</button>
+        <button class="btn btn-outline btn-sm" id="btn-sym-custom-cancel">Cancel</button>
+      </div>
+
+      <button class="btn-add-custom-sym" id="btn-show-custom-sym">+ Symbol</button>
+
+    </div>
+  </div>
+
+  <!-- SESSION BAR -->
+  <div class="session-bar" id="session-bar">
+    <div class="session-clock" id="session-clock"></div>
+    <div class="sessions" id="sessions"></div>
+    <div class="session-next" id="session-next"></div>
+  </div>
+
+  <!-- CHART GRID -->
+  <main class="chart-grid" id="chart-grid"></main>
+
+  <!-- EMPTY STATE -->
+  <div class="empty-state" id="empty-state" style="display:none;">
+    <div class="empty-icon">📈</div>
+    <p>Select symbols above to add charts</p>
+  </div>
+
+  <!-- MODAL: CUSTOM SESSION -->
+  <div class="modal-overlay" id="modal-session" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title" id="modal-session-title">Custom Session</h3>
+        <button class="modal-close" id="close-modal-session">&times;</button>
+      </div>
+      <form id="form-session">
+        <div class="form-group">
+          <label class="form-label">Session Name</label>
+          <input type="text" class="form-input" id="cs-name" placeholder="e.g. My Session, Frankfurt..." required />
+        </div>
+        <div class="form-group-row">
+          <div class="form-group">
+            <label class="form-label">Open (UTC)</label>
+            <input type="time" class="form-input" id="cs-open" required />
+          </div>
+          <div class="form-group">
+            <label class="form-label">Close (UTC)</label>
+            <input type="time" class="form-input" id="cs-close" required />
+          </div>
+        </div>
+        <p style="font-size:11px;color:var(--text-muted);margin-top:-4px;">Tip: if open &gt; close, session crosses midnight.</p>
+        <div class="form-group">
+          <label class="form-label">Color</label>
+          <div class="color-row">
+            <input type="color" class="color-picker" id="cs-color" value="#a855f7" />
+            <div class="color-presets">
+              <button type="button" class="color-preset" style="background:#ef4444;" data-color="#ef4444"></button>
+              <button type="button" class="color-preset" style="background:#f97316;" data-color="#f97316"></button>
+              <button type="button" class="color-preset" style="background:#f59e0b;" data-color="#f59e0b"></button>
+              <button type="button" class="color-preset" style="background:#22c55e;" data-color="#22c55e"></button>
+              <button type="button" class="color-preset" style="background:#60a5fa;" data-color="#60a5fa"></button>
+              <button type="button" class="color-preset" style="background:#a855f7;" data-color="#a855f7"></button>
+              <button type="button" class="color-preset" style="background:#ec4899;" data-color="#ec4899"></button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancel-session">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Session</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: PRESET NAME -->
+  <div class="modal-overlay" id="modal-preset" style="display:none;">
+    <div class="modal">
+      <div class="modal-header">
+        <h3 class="modal-title">Save Preset</h3>
+        <button class="modal-close" id="close-modal-preset">&times;</button>
+      </div>
+      <form id="form-preset">
+        <div class="form-group">
+          <label class="form-label">Preset Name</label>
+          <input type="text" class="form-input" id="preset-name-input" placeholder="e.g. Morning Watchlist..." maxlength="24" required />
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-outline" id="cancel-preset">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

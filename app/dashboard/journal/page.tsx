@@ -59,6 +59,9 @@ export default async function JournalPage() {
               <Link href="/dashboard/calendar" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
                 Calendar
               </Link>
+              <Link href="/dashboard/charts" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
+                Charts
+              </Link>
             </nav>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
