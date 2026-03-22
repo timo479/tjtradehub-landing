@@ -154,6 +154,9 @@ export default async function DashboardPage() {
               <Link href="/dashboard/charts" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
                 Charts
               </Link>
+              <Link href="/dashboard/calculator" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
+                Calculator
+              </Link>
             </nav>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>

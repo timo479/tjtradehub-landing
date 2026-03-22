@@ -1,23 +1,14 @@
 import { auth } from "@/lib/auth";
-import { db } from "@/lib/db";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
-import ChartsTourWrapper from "@/components/ChartsTourWrapper";
 
-export const metadata = { title: "Charts – TJ TradeHub" };
+export const metadata = { title: "Risk Calculator – TJ TradeHub" };
 
-export default async function ChartsPage() {
+export default async function CalculatorPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
-
-  const { data: userRow } = await db
-    .from("users")
-    .select("charts_tour_completed")
-    .eq("id", session!.user.id)
-    .single();
-  const chartsTourCompleted = userRow?.charts_tour_completed ?? false;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", backgroundColor: "#0a0a0a" }}>
@@ -49,8 +40,8 @@ export default async function ChartsPage() {
               <Link href="/dashboard" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>Dashboard</Link>
               <Link href="/dashboard/journal" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>Journal</Link>
               <Link href="/dashboard/calendar" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>Calendar</Link>
-              <Link href="/dashboard/charts" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Charts</Link>
-              <Link href="/dashboard/calculator" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>Calculator</Link>
+              <Link href="/dashboard/charts" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>Charts</Link>
+              <Link href="/dashboard/calculator" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Calculator</Link>
             </nav>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -60,15 +51,12 @@ export default async function ChartsPage() {
         </div>
       </header>
 
-      {/* Charts iframe */}
+      {/* Calculator iframe */}
       <iframe
-        src="/charts-embed/index.html"
+        src="/calculator-embed/index.html"
         style={{ flex: 1, border: "none", width: "100%", display: "block" }}
-        title="TJ Charts"
-        allow="notifications"
+        title="TJ Risk Calculator"
       />
-
-      <ChartsTourWrapper alreadyCompleted={chartsTourCompleted} />
     </div>
   );
 }
