@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { signOut } from "next-auth/react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -188,6 +189,14 @@ export default function BillingPage() {
       >
         ← Back to dashboard
       </Link>
+
+      <button
+        onClick={() => signOut({ callbackUrl: "/login" })}
+        className="mt-3 text-sm transition-colors"
+        style={{ color: "#4B5563", background: "none", border: "none", cursor: "pointer" }}
+      >
+        Sign out
+      </button>
     </div>
   );
 }

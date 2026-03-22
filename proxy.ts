@@ -19,9 +19,17 @@ export default auth((req) => {
     nextUrl.pathname.startsWith("/billing") ||
     nextUrl.pathname.startsWith("/admin");
 
-  // Redirect logged-in users away from auth pages
-  if (isAuthPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", nextUrl));
+  // Redirect logged-in users away from auth pages (only if they can access dashboard)
+  if (isAuthPage && isLoggedIn && session?.user) {
+    const user = session.user;
+    const canAccess = canAccessDashboard({
+      trial_ends_at: user.trialEndsAt ?? "",
+      subscription_status: user.subscriptionStatus ?? "trialing",
+      current_period_end: user.currentPeriodEnd ?? null,
+    });
+    if (canAccess) {
+      return NextResponse.redirect(new URL("/dashboard", nextUrl));
+    }
   }
 
   // Redirect unauthenticated users away from protected pages
