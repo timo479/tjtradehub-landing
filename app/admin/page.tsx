@@ -109,10 +109,11 @@ export default function AdminPage() {
       u.name?.toLowerCase().includes(search.toLowerCase())
   );
 
-  const total = users.length;
-  const active = users.filter((u) => u.subscription_status === "active" || u.subscription_status === "lifetime").length;
-  const trialing = users.filter((u) => u.subscription_status === "trialing").length;
-  const banned = users.filter((u) => u.is_banned).length;
+  const nonAdmins = users.filter((u) => u.role !== "admin");
+  const total = nonAdmins.length;
+  const active = nonAdmins.filter((u) => u.subscription_status === "active" || u.subscription_status === "lifetime").length;
+  const trialing = nonAdmins.filter((u) => u.subscription_status === "trialing").length;
+  const banned = nonAdmins.filter((u) => u.is_banned).length;
 
   return (
     <div className="min-h-screen bg-black text-white">
