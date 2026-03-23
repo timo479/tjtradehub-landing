@@ -1,6 +1,7 @@
 "use client";
 import { useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 declare global {
   interface Window {
@@ -11,19 +12,24 @@ declare global {
 export default function TikTokConversion() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const { update } = useSession();
 
   useEffect(() => {
     if (searchParams.get("upgraded") === "true") {
+      // Fire TikTok conversion event
       if (typeof window !== "undefined" && window.ttq) {
         window.ttq.track("CompletePayment", {
           value: 29,
           currency: "USD",
         });
       }
-      // Remove ?upgraded=true from URL so it doesn't fire again on refresh
-      router.replace("/dashboard", { scroll: false });
+      // Force session refresh so subscription_status is updated in JWT
+      update().then(() => {
+        router.replace("/dashboard", { scroll: false });
+        router.refresh();
+      });
     }
-  }, [searchParams, router]);
+  }, [searchParams, router, update]);
 
   return null;
 }
