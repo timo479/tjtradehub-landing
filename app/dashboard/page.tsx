@@ -9,6 +9,7 @@ import HelpButton from "@/components/HelpButton";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import MetaConnect from "@/components/meta/MetaConnect";
 import DashboardTourWrapper from "@/components/DashboardTourWrapper";
+import TikTokConversion from "@/components/TikTokConversion";
 
 export const metadata = {
   title: "Dashboard – TJ TradeHub",
@@ -102,6 +103,7 @@ export default async function DashboardPage() {
 
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
+      <TikTokConversion />
       {/* Trial Banner */}
       {onTrial && !isSubscribed && (
         <div className="w-full px-6 py-3 flex items-center justify-between text-sm"
