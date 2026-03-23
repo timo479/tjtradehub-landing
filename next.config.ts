@@ -18,7 +18,7 @@ const securityHeaders = [
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
       "img-src 'self' data: blob: https:",
       "font-src 'self' https://fonts.gstatic.com https://fonts.googleapis.com",
-      "connect-src 'self' https://*.supabase.co https://api.stripe.com https://*.tradingview.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.allorigins.win https://analytics.tiktok.com",
+      "connect-src 'self' https://tjtradehub.com https://www.tjtradehub.com https://*.supabase.co https://api.stripe.com https://*.tradingview.com https://query1.finance.yahoo.com https://query2.finance.yahoo.com https://api.allorigins.win https://analytics.tiktok.com",
       "frame-src 'self' https://*.tradingview.com https://s3.tradingview.com",
       "worker-src 'self' blob:",
     ].join("; "),
