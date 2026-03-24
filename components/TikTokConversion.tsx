@@ -12,24 +12,33 @@ declare global {
 export default function TikTokConversion() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { update } = useSession();
+  const { data: session, update } = useSession();
 
   useEffect(() => {
-    if (searchParams.get("upgraded") === "true") {
-      // Fire TikTok conversion event
+    if (searchParams.get("upgraded") !== "true") return;
+    if (!session?.user?.id) return;
+
+    // Remove URL param immediately regardless of outcome
+    router.replace("/dashboard", { scroll: false });
+
+    // Refresh session from DB to get latest subscription_status
+    update().then((fresh) => {
+      const isActive = fresh?.user?.subscriptionStatus === "active";
+      if (!isActive) return;
+
+      // localStorage guard – fire only once per user account
+      const key = `ttq_cp_${session.user.id}`;
+      if (localStorage.getItem(key)) return;
+
       if (typeof window !== "undefined" && window.ttq) {
-        window.ttq.track("CompletePayment", {
-          value: 29,
-          currency: "USD",
-        });
+        window.ttq.track("CompletePayment", { value: 29, currency: "USD" });
+        localStorage.setItem(key, "1");
       }
-      // Force session refresh so subscription_status is updated in JWT
-      update().then(() => {
-        router.replace("/dashboard", { scroll: false });
-        router.refresh();
-      });
-    }
-  }, [searchParams, router, update]);
+
+      router.refresh();
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session?.user?.id]);
 
   return null;
 }
