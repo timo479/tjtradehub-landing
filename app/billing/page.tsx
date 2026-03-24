@@ -24,6 +24,11 @@ export default function BillingPage() {
     setLoading(true);
     setError("");
 
+    // TikTok: InitiateCheckout
+    if (typeof window !== "undefined" && (window as any).ttq) {
+      (window as any).ttq.track("InitiateCheckout", { value: 29, currency: "USD" });
+    }
+
     try {
       const res = await fetch("/api/stripe/create-checkout", {
         method: "POST",
