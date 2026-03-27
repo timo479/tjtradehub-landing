@@ -204,8 +204,8 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
-  const PT = 14, BAR = 80, PB = 22;
-  const bW = 14, gap = 32, tW = bars.length * (bW + gap) - gap + 16;
+  const PT = 14, BAR = 80, PB = 24;
+  const bW = 38, gap = 14, tW = bars.length * (bW + gap) - gap + 16;
   const mid = PT + BAR * 0.72;
   const maxPos = BAR * 0.72 - 2;
   const maxNeg = BAR * 0.28 - 2;
@@ -218,11 +218,13 @@ function WWeekday({ entries }: { entries: Entry[] }) {
           ? (Math.abs(b.avg) / maxAbs) * maxPos
           : (Math.abs(b.avg) / maxAbs) * maxNeg;
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
+        const labelY = b.avg >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="0.5" />}
-            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.55" />}
-            <text x={x + bW / 2} y={PT + BAR + 13} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
+            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
+            {b.count > 0 && <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
             {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
           </g>
         );
@@ -708,7 +710,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       return rows.map((row, ri) => (
         <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
           {row.map(w => (
-            <div key={w.id} style={card}>
+            <div key={w.id} style={w.id === "weekday" ? { ...card, padding: "14px 18px", borderRadius: "12px" } : card}>
               <SectionTitle>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </div>
@@ -731,7 +733,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
     return rows.map((row, ri) => (
       <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
         {row.map(w => (
-          <div key={w.id} style={card}>
+          <div key={w.id} style={w.id === "weekday" ? { ...card, padding: "14px 18px", borderRadius: "12px" } : card}>
             <SectionTitle>{w.name}</SectionTitle>
             <w.component entries={entries} />
           </div>
