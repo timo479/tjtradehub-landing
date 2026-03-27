@@ -170,20 +170,20 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
   const R = 40, CX = 56, CY = 56, sw = 13, circ = 2 * Math.PI * R;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-      <svg viewBox="0 0 112 112" style={{ flexShrink: 0, width: "clamp(120px, 38%, 200px)", height: "auto" }}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.25" />
+    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <svg viewBox="0 0 112 112" style={{ flexShrink: 0, width: "clamp(72px, 20%, 96px)", height: "auto" }}>
+        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.2" />
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
           strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`}
           transform={`rotate(-90 ${CX} ${CY})`} />
         <text x={CX} y={CY - 4} textAnchor="middle" fill="#F9FAFB" fontSize="15" fontWeight="700">{Math.round(pct * 100)}%</text>
         <text x={CX} y={CY + 12} textAnchor="middle" fill="#6B7280" fontSize="9">Win Rate</text>
       </svg>
-      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
         {[{ c: "#22c55e", l: `${wins} Wins` }, { c: "#ef4444", l: `${losses} Losses` }, { c: "#374151", l: `${total - wins - losses} Break-even` }].map(x => (
-          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c }} />
-            <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{x.l}</span>
+          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+            <div style={{ width: "7px", height: "7px", borderRadius: "2px", backgroundColor: x.c }} />
+            <span style={{ color: "#9CA3AF", fontSize: "12px" }}>{x.l}</span>
           </div>
         ))}
       </div>
@@ -204,8 +204,8 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
-  const PT = 14, BAR = 80, PB = 24;
-  const bW = 38, gap = 14, tW = bars.length * (bW + gap) - gap + 16;
+  const PT = 14, BAR = 80, PB = 22;
+  const bW = 14, gap = 32, tW = bars.length * (bW + gap) - gap + 16;
   const mid = PT + BAR * 0.72;
   const maxPos = BAR * 0.72 - 2;
   const maxNeg = BAR * 0.28 - 2;
@@ -218,13 +218,11 @@ function WWeekday({ entries }: { entries: Entry[] }) {
           ? (Math.abs(b.avg) / maxAbs) * maxPos
           : (Math.abs(b.avg) / maxAbs) * maxNeg;
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
-        const labelY = b.avg >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
-            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
-            {b.count > 0 && <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
+            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="0.5" />}
+            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.55" />}
+            <text x={x + bW / 2} y={PT + BAR + 13} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
             {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
           </g>
         );
