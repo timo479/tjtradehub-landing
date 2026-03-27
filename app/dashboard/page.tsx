@@ -186,10 +186,14 @@ export default async function DashboardPage() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10" data-tour="stats-cards">
           {cards.map((card) => (
             <div key={card.label} className="rounded-2xl p-6"
-              style={{ backgroundColor: "#111827", border: "1px solid #1F2937" }}>
-              <p className="text-sm mb-3" style={{ color: "#9CA3AF" }}>{card.label}</p>
-              <p className="text-3xl font-bold mb-1" style={{ color: card.color }}>{card.value}</p>
-              <p className="text-xs" style={{ color: "#6B7280" }}>{card.sub}</p>
+              style={{
+                backgroundColor: "#111827",
+                border: "1px solid #1F2937",
+                borderTop: `2px solid ${card.color === "#F9FAFB" ? "#374151" : card.color}`,
+              }}>
+              <p className="text-xs mb-4" style={{ color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{card.label}</p>
+              <p className="text-4xl font-bold mb-2" style={{ color: card.color, lineHeight: "1" }}>{card.value}</p>
+              <p className="text-xs" style={{ color: "#4B5563" }}>{card.sub}</p>
             </div>
           ))}
         </div>

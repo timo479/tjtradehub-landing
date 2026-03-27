@@ -53,7 +53,12 @@ const card: React.CSSProperties = {
 };
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
-  return <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "16px" }}>{children}</p>;
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+      <div style={{ width: "3px", height: "12px", borderRadius: "2px", backgroundColor: "#8B5CF6", flexShrink: 0 }} />
+      <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", margin: 0 }}>{children}</p>
+    </div>
+  );
 }
 
 function NoData({ text = "At least 1 trade with P&L needed" }: { text?: string }) {
@@ -100,7 +105,7 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
       {items.map(i => (
-        <div key={i.label} style={{ backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "12px", padding: "14px 16px" }}>
+        <div key={i.label} style={{ backgroundColor: "#0d1117", borderRadius: "12px", padding: "14px 16px" }}>
           <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{i.label}</p>
           <p style={{ color: i.color, fontWeight: 700, fontSize: "20px", lineHeight: 1 }}>{i.value}</p>
           {"sub" in i && i.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{i.sub}</p>}
@@ -706,7 +711,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
           {row.map(w => (
             <div key={w.id} style={card}>
-              <SectionTitle>{w.icon} {w.name}</SectionTitle>
+              <SectionTitle>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </div>
           ))}
@@ -742,8 +747,8 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-        <p style={{ color: "#6B7280", fontSize: "13px" }}>
-          {active.length} of {WIDGETS.length} widgets active
+        <p style={{ color: "#374151", fontSize: "12px" }}>
+          {active.length} / {WIDGETS.length} widgets
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* Layout switcher */}
