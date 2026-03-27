@@ -23,7 +23,7 @@ export async function GET() {
 
     // Show first 5 raw deals so we can see the structure
     const sample = deals.slice(0, 5);
-    const entryTypes = [...new Set(deals.map((d: { entry: string }) => d.entry))];
+    const entryTypes = [...new Set(deals.map((d: { entryType: string }) => d.entryType))];
     const dealTypes = [...new Set(deals.map((d: { type: string }) => d.type))];
 
     return NextResponse.json({

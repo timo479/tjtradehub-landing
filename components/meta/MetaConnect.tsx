@@ -81,9 +81,12 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
   }, [isUserActive]);
 
   const startHeartbeat = useCallback(() => {
+    // Clean up previous session's event listeners before starting new
+    const prevRef = heartbeatTimer as React.MutableRefObject<ReturnType<typeof setInterval> | null> & { cleanup?: () => void };
+    prevRef.cleanup?.();
+    if (heartbeatTimer.current) { clearInterval(heartbeatTimer.current); heartbeatTimer.current = null; }
     lastActivityRef.current = Date.now();
     const sessionStart = Date.now();
-    if (heartbeatTimer.current) clearInterval(heartbeatTimer.current);
     sendHeartbeat();
     heartbeatTimer.current = setInterval(() => {
       // Hard 4h session limit – force undeploy to prevent overnight billing
@@ -156,8 +159,18 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
 
   // Poll until DEPLOYED + CONNECTED (broker handshake complete)
   const startPolling = useCallback(() => {
+    let attempts = 0;
+    const MAX_POLL_ATTEMPTS = 24; // 24 × 5s = 2 minutes
     if (pollTimer.current) clearInterval(pollTimer.current);
     pollTimer.current = setInterval(async () => {
+      attempts++;
+      if (attempts > MAX_POLL_ATTEMPTS) {
+        clearInterval(pollTimer.current!);
+        pollTimer.current = null;
+        setError("Connection timed out after 2 minutes. Please try again.");
+        setDeploying(false);
+        return;
+      }
       const res = await fetch("/api/meta/settings");
       if (!res.ok) return;
       const data: ConnectionInfo = await res.json();
@@ -217,6 +230,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
   };
 
   const redeploy = async () => {
+    if (deploying) return;
     setDeploying(true);
     setError(null);
     const res = await fetch("/api/meta/deploy", { method: "POST" });

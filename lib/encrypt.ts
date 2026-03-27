@@ -10,7 +10,7 @@ function getKey(): Buffer | null {
 
 export function encrypt(text: string): string {
   const key = getKey();
-  if (!key) return text; // no key set → store plaintext (backward compat)
+  if (!key) throw new Error("METAAPI_ENCRYPTION_KEY is not configured. Set this env variable to encrypt credentials.");
   const iv = crypto.randomBytes(12);
   const cipher = crypto.createCipheriv(ALGORITHM, key, iv);
   const encrypted = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);

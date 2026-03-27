@@ -205,7 +205,7 @@ export async function POST(req: Request) {
     if (closedDeals.length === 0) {
       // On first sync, don't advance the timestamp — MetaAPI may still be loading history
       if (!isFirstSync) {
-        await db.from("users").update({ last_meta_sync: to.toISOString() }).eq("id", session.user.id);
+        await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
       }
       return NextResponse.json({ synced: 0, skipped: 0 });
     }
@@ -282,7 +282,7 @@ export async function POST(req: Request) {
       synced++;
     }
 
-    await db.from("users").update({ last_meta_sync: to.toISOString() }).eq("id", session.user.id);
+    await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
     return NextResponse.json({ synced, skipped, total: closedDeals.length });
 
   } catch (e) {

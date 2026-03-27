@@ -1,10 +1,24 @@
 import { db } from "@/lib/db";
 import { undeployAccount } from "@/lib/metaapi";
 import { NextResponse } from "next/server";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
-  const authHeader = req.headers.get("authorization");
-  if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
+  const secret = process.env.CRON_SECRET;
+  if (!secret) {
+    return NextResponse.json({ error: "Server misconfigured" }, { status: 500 });
+  }
+  const authHeader = req.headers.get("authorization") ?? "";
+  const expected = `Bearer ${secret}`;
+  let authorized = false;
+  try {
+    authorized =
+      authHeader.length === expected.length &&
+      crypto.timingSafeEqual(Buffer.from(authHeader), Buffer.from(expected));
+  } catch {
+    // length mismatch or buffer error → not authorized
+  }
+  if (!authorized) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

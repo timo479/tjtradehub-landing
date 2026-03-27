@@ -83,6 +83,7 @@ export async function POST(req: NextRequest) {
           mt_platform: platform,
           metaapi_account_state: "DEPLOYING",
           last_meta_sync: null,
+          meta_last_active: new Date().toISOString(),
         }).eq("id", session.user.id);
         return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
       } catch {
@@ -111,6 +112,7 @@ export async function POST(req: NextRequest) {
       metaapi_account_id: account.id,
       metaapi_account_state: "DEPLOYING",
       last_meta_sync: null,
+      meta_last_active: new Date().toISOString(),
     }).eq("id", session.user.id);
 
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });

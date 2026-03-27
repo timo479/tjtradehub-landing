@@ -66,7 +66,7 @@ export async function POST(request: NextRequest) {
       const customerId = session.customer as string;
       if (!customerId) break;
 
-      await db
+      const { error: csErr } = await db
         .from("users")
         .update({
           subscription_id: sub.id,
@@ -74,6 +74,7 @@ export async function POST(request: NextRequest) {
           current_period_end: getPeriodEnd(sub),
         })
         .eq("stripe_customer_id", customerId);
+      if (csErr) console.error("Webhook DB error (checkout.completed):", csErr, "customer:", customerId);
       break;
     }
 
@@ -83,7 +84,7 @@ export async function POST(request: NextRequest) {
       const customerId = getCustomerId(sub);
       if (!customerId) break;
 
-      await db
+      const { error: cuErr } = await db
         .from("users")
         .update({
           subscription_id: sub.id,
@@ -91,6 +92,7 @@ export async function POST(request: NextRequest) {
           current_period_end: getPeriodEnd(sub),
         })
         .eq("stripe_customer_id", customerId);
+      if (cuErr) console.error("Webhook DB error (subscription.created/updated):", cuErr, "customer:", customerId);
       break;
     }
 
@@ -100,13 +102,14 @@ export async function POST(request: NextRequest) {
       if (!customerId) break;
 
       await cleanupMetaAccount(customerId);
-      await db
+      const { error: sdErr } = await db
         .from("users")
         .update({
           subscription_status: "canceled",
           current_period_end: null,
         })
         .eq("stripe_customer_id", customerId);
+      if (sdErr) console.error("Webhook DB error (subscription.deleted):", sdErr, "customer:", customerId);
       break;
     }
 
@@ -116,10 +119,36 @@ export async function POST(request: NextRequest) {
       if (!customerId) break;
 
       await cleanupMetaAccount(customerId);
-      await db
+      const { error: pfErr } = await db
         .from("users")
         .update({ subscription_status: "past_due" })
         .eq("stripe_customer_id", customerId);
+      if (pfErr) console.error("Webhook DB error (payment_failed):", pfErr, "customer:", customerId);
+      break;
+    }
+
+    case "invoice.payment_succeeded": {
+      const invoice = event.data.object as Stripe.Invoice;
+      const customerId = getCustomerId(invoice);
+      if (!customerId) break;
+
+      const subscriptionId = (invoice as { subscription?: string }).subscription;
+      if (!subscriptionId) break;
+
+      try {
+        const sub = await stripe.subscriptions.retrieve(subscriptionId);
+        const { error: psErr } = await db
+          .from("users")
+          .update({
+            subscription_id: sub.id,
+            subscription_status: sub.status,
+            current_period_end: getPeriodEnd(sub),
+          })
+          .eq("stripe_customer_id", customerId);
+        if (psErr) console.error("Webhook DB error (payment_succeeded):", psErr, "customer:", customerId);
+      } catch (e) {
+        console.error("Webhook payment_succeeded retrieve error:", e);
+      }
       break;
     }
   }

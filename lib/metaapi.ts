@@ -107,12 +107,18 @@ export async function updateAccount(accountId: string, params: {
 
 export async function undeployAccount(accountId: string) {
   const token = getToken();
-  const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}/undeploy`, {
-    method: "POST",
-    headers: { "auth-token": token, "Content-Type": "application/json" },
-    body: "{}",
-    cache: "no-store",
-  });
+  let res: Response;
+  try {
+    res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}/undeploy`, {
+      method: "POST",
+      headers: { "auth-token": token, "Content-Type": "application/json" },
+      body: "{}",
+      cache: "no-store",
+    });
+  } catch (e) {
+    const cause = (e as { cause?: { message?: string } })?.cause;
+    throw new Error(`MetaAPI network error: ${cause?.message ?? (e instanceof Error ? e.message : String(e))}`);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
@@ -120,13 +126,23 @@ export async function undeployAccount(accountId: string) {
   return null;
 }
 
-export async function removeAccount(accountId: string) {
+export async function removeAccount(accountId: string): Promise<void> {
   const token = getToken();
-  const res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}`, {
-    method: "DELETE",
-    headers: { "auth-token": token },
-  });
-  return res.ok;
+  let res: Response;
+  try {
+    res = await fetch(`${PROVISIONING}/users/current/accounts/${accountId}`, {
+      method: "DELETE",
+      headers: { "auth-token": token },
+      cache: "no-store",
+    });
+  } catch (e) {
+    const cause = (e as { cause?: { message?: string } })?.cause;
+    throw new Error(`MetaAPI network error: ${cause?.message ?? (e instanceof Error ? e.message : String(e))}`);
+  }
+  if (!res.ok) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
+  }
 }
 
 // ─── Trading Data ─────────────────────────────────────────────────────────────

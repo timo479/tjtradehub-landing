@@ -20,6 +20,10 @@ export async function GET(req: NextRequest) {
   }
 
   if (new Date(user.verification_token_expires) < new Date()) {
+    await db.from("users").update({
+      verification_token: null,
+      verification_token_expires: null,
+    }).eq("id", user.id);
     return NextResponse.redirect(`${appUrl()}/login?error=token_expired`);
   }
 

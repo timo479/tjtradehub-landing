@@ -60,6 +60,10 @@ export async function POST(request: NextRequest) {
       Date.now() + 24 * 60 * 60 * 1000
     ).toISOString();
 
+    const trialDays = parseInt(process.env.TRIAL_DAYS ?? "7");
+    const trialEnds = new Date();
+    trialEnds.setDate(trialEnds.getDate() + trialDays);
+
     const { error } = await db.from("users").insert({
       name,
       email,
@@ -67,6 +71,8 @@ export async function POST(request: NextRequest) {
       email_verified: false,
       verification_token,
       verification_token_expires,
+      trial_ends_at: trialEnds.toISOString(),
+      subscription_status: "trialing",
     });
 
     if (error) {
