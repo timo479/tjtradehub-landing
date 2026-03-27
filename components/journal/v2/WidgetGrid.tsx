@@ -171,7 +171,7 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-      <svg width="112" height="112" viewBox="0 0 112 112" style={{ flexShrink: 0 }}>
+      <svg viewBox="0 0 112 112" style={{ flexShrink: 0, width: "clamp(120px, 38%, 200px)", height: "auto" }}>
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.25" />
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
           strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`}
@@ -205,13 +205,13 @@ function WWeekday({ entries }: { entries: Entry[] }) {
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
   const PT = 14, BAR = 80, PB = 24;
-  const bW = 22, gap = 8, tW = bars.length * (bW + gap) - gap + 16;
+  const bW = 38, gap = 14, tW = bars.length * (bW + gap) - gap + 16;
   const mid = PT + BAR * 0.72;
   const maxPos = BAR * 0.72 - 2;
   const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "260px", height: "auto", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
         const h = b.avg >= 0
@@ -239,10 +239,10 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   const bars = useMemo(() => {
     const today = new Date();
     const result: { label: string; key: string; total: number; count: number }[] = [];
-    for (let i = 5; i >= 0; i--) {
+    for (let i = 11; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
-      result.push({ label: MONTHS_SHORT[d.getMonth()], key, total: 0, count: 0 });
+      result.push({ label: `${MONTHS_SHORT[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`, key, total: 0, count: 0 });
     }
     entries.forEach(e => {
       const p = getPnl(e); if (p === null) return;
@@ -256,13 +256,13 @@ function WMonthly({ entries }: { entries: Entry[] }) {
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.total)));
   const PT = 14, BAR = 80, PB = 24;
-  const bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 28;
+  const bW = 44, gap = 13, tW = bars.length * (bW + gap) - gap + 28;
   const mid = PT + BAR * 0.72;
   const maxPos = BAR * 0.72 - 2;
   const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "480px", height: "auto", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "auto", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
         const h = b.total >= 0
@@ -734,7 +734,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
         {row.map(w => (
           <div key={w.id} style={card}>
-            <SectionTitle>{w.icon} {w.name}</SectionTitle>
+            <SectionTitle>{w.name}</SectionTitle>
             <w.component entries={entries} />
           </div>
         ))}
