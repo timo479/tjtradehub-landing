@@ -239,10 +239,10 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   const bars = useMemo(() => {
     const today = new Date();
     const result: { label: string; key: string; total: number; count: number }[] = [];
-    for (let i = 11; i >= 0; i--) {
+    for (let i = 5; i >= 0; i--) {
       const d = new Date(today.getFullYear(), today.getMonth() - i, 1);
       const key = `${d.getFullYear()}-${d.getMonth()}`;
-      result.push({ label: `${MONTHS_SHORT[d.getMonth()]} '${String(d.getFullYear()).slice(2)}`, key, total: 0, count: 0 });
+      result.push({ label: MONTHS_SHORT[d.getMonth()], key, total: 0, count: 0 });
     }
     entries.forEach(e => {
       const p = getPnl(e); if (p === null) return;
@@ -567,7 +567,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "equity-curve", name: "Equity Curve",            desc: "Cumulative P&L across all trades",                     icon: "📈", size: "full", defaultOn: true,  component: WEquityCurve },
   { id: "winloss",      name: "Win / Loss",              desc: "Wins, Losses and Break-even as donut chart",           icon: "🎯", size: "half", defaultOn: true,  component: WWinLoss },
   { id: "weekday",      name: "Weekday Performance",     desc: "Average P&L by weekday",                               icon: "📅", size: "half", defaultOn: true,  component: WWeekday },
-  { id: "monthly-pnl",  name: "Monthly P&L",             desc: "P&L for the last 6 months as bar chart",               icon: "🗓️", size: "full", defaultOn: true,  component: WMonthly },
+  { id: "monthly-pnl",  name: "Monthly P&L",             desc: "P&L for the last 6 months as bar chart",               icon: "🗓️", size: "half", defaultOn: true,  component: WMonthly },
   { id: "calendar",     name: "Trade Calendar",          desc: "Heatmap of the last 3 months by daily P&L",            icon: "🗓️", size: "full", defaultOn: true,  component: WCalendar },
   { id: "histogram",    name: "P&L Distribution",        desc: "Frequency distribution of your trade results",         icon: "📉", size: "full", defaultOn: false, component: WHistogram },
   { id: "instrument",   name: "Instrument Breakdown",    desc: "Which markets you trade most frequently",               icon: "🔍", size: "half", defaultOn: false, component: WInstrument },
