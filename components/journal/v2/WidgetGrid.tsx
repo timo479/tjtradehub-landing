@@ -170,8 +170,8 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
   const R = 40, CX = 56, CY = 56, sw = 13, circ = 2 * Math.PI * R;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-      <svg viewBox="0 0 112 112" style={{ flexShrink: 0, width: "clamp(72px, 20%, 96px)", height: "auto" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+      <svg viewBox="0 0 112 112" style={{ width: "130px", height: "130px" }}>
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.2" />
         <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
           strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`}
@@ -179,7 +179,7 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
         <text x={CX} y={CY - 4} textAnchor="middle" fill="#F9FAFB" fontSize="15" fontWeight="700">{Math.round(pct * 100)}%</text>
         <text x={CX} y={CY + 12} textAnchor="middle" fill="#6B7280" fontSize="9">Win Rate</text>
       </svg>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+      <div style={{ display: "flex", gap: "16px" }}>
         {[{ c: "#22c55e", l: `${wins} Wins` }, { c: "#ef4444", l: `${losses} Losses` }, { c: "#374151", l: `${total - wins - losses} Break-even` }].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
             <div style={{ width: "7px", height: "7px", borderRadius: "2px", backgroundColor: x.c }} />
