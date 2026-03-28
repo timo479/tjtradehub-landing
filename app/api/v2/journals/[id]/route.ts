@@ -24,7 +24,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     .single();
   if (!journal) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
-  const allowed = ["name", "instrument_type", "time_from", "time_to", "risk_per_trade", "max_trades_per_day", "rules"];
+  const allowed = ["name", "instrument_type", "time_from", "time_to", "risk_per_trade", "max_trades_per_day", "starting_balance", "rules"];
   const updates: Record<string, unknown> = {};
   for (const key of allowed) {
     if (key in body) updates[key] = body[key];

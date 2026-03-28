@@ -25,9 +25,10 @@ const FIXED_SECTIONS = [
   {
     name: "Numbers", order_index: 1,
     fields: [
-      { label: "P&L",        field_type: "number", order_index: 0, options: null },
-      { label: "Commission", field_type: "number", order_index: 1, options: null },
-      { label: "Swap",       field_type: "number", order_index: 2, options: null },
+      { label: "P&L",         field_type: "number", order_index: 0, options: null },
+      { label: "Commission",  field_type: "number", order_index: 1, options: null },
+      { label: "Swap",        field_type: "number", order_index: 2, options: null },
+      { label: "Risk Amount", field_type: "number", order_index: 3, options: null },
     ],
   },
   {
@@ -49,7 +50,7 @@ export async function GET() {
 
   const { data, error } = await db
     .from("journal_templates")
-    .select("id, name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, rules, is_frozen, created_at, template_sections(*, template_fields(*))")
+    .select("id, name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, starting_balance, rules, is_frozen, created_at, template_sections(*, template_fields(*))")
     .eq("user_id", session.user.id)
     .neq("name", "MetaAPI Import")
     .order("created_at", { ascending: true });
@@ -64,7 +65,7 @@ export async function POST(req: NextRequest) {
   if (!await checkAccess(session.user.id)) return NextResponse.json({ error: "Subscription required" }, { status: 403 });
 
   const body = await req.json();
-  const { name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, rules } = body;
+  const { name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, starting_balance, rules } = body;
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
 
   const { data: template, error: tErr } = await db
@@ -79,6 +80,7 @@ export async function POST(req: NextRequest) {
       time_to: time_to ?? "17:00",
       risk_per_trade: risk_per_trade ?? null,
       max_trades_per_day: max_trades_per_day ?? null,
+      starting_balance: starting_balance ?? null,
       rules: rules ?? [],
     })
     .select()
@@ -107,7 +109,7 @@ export async function POST(req: NextRequest) {
 
   const { data: full } = await db
     .from("journal_templates")
-    .select("id, name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, rules, is_frozen, created_at, template_sections(*, template_fields(*))")
+    .select("id, name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, starting_balance, rules, is_frozen, created_at, template_sections(*, template_fields(*))")
     .eq("id", template.id)
     .single();
 

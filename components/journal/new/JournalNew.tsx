@@ -16,6 +16,7 @@ interface Journal {
   id: string; name: string; instrument_type: string;
   time_from: string; time_to: string;
   risk_per_trade: number | null; max_trades_per_day: number | null;
+  starting_balance: number | null;
   rules: Rule[]; is_frozen: boolean; created_at: string;
   template_sections: SectionDef[];
 }

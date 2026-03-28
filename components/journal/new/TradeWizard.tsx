@@ -84,6 +84,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const [be, setBe] = useState(getInitialValue(entry, "BE"));
   const [volume, setVolume] = useState(getInitialValue(entry, "Volume"));
   const [pnl, setPnl] = useState(getInitialValue(entry, "P&L"));
+  const [riskAmount, setRiskAmount] = useState(getInitialValue(entry, "Risk Amount"));
   const [commission, setCommission] = useState(getInitialValue(entry, "Commission"));
   const [swap, setSwap] = useState(getInitialValue(entry, "Swap"));
 
@@ -199,6 +200,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     set("Take Profit", tp);
     set("BE", be);
     set("P&L", pnl);
+    set("Risk Amount", riskAmount);
     set("Commission", commission);
     set("Swap", swap);
     set("Setup", setup);
@@ -384,9 +386,15 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
               ))}
             </div>
 
-            <div>
-              <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>P&L <span style={{ color: "#6B7280" }}>result in account currency</span></label>
-              <input type="number" step="any" style={{ ...inp, fontSize: "20px", fontWeight: 700, textAlign: "center", padding: "14px" }} placeholder="e.g. 120.00 or -45.00" value={pnl} onChange={e => setPnl(e.target.value)} />
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
+              <div>
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>P&L <span style={{ color: "#4B5563" }}>result</span></label>
+                <input type="number" step="any" style={{ ...inp, fontSize: "18px", fontWeight: 700, textAlign: "center", padding: "14px" }} placeholder="e.g. 120.00" value={pnl} onChange={e => setPnl(e.target.value)} />
+              </div>
+              <div>
+                <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Risk Amount <span style={{ color: "#4B5563" }}>risked $</span></label>
+                <input type="number" step="any" style={{ ...inp, fontSize: "18px", fontWeight: 700, textAlign: "center", padding: "14px" }} placeholder="e.g. 50.00" value={riskAmount} onChange={e => setRiskAmount(e.target.value)} />
+              </div>
             </div>
 
             <details style={{ border: "1px solid #1F2937", borderRadius: "10px", overflow: "hidden" }}>

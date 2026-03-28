@@ -11,6 +11,7 @@ interface Journal {
   time_to: string;
   risk_per_trade: number | null;
   max_trades_per_day: number | null;
+  starting_balance: number | null;
   rules: Rule[];
 }
 
@@ -39,6 +40,7 @@ export default function JournalCreateModal({ initial, onClose, onSaved }: Props)
   const [timeTo, setTimeTo] = useState(initial?.time_to ?? "17:00");
   const [riskPerTrade, setRiskPerTrade] = useState(String(initial?.risk_per_trade ?? ""));
   const [maxTrades, setMaxTrades] = useState(String(initial?.max_trades_per_day ?? ""));
+  const [startingBalance, setStartingBalance] = useState(String(initial?.starting_balance ?? ""));
   const [rules, setRules] = useState<Rule[]>(initial?.rules ?? []);
   const [showPresets, setShowPresets] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -74,6 +76,7 @@ export default function JournalCreateModal({ initial, onClose, onSaved }: Props)
       time_to: timeTo,
       risk_per_trade: riskPerTrade ? parseFloat(riskPerTrade) : null,
       max_trades_per_day: maxTrades ? parseInt(maxTrades) : null,
+      starting_balance: startingBalance ? parseFloat(startingBalance) : null,
       rules: cleanRules,
     };
 
@@ -138,6 +141,12 @@ export default function JournalCreateModal({ initial, onClose, onSaved }: Props)
               <label style={label}>Max. Trades per Day</label>
               <input type="number" style={inp} placeholder="e.g. 3" value={maxTrades} onChange={e => setMaxTrades(e.target.value)} />
             </div>
+          </div>
+
+          {/* Starting Balance */}
+          <div>
+            <label style={label}>Starting Balance <span style={{ color: "#6B7280" }}>($) – for Risk Discipline tracking</span></label>
+            <input type="number" step="0.01" style={inp} placeholder="e.g. 10000" value={startingBalance} onChange={e => setStartingBalance(e.target.value)} />
           </div>
 
           {/* Rules */}

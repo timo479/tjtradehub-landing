@@ -15,7 +15,7 @@ interface Trade {
   trade_field_values: TradeFieldValue[];
   journal_templates: { id: string; name: string };
 }
-interface Journal { id: string; name: string; rules: Rule[]; }
+interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; }
 
 interface Props { entries: Trade[]; journal: Journal; }
 
@@ -537,6 +537,87 @@ function WSetupPerf({ entries }: { entries: Trade[] }) {
   );
 }
 
+// ─── NEW Widget: Risk Discipline ──────────────────────────────────────────────
+function WRiskDiscipline({ entries, journal }: { entries: Trade[]; journal: Journal }) {
+  const result = useMemo(() => {
+    const riskRule = journal.risk_per_trade;
+    const startBal = journal.starting_balance;
+    if (!riskRule || startBal == null) return null;
+
+    const withRisk = entries.filter(e => getField(e, "Risk Amount") !== null);
+    if (!withRisk.length) return null;
+
+    const sorted = [...withRisk].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
+
+    let balance = startBal;
+    let compliant = 0, breakCount = 0, sumBreakRisk = 0;
+
+    for (const trade of sorted) {
+      const riskAmtStr = getField(trade, "Risk Amount");
+      if (riskAmtStr && balance > 0) {
+        const riskAmt = parseFloat(riskAmtStr);
+        if (!isNaN(riskAmt)) {
+          const actualPct = (riskAmt / balance) * 100;
+          if (Math.abs(actualPct - riskRule) <= 0.5) { compliant++; }
+          else { breakCount++; sumBreakRisk += actualPct; }
+        }
+      }
+      const p = pnlNum(trade);
+      if (p !== null) balance += p;
+    }
+
+    const total = compliant + breakCount;
+    const pct = total ? Math.round((compliant / total) * 100) : null;
+    const avgBreakRisk = breakCount > 0 ? sumBreakRisk / breakCount : null;
+    return { compliant, total, pct, breakCount, avgBreakRisk };
+  }, [entries, journal]);
+
+  if (!result) {
+    if (!journal.risk_per_trade || journal.starting_balance == null)
+      return <NoData text="Set Risk % and Starting Balance in journal settings to enable risk tracking." />;
+    return <NoData text="No trades with 'Risk Amount' field found." />;
+  }
+
+  const { compliant, total, pct, breakCount, avgBreakRisk } = result;
+  const color = pct !== null && pct >= 80 ? "#22c55e" : pct !== null && pct >= 60 ? "#F59E0B" : "#ef4444";
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div>
+          <p style={{ color: "#D1D5DB", fontSize: "13px", marginBottom: "3px" }}>
+            Rule: <strong style={{ color: "#A78BFA" }}>{journal.risk_per_trade}% risk per trade</strong>
+          </p>
+          <p style={{ color: "#6B7280", fontSize: "12px" }}>±0.5% tolerance · balance-adjusted</p>
+        </div>
+        <div style={{ textAlign: "right" }}>
+          <p style={{ color, fontSize: "28px", fontWeight: 800, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+            {pct !== null ? `${pct}%` : "—"}
+          </p>
+          <p style={{ color: "#6B7280", fontSize: "11px", marginTop: "2px" }}>{compliant}/{total} trades</p>
+        </div>
+      </div>
+
+      <div style={{ height: "8px", backgroundColor: "#1F2937", borderRadius: "4px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct ?? 0}%`, backgroundColor: color, borderRadius: "4px", transition: "width 0.5s ease" }} />
+      </div>
+
+      {breakCount > 0 ? (
+        <div style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "10px", padding: "10px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ color: "#f87171", fontSize: "13px" }}>⚠ {breakCount} rule break{breakCount !== 1 ? "s" : ""}</span>
+          {avgBreakRisk !== null && (
+            <span style={{ color: "#6B7280", fontSize: "12px" }}>avg {avgBreakRisk.toFixed(1)}% on violations</span>
+          )}
+        </div>
+      ) : total > 0 ? (
+        <div style={{ backgroundColor: "rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.2)", borderRadius: "10px", padding: "10px 14px", textAlign: "center" }}>
+          <span style={{ color: "#22c55e", fontSize: "13px" }}>✓ Perfect risk discipline!</span>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 // ─── NEW Widget: Rule Compliance ──────────────────────────────────────────────
 function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Journal }) {
   const bars = useMemo(() => {
@@ -705,6 +786,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "monthly",        name: "Monthly P&L",            desc: "P&L bar chart for the last 6 months",                 icon: "🗓️", size: "full", defaultOn: true,  component: ({ entries }) => <WMonthly entries={entries} /> },
   { id: "calendar",       name: "Trade Calendar",         desc: "Daily P&L heatmap for the last 3 months",             icon: "📆", size: "full", defaultOn: true,  component: ({ entries }) => <WCalendar entries={entries} /> },
   { id: "setup-perf",     name: "Setup Performance",      desc: "Win Rate and P&L broken down by setup type",          icon: "🔬", size: "full", defaultOn: true,  component: ({ entries }) => <WSetupPerf entries={entries} /> },
+  { id: "risk-discipline", name: "Risk Discipline",        desc: "How consistently you stick to your risk % rule",      icon: "🎯", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRiskDiscipline entries={entries} journal={journal} /> },
   { id: "rule-compliance",name: "Rule Compliance",        desc: "How often each journal rule was followed",            icon: "✅", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WRuleCompliance entries={entries} journal={journal} /> },
   { id: "emotions-breaks",name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", size: "full", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
   { id: "trade-analysis", name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", size: "full", defaultOn: true,  component: ({ entries }) => <WTradeAnalysis entries={entries} /> },
