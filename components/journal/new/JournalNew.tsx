@@ -264,8 +264,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
 
   const sortArrow = (col: string) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
-  // Review trades count (no setup + no emotions in journal trades)
   const reviewCount = journalTrades.filter(t => t.source === "mt5" && !t.is_reviewed).length;
+  useEffect(() => { if (filter === "review" && reviewCount === 0) setFilter("all"); }, [reviewCount, filter]);
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "300px", color: "#6B7280", fontSize: "14px" }}>
@@ -506,12 +506,18 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
       {/* Filter + Search */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
-          {(["all", "today", "week", "month", "review"] as Filter[]).map(f => (
+          {(["all", "today", "week", "month"] as Filter[]).map(f => (
             <button key={f} onClick={() => setFilter(f)}
-              style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${filter === f ? "rgba(139,92,246,0.5)" : "#374151"}`, backgroundColor: filter === f ? "rgba(139,92,246,0.1)" : "transparent", color: filter === f ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
-              {f === "review" ? <>Needs Review {reviewCount > 0 && <span style={{ backgroundColor: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: "8px", padding: "0 5px", minWidth: "16px", textAlign: "center" }}>{reviewCount}</span>}</> : f.charAt(0).toUpperCase() + f.slice(1)}
+              style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${filter === f ? "rgba(139,92,246,0.5)" : "#374151"}`, backgroundColor: filter === f ? "rgba(139,92,246,0.1)" : "transparent", color: filter === f ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+              {f.charAt(0).toUpperCase() + f.slice(1)}
             </button>
           ))}
+          {reviewCount > 0 && (
+            <button onClick={() => setFilter("review")}
+              style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${filter === "review" ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.25)"}`, backgroundColor: filter === "review" ? "rgba(239,68,68,0.12)" : "transparent", color: filter === "review" ? "#f87171" : "#ef4444", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
+              Needs Review <span style={{ backgroundColor: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: "8px", padding: "0 5px", minWidth: "16px", textAlign: "center" }}>{reviewCount}</span>
+            </button>
+          )}
         </div>
         <input style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "8px", padding: "7px 12px", color: "#F9FAFB", fontSize: "13px", outline: "none", width: "280px", maxWidth: "100%" }}
           placeholder="Search symbol, setup, notes, emotions..."
