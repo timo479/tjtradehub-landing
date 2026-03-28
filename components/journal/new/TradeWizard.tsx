@@ -422,7 +422,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "14px" }}>
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>P&L <span style={{ color: "#4B5563" }}>result</span></label>
-                <input type="number" step="any" style={{ ...inp, fontSize: "18px", fontWeight: 700, textAlign: "center", padding: "14px" }} placeholder="e.g. 120.00" value={pnl} onChange={e => setPnl(e.target.value)} />
+                <input type="number" step="any" style={{ ...inp, fontSize: "18px", fontWeight: 700, textAlign: "center", padding: "14px", color: pnl === "" ? "#F9FAFB" : parseFloat(pnl) > 0 ? "#22c55e" : parseFloat(pnl) < 0 ? "#ef4444" : "#F9FAFB", border: `1px solid ${pnl === "" ? "#1F2937" : parseFloat(pnl) > 0 ? "rgba(34,197,94,0.4)" : parseFloat(pnl) < 0 ? "rgba(239,68,68,0.4)" : "#1F2937"}` }} placeholder="e.g. 120.00" value={pnl} onChange={e => setPnl(e.target.value)} />
               </div>
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Risk Amount <span style={{ color: "#4B5563" }}>risked $</span></label>
