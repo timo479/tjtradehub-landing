@@ -104,6 +104,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   // MT5 sync
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
+  const [metaConnected, setMetaConnected] = useState<boolean>(false);
   const [showInbox, setShowInbox] = useState(false);
   const [bulkJournalId, setBulkJournalId] = useState("");
   const [bulkMoving, setBulkMoving] = useState(false);
@@ -130,6 +131,13 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  useEffect(() => {
+    fetch("/api/meta/settings")
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setMetaConnected(!!(d?.connected && d?.state === "DEPLOYED" && d?.connectionStatus === "CONNECTED")))
+      .catch(() => setMetaConnected(false));
+  }, []);
 
   useEffect(() => {
     if (!detailTrade) { setDetailScreenshots([]); return; }
@@ -456,10 +464,15 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
           {syncMsg && <span style={{ fontSize: "12px", color: syncMsg.startsWith("✅") ? "#22c55e" : "#ef4444" }}>{syncMsg}</span>}
-          <button onClick={mt5Sync} disabled={syncing} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 14px", borderRadius: "8px", border: "1px solid #00c896", backgroundColor: "transparent", color: "#00c896", cursor: syncing ? "not-allowed" : "pointer", fontSize: "13px", opacity: syncing ? 0.6 : 1 }}>
-            <span style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#00c896", boxShadow: "0 0 6px #00c896", flexShrink: 0, animation: "pulse 1.8s infinite" }} />
-            {syncing ? "Syncing..." : "MT5 Sync"}
-          </button>
+          {(() => {
+            const dotColor = metaConnected ? "#00c896" : "#ef4444";
+            return (
+              <button onClick={mt5Sync} disabled={syncing} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 14px", borderRadius: "8px", border: `1px solid ${dotColor}`, backgroundColor: "transparent", color: dotColor, cursor: syncing ? "not-allowed" : "pointer", fontSize: "13px", opacity: syncing ? 0.6 : 1 }}>
+                <span style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: dotColor, boxShadow: `0 0 6px ${dotColor}`, flexShrink: 0, animation: metaConnected ? "pulse 1.8s infinite" : "none" }} />
+                {syncing ? "Syncing..." : "MT5 Sync"}
+              </button>
+            );
+          })()}
           {view === "trades" && <button onClick={() => setShowWizard(true)} style={{ padding: "8px 16px", borderRadius: "8px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>+ Log Trade</button>}
         </div>
       </div>
