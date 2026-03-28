@@ -15,7 +15,7 @@ interface Trade {
   trade_field_values: TradeFieldValue[];
   journal_templates: { id: string; name: string };
 }
-interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; }
+interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; time_from: string; time_to: string; }
 
 interface Props { entries: Trade[]; journal: Journal; }
 
@@ -621,7 +621,6 @@ function WRiskDiscipline({ entries, journal }: { entries: Trade[]; journal: Jour
 // ─── NEW Widget: Rule Compliance ──────────────────────────────────────────────
 function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Journal }) {
   const bars = useMemo(() => {
-    if (!journal.rules.length) return [];
     return journal.rules.map(rule => {
       let followed = 0, total = 0;
       entries.forEach(e => {
@@ -633,29 +632,53 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
     }).filter(b => b.total > 0);
   }, [entries, journal]);
 
-  if (!bars.length) return <NoData text="No rule compliance data yet. Log trades with rules to see this." />;
+  // Time rule: always shown if journal has session hours configured
+  const timeBar = useMemo(() => {
+    if (!journal.time_from || !journal.time_to) return null;
+    let followed = 0, total = 0;
+    entries.forEach(e => {
+      const d = new Date(e.trade_date);
+      const hhmm = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+      total++;
+      if (hhmm >= journal.time_from && hhmm <= journal.time_to) followed++;
+    });
+    return { text: `⏰ Trading Hours (${journal.time_from}–${journal.time_to})`, followed, total, pct: total ? Math.round((followed / total) * 100) : null };
+  }, [entries, journal]);
+
+  if (!bars.length && !timeBar) return <NoData text="No rule compliance data yet. Log trades with rules to see this." />;
+
+  const renderBar = (b: { text: string; followed: number; total: number; pct: number | null }) => (
+    <div key={b.text}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+        <span style={{ color: "#D1D5DB", fontSize: "13px", flex: 1, paddingRight: "16px" }}>{b.text}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <span style={{ color: "#6B7280", fontSize: "11px" }}>{b.followed}/{b.total}</span>
+          <span style={{ color: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444", fontWeight: 700, fontSize: "13px", minWidth: "38px", textAlign: "right" }}>
+            {b.pct !== null ? `${b.pct}%` : "—"}
+          </span>
+        </div>
+      </div>
+      <div style={{ height: "6px", backgroundColor: "#1F2937", borderRadius: "3px", overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${b.pct ?? 0}%`, borderRadius: "3px", transition: "width 0.4s ease", backgroundColor: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444" }} />
+      </div>
+    </div>
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {bars.map(b => (
-        <div key={b.text}>
-          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-            <span style={{ color: "#D1D5DB", fontSize: "13px", flex: 1, paddingRight: "16px" }}>{b.text}</span>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-              <span style={{ color: "#6B7280", fontSize: "11px" }}>{b.followed}/{b.total}</span>
-              <span style={{ color: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444", fontWeight: 700, fontSize: "13px", minWidth: "38px", textAlign: "right" }}>
-                {b.pct !== null ? `${b.pct}%` : "—"}
-              </span>
-            </div>
-          </div>
-          <div style={{ height: "6px", backgroundColor: "#1F2937", borderRadius: "3px", overflow: "hidden" }}>
-            <div style={{
-              height: "100%", width: `${b.pct ?? 0}%`, borderRadius: "3px", transition: "width 0.4s ease",
-              backgroundColor: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444",
-            }} />
-          </div>
-        </div>
-      ))}
+      {timeBar && (
+        <>
+          <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Session Rule</p>
+          {renderBar(timeBar)}
+          {bars.length > 0 && <div style={{ borderTop: "1px solid #1F2937", paddingTop: "4px" }} />}
+        </>
+      )}
+      {bars.length > 0 && (
+        <>
+          {timeBar && <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>My Rules</p>}
+          {bars.map(b => renderBar(b))}
+        </>
+      )}
     </div>
   );
 }
