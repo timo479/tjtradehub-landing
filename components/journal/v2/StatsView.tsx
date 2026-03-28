@@ -27,7 +27,7 @@ const getPnl = (entry: Entry): number | null => {
     const label = (fv.template_fields?.label ?? "").toLowerCase();
     if (
       fv.template_fields?.field_type === "number" &&
-      (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gain"))
+      (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gewinn") || label.includes("gain"))
     ) {
       const n = parseFloat(fv.value);
       return isNaN(n) ? null : n;
@@ -464,13 +464,14 @@ export default function StatsView({ entries }: Props) {
       const dd = peak - cum; if (dd > maxDD) maxDD = dd;
     }
 
-    let streak = 0, currentStreak = 0;
+    // Streak: sort DESC (newest first), iterate forward for current streak
+    const sortedDesc = [...pnlEntries].sort((a, b) => new Date(b.e.trade_date).getTime() - new Date(a.e.trade_date).getTime());
+    let streak = 0;
     let streakType: "win" | "loss" | null = null;
-    for (const pnl of [...pnls].reverse()) {
+    for (const { pnl } of sortedDesc) {
       const type = pnl > 0 ? "win" : "loss";
       if (streakType === null) streakType = type;
-      if (type === streakType) { currentStreak++; streak = currentStreak; }
-      else break;
+      if (type === streakType) streak++; else break;
     }
 
     // Content-aware colSpans (same logic as WidgetGrid)

@@ -103,13 +103,21 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
     const avg = pnls.length ? total / pnls.length : 0;
     const best = pnls.length ? Math.max(...pnls) : 0;
     const worst = pnls.length ? Math.min(...pnls) : 0;
+    // Drawdown: only trades with actual P&L, sorted by date ASC
     let peak = 0, cum = 0, dd = 0;
-    for (const p of [...entries].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime()).map(e => getPnl(e) ?? 0)) {
+    for (const p of [...entries]
+      .filter(e => getPnl(e) !== null)
+      .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())
+      .map(e => getPnl(e)!)) {
       cum += p; if (cum > peak) peak = cum; if (peak - cum > dd) dd = peak - cum;
     }
+    // Streak: API returns DESC (newest first) → iterate as-is for current streak
+    const sortedDesc = [...entries]
+      .filter(e => getPnl(e) !== null)
+      .sort((a, b) => new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime());
     let streak = 0; let sType: "win" | "loss" | null = null;
-    for (const p of [...pnls].reverse()) {
-      const t = p > 0 ? "win" : "loss";
+    for (const e of sortedDesc) {
+      const t = getPnl(e)! > 0 ? "win" : "loss";
       if (!sType) sType = t;
       if (t === sType) streak++; else break;
     }

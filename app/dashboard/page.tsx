@@ -44,7 +44,7 @@ export default async function DashboardPage() {
     for (const fv of e.trade_field_values ?? []) {
       const label = (fv.template_fields?.label ?? "").toLowerCase();
       if (fv.template_fields?.field_type === "number" &&
-        (label.includes("p&l") || label.includes("pnl") || label.includes("profit"))) {
+        (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gewinn") || label.includes("gain"))) {
         const n = parseFloat(fv.value);
         return isNaN(n) ? null : n;
       }
