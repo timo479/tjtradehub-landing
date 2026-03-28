@@ -859,6 +859,14 @@ export default function JournalStats({ entries, journal }: Props) {
   const filtered = useMemo(() => applyPeriod(entries, period, customFrom, customTo), [entries, period, customFrom, customTo]);
   const activeWidgets = useMemo(() => WIDGETS.filter(w => active.includes(w.id)), [active]);
 
+  const balanceInfo = useMemo(() => {
+    if (journal.starting_balance == null) return null;
+    const sorted = [...entries].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
+    const totalPnl = sorted.reduce((sum, t) => sum + (pnlNum(t) ?? 0), 0);
+    const current = journal.starting_balance + totalPnl;
+    return { starting: journal.starting_balance, totalPnl, current };
+  }, [entries, journal.starting_balance]);
+
   const getCols = () => { if (layout === "1col") return 1; if (layout === "2col") return 2; if (layout === "3col") return 3; return null; };
 
   const renderWidgets = () => {
@@ -892,6 +900,30 @@ export default function JournalStats({ entries, journal }: Props) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+      {/* Account Balance Card */}
+      {balanceInfo && (
+        <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "14px", padding: "20px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <span style={{ fontSize: "18px" }}>💰</span>
+            <span style={{ color: "#6B7280", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Account Balance</span>
+          </div>
+          <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Starting</div>
+              <div style={{ color: "#9CA3AF", fontSize: "16px", fontWeight: 600 }}>${balanceInfo.starting.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Total P&L</div>
+              <div style={{ color: balanceInfo.totalPnl >= 0 ? "#22c55e" : "#ef4444", fontSize: "16px", fontWeight: 600 }}>{fmt(balanceInfo.totalPnl)}</div>
+            </div>
+            <div style={{ textAlign: "center" }}>
+              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Current Balance</div>
+              <div style={{ color: balanceInfo.current >= balanceInfo.starting ? "#22c55e" : "#ef4444", fontSize: "22px", fontWeight: 700, letterSpacing: "-0.02em" }}>${balanceInfo.current.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Period Filter Bar */}
       <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "12px", padding: "14px 18px", display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>

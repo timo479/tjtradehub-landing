@@ -40,6 +40,7 @@ interface Props {
 const DEFAULT_SYMBOLS = ["EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY", "NAS100", "US30", "XAUUSD"];
 const CUSTOM_SYMBOLS_KEY = "tj-custom-symbols";
 const CUSTOM_SETUPS_KEY = "tj-custom-setups";
+const CUSTOM_EMOTIONS_KEY = "tj-custom-emotions";
 const DEFAULT_SETUPS = ["Breakout", "Pullback", "OB Retest", "FVG", "Liquidity Grab", "Trend Follow"];
 const EMOTIONS = ["😌 Calm", "🎯 Confident", "😰 Nervous", "🔥 FOMO", "💰 Greedy", "😨 Fearful", "😤 Frustrated", "🚀 Euphoric"];
 
@@ -122,9 +123,16 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const [showAddSetup, setShowAddSetup] = useState(false);
   const addSetupRef = useRef<HTMLInputElement>(null);
 
+  // Custom emotions (persisted in localStorage)
+  const [customEmotions, setCustomEmotions] = useState<string[]>([]);
+  const [newEmotionInput, setNewEmotionInput] = useState("");
+  const [showAddEmotion, setShowAddEmotion] = useState(false);
+  const addEmotionRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     try { setCustomSymbols(JSON.parse(localStorage.getItem(CUSTOM_SYMBOLS_KEY) ?? "[]")); } catch { /* ignore */ }
     try { setCustomSetups(JSON.parse(localStorage.getItem(CUSTOM_SETUPS_KEY) ?? "[]")); } catch { /* ignore */ }
+    try { setCustomEmotions(JSON.parse(localStorage.getItem(CUSTOM_EMOTIONS_KEY) ?? "[]")); } catch { /* ignore */ }
   }, []);
 
   const addCustomSymbol = () => {
@@ -161,6 +169,25 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     setCustomSetups(next);
     localStorage.setItem(CUSTOM_SETUPS_KEY, JSON.stringify(next));
     if (setup === s) setSetup("");
+  };
+
+  const addCustomEmotion = () => {
+    const s = newEmotionInput.trim();
+    const defaultKeys = EMOTIONS.map(e => e.split(" ").slice(1).join(" "));
+    if (!s || customEmotions.includes(s) || defaultKeys.includes(s)) { setNewEmotionInput(""); setShowAddEmotion(false); return; }
+    const next = [...customEmotions, s];
+    setCustomEmotions(next);
+    localStorage.setItem(CUSTOM_EMOTIONS_KEY, JSON.stringify(next));
+    setEmotions(prev => [...prev, s]);
+    setNewEmotionInput("");
+    setShowAddEmotion(false);
+  };
+
+  const removeCustomEmotion = (s: string) => {
+    const next = customEmotions.filter(c => c !== s);
+    setCustomEmotions(next);
+    localStorage.setItem(CUSTOM_EMOTIONS_KEY, JSON.stringify(next));
+    setEmotions(prev => prev.filter(e => e !== s));
   };
   const [slideBack, setSlideBack] = useState(false);
   const [savedEntryId, setSavedEntryId] = useState<string | null>(entry?.id ?? null);
@@ -471,7 +498,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
 
             <div>
               <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>How did you feel?</label>
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", alignItems: "center" }}>
                 {EMOTIONS.map(e => {
                   const key = e.split(" ").slice(1).join(" ");
                   const active = emotions.includes(key);
@@ -482,6 +509,48 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
                     </button>
                   );
                 })}
+                {/* Custom emotion chips */}
+                {customEmotions.map(e => {
+                  const active = emotions.includes(e);
+                  return (
+                    <div key={e} style={{ display: "flex", alignItems: "center", gap: "2px", borderRadius: "20px", border: `1px solid ${active ? "#8B5CF6" : "#374151"}`, backgroundColor: active ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)", overflow: "hidden" }}>
+                      <button type="button" onClick={() => toggleEmotion(e)}
+                        style={{ padding: "6px 10px 6px 14px", background: "none", border: "none", color: active ? "#A78BFA" : "#9CA3AF", fontSize: "13px", fontWeight: 500, cursor: "pointer" }}>
+                        {e}
+                      </button>
+                      <button type="button" onClick={() => removeCustomEmotion(e)}
+                        style={{ padding: "6px 8px 6px 2px", background: "none", border: "none", color: "#4B5563", fontSize: "13px", cursor: "pointer", lineHeight: 1 }}
+                        title="Remove">×</button>
+                    </div>
+                  );
+                })}
+                {/* Add button / inline input */}
+                {showAddEmotion ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <input
+                      ref={addEmotionRef}
+                      autoFocus
+                      value={newEmotionInput}
+                      onChange={e => setNewEmotionInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomEmotion(); } if (e.key === "Escape") { setShowAddEmotion(false); setNewEmotionInput(""); } }}
+                      placeholder="e.g. Focused"
+                      style={{ ...inp, width: "110px", padding: "4px 10px", fontSize: "12px", borderRadius: "20px" }}
+                    />
+                    <button type="button" onClick={addCustomEmotion}
+                      style={{ padding: "4px 10px", borderRadius: "20px", border: "1px solid #8B5CF6", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                      Add
+                    </button>
+                    <button type="button" onClick={() => { setShowAddEmotion(false); setNewEmotionInput(""); }}
+                      style={{ padding: "4px 8px", borderRadius: "20px", border: "1px solid #374151", backgroundColor: "transparent", color: "#6B7280", fontSize: "13px", cursor: "pointer" }}>
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setShowAddEmotion(true)}
+                    style={{ padding: "4px 11px", borderRadius: "20px", border: "1px dashed #374151", backgroundColor: "transparent", color: "#6B7280", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ fontSize: "14px", lineHeight: 1 }}>+</span> Add
+                  </button>
+                )}
               </div>
               <input style={{ ...inp, marginTop: "10px" }} placeholder="Additional emotion note (optional)" value={emotionNote} onChange={e => setEmotionNote(e.target.value)} />
             </div>
