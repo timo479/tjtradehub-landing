@@ -22,7 +22,7 @@ interface Props {
 }
 
 const PRESET_RULES = [
-  { cat: "Risk", rules: ["No trade over 1% risk", "RRR minimum 1:2", "Max. 2% daily loss — then stop", "No overnight positions", "Calculate position size before every trade"] },
+  { cat: "Risk", rules: ["RRR minimum 1:2", "Max. 2% daily loss — then stop", "No overnight positions", "Calculate position size before every trade"] },
   { cat: "Setup", rules: ["Only trade with the trend", "Only A-setups", "No trade against HTF bias", "Entry only on confirmed setup", "No trade before major news", "No trade without a clear SL level"] },
   { cat: "Psychology", rules: ["No revenge trade after a loss", "Stop after 2 consecutive losses", "No FOMO trade", "Only trade at full focus", "No trading when in a bad mood"] },
   { cat: "Preparation", rules: ["Market analysis before session", "Check economic calendar", "Watchlist prepared", "No trading without morning routine"] },
