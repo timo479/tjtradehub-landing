@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
@@ -45,18 +45,39 @@ const fmt = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const card: React.CSSProperties = {
-  backgroundColor: "#111827",
-  border: "1px solid #1F2937",
+const cardBase: React.CSSProperties = {
+  background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
+  border: "1px solid transparent",
   borderRadius: "16px",
   padding: "20px 24px",
+  transition: "box-shadow 0.25s ease, transform 0.2s ease",
 };
+
+function GlowCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        ...cardBase,
+        ...style,
+        boxShadow: hovered
+          ? "0 0 28px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.5)"
+          : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
+        transform: hovered ? "translateY(-2px)" : "none",
+      }}
+    >
+      {children}
+    </div>
+  );
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
-      <div style={{ width: "3px", height: "12px", borderRadius: "2px", backgroundColor: "#8B5CF6", flexShrink: 0 }} />
-      <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", margin: 0 }}>{children}</p>
+      <div style={{ width: "3px", height: "14px", borderRadius: "2px", background: "linear-gradient(180deg, #8B5CF6, #6366f1)", flexShrink: 0 }} />
+      <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{children}</p>
     </div>
   );
 }
@@ -104,11 +125,16 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
 
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
-      {items.map(i => (
-        <div key={i.label} style={{ backgroundColor: "#0d1117", borderRadius: "12px", padding: "14px 16px" }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{i.label}</p>
-          <p style={{ color: i.color, fontWeight: 700, fontSize: "20px", lineHeight: 1 }}>{i.value}</p>
-          {"sub" in i && i.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{i.sub}</p>}
+      {items.map(item => (
+        <div key={item.label} style={{
+          background: "linear-gradient(#0a0e1a, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.2) 0%, transparent 60%) border-box",
+          border: "1px solid transparent",
+          borderRadius: "12px",
+          padding: "14px 16px",
+        }}>
+          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{item.label}</p>
+          <p style={{ color: item.color, fontWeight: 700, fontSize: "20px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{item.value}</p>
+          {"sub" in item && item.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{item.sub}</p>}
         </div>
       ))}
     </div>
@@ -710,10 +736,10 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       return rows.map((row, ri) => (
         <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
           {row.map(w => (
-            <div key={w.id} style={w.id === "weekday" ? { ...card, padding: "14px 18px", borderRadius: "12px" } : card}>
+            <GlowCard key={w.id} style={w.id === "weekday" ? { padding: "14px 18px", borderRadius: "12px" } : undefined}>
               <SectionTitle>{w.name}</SectionTitle>
               <w.component entries={entries} />
-            </div>
+            </GlowCard>
           ))}
         </div>
       ));
@@ -733,10 +759,10 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
     return rows.map((row, ri) => (
       <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
         {row.map(w => (
-          <div key={w.id} style={w.id === "weekday" ? { ...card, padding: "14px 18px", borderRadius: "12px" } : card}>
+          <GlowCard key={w.id} style={w.id === "weekday" ? { padding: "14px 18px", borderRadius: "12px" } : undefined}>
             <SectionTitle>{w.name}</SectionTitle>
             <w.component entries={entries} />
-          </div>
+          </GlowCard>
         ))}
       </div>
     ));
@@ -779,10 +805,10 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       </div>
 
       {entries.length === 0 && (
-        <div style={{ ...card, textAlign: "center", padding: "60px" }}>
+        <GlowCard style={{ textAlign: "center", padding: "60px" }}>
           <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
           <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades yet – Statistics will appear once you add trades.</p>
-        </div>
+        </GlowCard>
       )}
 
       {/* Widget Rows */}

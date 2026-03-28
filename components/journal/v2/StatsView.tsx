@@ -1,5 +1,5 @@
 "use client";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 
 interface FieldValue {
   id: string;
@@ -45,11 +45,50 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
 function KpiCard({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) {
+  const [hovered, setHovered] = useState(false);
   return (
-    <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "14px", padding: "18px 20px" }}>
-      <p style={{ color: "#6B7280", fontSize: "11px", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>{label}</p>
-      <p style={{ color, fontWeight: 700, fontSize: "22px", lineHeight: 1 }}>{value}</p>
-      {sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>{sub}</p>}
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
+        border: "1px solid transparent",
+        borderRadius: "14px",
+        padding: "18px 20px",
+        boxShadow: hovered
+          ? "0 0 24px rgba(139,92,246,0.15), 0 6px 28px rgba(0,0,0,0.5)"
+          : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 16px rgba(0,0,0,0.3)",
+        transform: hovered ? "translateY(-2px)" : "none",
+        transition: "box-shadow 0.25s ease, transform 0.2s ease",
+      }}
+    >
+      <p style={{ color: "#6B7280", fontSize: "10px", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>{label}</p>
+      <p style={{ color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{value}</p>
+      {sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "5px" }}>{sub}</p>}
+    </div>
+  );
+}
+
+function GlowSection({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const [hovered, setHovered] = useState(false);
+  return (
+    <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
+        border: "1px solid transparent",
+        borderRadius: "16px",
+        padding: "20px 24px",
+        boxShadow: hovered
+          ? "0 0 28px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.5)"
+          : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
+        transform: hovered ? "translateY(-2px)" : "none",
+        transition: "box-shadow 0.25s ease, transform 0.2s ease",
+        ...style,
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -376,23 +415,19 @@ export default function StatsView({ entries }: Props) {
     return { total, wins, losses, avg, best, worst, maxDD, streak, streakType, hasPnl: pnls.length > 0, pnlCount: pnls.length };
   }, [entries]);
 
-  const card: React.CSSProperties = {
-    backgroundColor: "#111827",
-    border: "1px solid #1F2937",
-    borderRadius: "16px",
-    padding: "20px 24px",
-  };
-
   const sectionTitle = (title: string) => (
-    <p style={{ color: "#6B7280", fontSize: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "16px" }}>{title}</p>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+      <div style={{ width: "3px", height: "14px", borderRadius: "2px", background: "linear-gradient(180deg, #8B5CF6, #6366f1)", flexShrink: 0 }} />
+      <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{title}</p>
+    </div>
   );
 
   if (entries.length === 0) {
     return (
-      <div style={{ ...card, textAlign: "center", padding: "60px" }}>
+      <GlowSection style={{ textAlign: "center", padding: "60px" }}>
         <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
         <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades yet — statistics will appear once you log trades.</p>
-      </div>
+      </GlowSection>
     );
   }
 
@@ -419,30 +454,30 @@ export default function StatsView({ entries }: Props) {
 
       {/* Equity Curve */}
       {stats.hasPnl && (
-        <div style={card}>
+        <GlowSection>
           {sectionTitle("Equity Curve")}
           <EquityCurve entries={entries} />
-        </div>
+        </GlowSection>
       )}
 
       {/* Win/Loss + Weekday */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
         {stats.hasPnl && (
-          <div style={card}>
+          <GlowSection>
             {sectionTitle("Win / Loss")}
             <WinLossDonut wins={stats.wins} losses={stats.losses} />
-          </div>
+          </GlowSection>
         )}
         {stats.hasPnl && (
-          <div style={card}>
+          <GlowSection>
             {sectionTitle("Avg P&L by Weekday")}
             <WeekdayBars entries={entries} />
-          </div>
+          </GlowSection>
         )}
       </div>
 
       {/* Calendar */}
-      <div style={card}>
+      <GlowSection>
         {sectionTitle("Trade Calendar")}
         <TradeCalendar entries={entries} />
         <div style={{ display: "flex", gap: "16px", marginTop: "14px", flexWrap: "wrap" }}>
@@ -458,7 +493,7 @@ export default function StatsView({ entries }: Props) {
             </div>
           ))}
         </div>
-      </div>
+      </GlowSection>
 
     </div>
   );

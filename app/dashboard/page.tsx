@@ -7,6 +7,7 @@ import { redirect } from "next/navigation";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 import DashboardStats from "@/components/dashboard/DashboardStats";
+import DashboardKpiCards from "@/components/dashboard/DashboardKpiCards";
 import MetaConnect from "@/components/meta/MetaConnect";
 import DashboardTourWrapper from "@/components/DashboardTourWrapper";
 import TikTokConversion from "@/components/TikTokConversion";
@@ -86,12 +87,14 @@ export default async function DashboardPage() {
       value: avgRating ? `${avgRating}/10` : "—",
       sub: avgRating ? "across all trades" : "add trades to calculate",
       color: avgRating ? (parseFloat(avgRating) >= 7 ? "#8B5CF6" : "#ef4444") : "#6B7280",
+      progress: avgRating ? (parseFloat(avgRating) / 10) * 100 : undefined,
     },
     {
       label: "Win Rate",
       value: winRate !== null ? `${winRate}%` : "—",
       sub: winRate !== null ? `${wins} of ${pnls.length} trades` : "add trades to calculate",
       color: winRate !== null ? (winRate >= 50 ? "#22c55e" : "#ef4444") : "#6B7280",
+      progress: winRate !== null ? winRate : undefined,
     },
     {
       label: "Total P&L",
@@ -183,20 +186,7 @@ export default async function DashboardPage() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10" data-tour="stats-cards">
-          {cards.map((card) => (
-            <div key={card.label} className="rounded-2xl p-6"
-              style={{
-                backgroundColor: "#111827",
-                border: "1px solid #1F2937",
-                borderTop: `2px solid ${card.color === "#F9FAFB" ? "#374151" : card.color}`,
-              }}>
-              <p className="text-xs mb-4" style={{ color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 600 }}>{card.label}</p>
-              <p className="text-4xl font-bold mb-2" style={{ color: card.color, lineHeight: "1" }}>{card.value}</p>
-              <p className="text-xs" style={{ color: "#4B5563" }}>{card.sub}</p>
-            </div>
-          ))}
-        </div>
+        <DashboardKpiCards cards={cards} />
 
         {/* MetaAPI */}
         <div className="mb-8" data-tour="metaconnect">
