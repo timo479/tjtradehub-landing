@@ -234,7 +234,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
     if (filter === "today") list = list.filter(t => t.trade_date.slice(0, 10) === today);
     else if (filter === "week") list = list.filter(t => new Date(t.trade_date) >= weekAgo);
     else if (filter === "month") list = list.filter(t => new Date(t.trade_date) >= monthAgo);
-    else if (filter === "review") list = list.filter(t => !getField(t, "Setup") && getEmotions(t).length === 0);
+    else if (filter === "review") list = list.filter(t => t.source === "mt5" && !t.is_reviewed);
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -265,7 +265,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   const sortArrow = (col: string) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
   // Review trades count (no setup + no emotions in journal trades)
-  const reviewCount = journalTrades.filter(t => !getField(t, "Setup") && getEmotions(t).length === 0).length;
+  const reviewCount = journalTrades.filter(t => t.source === "mt5" && !t.is_reviewed).length;
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "300px", color: "#6B7280", fontSize: "14px" }}>
