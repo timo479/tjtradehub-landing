@@ -51,10 +51,10 @@ function KpiCard({ label, value, color, sub }: { label: string; value: string; c
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
+        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.22) 0%, transparent 60%) border-box",
         border: "1px solid transparent",
-        borderRadius: "14px",
-        padding: "18px 20px",
+        borderRadius: "10px",
+        padding: "12px 16px",
         boxShadow: hovered
           ? "0 0 24px rgba(139,92,246,0.15), 0 6px 28px rgba(0,0,0,0.5)"
           : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 16px rgba(0,0,0,0.3)",
@@ -76,10 +76,10 @@ function GlowSection({ children, style }: { children: React.ReactNode; style?: R
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
+        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.22) 0%, transparent 60%) border-box",
         border: "1px solid transparent",
-        borderRadius: "16px",
-        padding: "20px 24px",
+        borderRadius: "14px",
+        padding: "24px 24px",
         boxShadow: hovered
           ? "0 0 28px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.5)"
           : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
@@ -416,7 +416,7 @@ export default function StatsView({ entries }: Props) {
   }, [entries]);
 
   const sectionTitle = (title: string) => (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
       <div style={{ width: "3px", height: "14px", borderRadius: "2px", background: "linear-gradient(180deg, #8B5CF6, #6366f1)", flexShrink: 0 }} />
       <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{title}</p>
     </div>
@@ -435,7 +435,7 @@ export default function StatsView({ entries }: Props) {
     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
 
       {/* KPI Row */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))", gap: "12px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
         <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
         {stats.hasPnl && <>
           <KpiCard label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
@@ -461,7 +461,7 @@ export default function StatsView({ entries }: Props) {
       )}
 
       {/* Win/Loss + Weekday */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "4fr 8fr", gap: "16px" }}>
         {stats.hasPnl && (
           <GlowSection>
             {sectionTitle("Win / Loss")}

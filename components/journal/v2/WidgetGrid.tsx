@@ -1,6 +1,17 @@
 "use client";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
+
+// ─── Design Tokens ────────────────────────────────────────────────────────────
+// Spacing: 8 · 12 · 16 · 24 · 32px  (strict 8px grid)
+// colSpan: 4=small · 5–8=medium · 12=large
+const PADDING: Record<string, string> = {
+  sm: "16px 16px",   // colSpan 4   → compact KPI / donut
+  md: "16px 24px",   // colSpan 5–8 → charts
+  lg: "24px 24px",   // colSpan 12  → full-width panels
+};
+const getPadding = (colSpan: number) =>
+  colSpan <= 4 ? PADDING.sm : colSpan <= 8 ? PADDING.md : PADDING.lg;
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -45,14 +56,6 @@ const fmt = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-const cardBase: React.CSSProperties = {
-  background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.25) 0%, transparent 60%) border-box",
-  border: "1px solid transparent",
-  borderRadius: "16px",
-  padding: "20px 24px",
-  transition: "box-shadow 0.25s ease, transform 0.2s ease",
-};
-
 function GlowCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
   const [hovered, setHovered] = useState(false);
   return (
@@ -60,12 +63,15 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        ...cardBase,
-        ...style,
+        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.22) 0%, transparent 60%) border-box",
+        border: "1px solid transparent",
+        borderRadius: "14px",
+        transition: "box-shadow 0.25s ease, transform 0.2s ease",
         boxShadow: hovered
-          ? "0 0 28px rgba(139,92,246,0.15), 0 8px 32px rgba(0,0,0,0.5)"
+          ? "0 0 28px rgba(139,92,246,0.14), 0 8px 32px rgba(0,0,0,0.5)"
           : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
         transform: hovered ? "translateY(-2px)" : "none",
+        ...style,
       }}
     >
       {children}
@@ -75,7 +81,7 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "18px" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
       <div style={{ width: "3px", height: "14px", borderRadius: "2px", background: "linear-gradient(180deg, #8B5CF6, #6366f1)", flexShrink: 0 }} />
       <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{children}</p>
     </div>
@@ -124,17 +130,17 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))", gap: "10px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
       {items.map(item => (
         <div key={item.label} style={{
-          background: "linear-gradient(#0a0e1a, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.2) 0%, transparent 60%) border-box",
+          background: "linear-gradient(#0a0e18, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.18) 0%, transparent 55%) border-box",
           border: "1px solid transparent",
-          borderRadius: "12px",
-          padding: "14px 16px",
+          borderRadius: "10px",
+          padding: "12px 16px",
         }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "6px" }}>{item.label}</p>
-          <p style={{ color: item.color, fontWeight: 700, fontSize: "20px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{item.value}</p>
-          {"sub" in item && item.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{item.sub}</p>}
+          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "8px" }}>{item.label}</p>
+          <p style={{ color: item.color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{item.value}</p>
+          {"sub" in item && item.sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>{item.sub}</p>}
         </div>
       ))}
     </div>
@@ -520,11 +526,16 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
       {metrics.map(x => (
-        <div key={x.label} style={{ backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "12px 14px" }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", marginBottom: "4px" }}>{x.label}</p>
-          <p style={{ color: x.color, fontWeight: 700, fontSize: "18px" }}>{x.value}</p>
+        <div key={x.label} style={{
+          background: "linear-gradient(#0a0e18, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.15) 0%, transparent 55%) border-box",
+          border: "1px solid transparent",
+          borderRadius: "10px",
+          padding: "12px 16px",
+        }}>
+          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "8px" }}>{x.label}</p>
+          <p style={{ color: x.color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{x.value}</p>
         </div>
       ))}
     </div>
@@ -577,28 +588,42 @@ function WFrequency({ entries }: { entries: Entry[] }) {
 }
 
 // ─── Widget Registry ──────────────────────────────────────────────────────────
+// colSpan: grid columns out of 12
+//   4  = Small  → compact: donut, single metric group
+//   6  = Medium → half-row: bar charts, lists
+//   8  = Medium-Wide → weekday bars (7 items need width)
+//   12 = Large  → full-row: equity curve, calendar, histogram
 
 interface WidgetDef {
   id: string;
   name: string;
   desc: string;
   icon: string;
-  size: "full" | "half";
+  colSpan: 4 | 5 | 6 | 7 | 8 | 12;
   defaultOn: boolean;
   component: React.FC<{ entries: Entry[] }>;
 }
 
+// Order controls row-packing (rows always sum to 12):
+//  Row 1: kpi-cards (12)
+//  Row 2: equity-curve (12)
+//  Row 3: winloss (4) + weekday (8)
+//  Row 4: monthly-pnl (12)
+//  Row 5: calendar (12)
+//  Optional row: instrument (6) + profit-factor (6) = 12
+//  Optional row: histogram (12)
+//  Optional row: frequency (12)
 const WIDGETS: WidgetDef[] = [
-  { id: "kpi-cards",    name: "KPI Overview",            desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",     icon: "📊", size: "full", defaultOn: true,  component: WKpiCards },
-  { id: "equity-curve", name: "Equity Curve",            desc: "Cumulative P&L across all trades",                     icon: "📈", size: "full", defaultOn: true,  component: WEquityCurve },
-  { id: "winloss",      name: "Win / Loss",              desc: "Wins, Losses and Break-even as donut chart",           icon: "🎯", size: "half", defaultOn: true,  component: WWinLoss },
-  { id: "weekday",      name: "Weekday Performance",     desc: "Average P&L by weekday",                               icon: "📅", size: "half", defaultOn: true,  component: WWeekday },
-  { id: "monthly-pnl",  name: "Monthly P&L",             desc: "P&L for the last 6 months as bar chart",               icon: "🗓️", size: "half", defaultOn: true,  component: WMonthly },
-  { id: "calendar",     name: "Trade Calendar",          desc: "Heatmap of the last 3 months by daily P&L",            icon: "🗓️", size: "full", defaultOn: true,  component: WCalendar },
-  { id: "histogram",    name: "P&L Distribution",        desc: "Frequency distribution of your trade results",         icon: "📉", size: "full", defaultOn: false, component: WHistogram },
-  { id: "instrument",   name: "Instrument Breakdown",    desc: "Which markets you trade most frequently",               icon: "🔍", size: "half", defaultOn: false, component: WInstrument },
-  { id: "profit-factor",name: "Profit Factor",           desc: "Profit Factor, Gross Profit/Loss, Expectancy",         icon: "⚡", size: "half", defaultOn: false, component: WProfitFactor },
-  { id: "frequency",    name: "Trade Frequency",         desc: "Number of trades per month over the last 8 months",    icon: "🔢", size: "full", defaultOn: false, component: WFrequency },
+  { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", colSpan: 12, defaultOn: true,  component: WKpiCards },
+  { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", colSpan: 12, defaultOn: true,  component: WEquityCurve },
+  { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", colSpan: 4,  defaultOn: true,  component: WWinLoss },
+  { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", colSpan: 8,  defaultOn: true,  component: WWeekday },
+  { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", colSpan: 12, defaultOn: true,  component: WMonthly },
+  { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", colSpan: 12, defaultOn: true,  component: WCalendar },
+  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", colSpan: 6,  defaultOn: false, component: WInstrument },
+  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", colSpan: 6,  defaultOn: false, component: WProfitFactor },
+  { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", colSpan: 12, defaultOn: false, component: WHistogram },
+  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", colSpan: 12, defaultOn: false, component: WFrequency },
 ];
 
 const STORAGE_KEY = "tj-widget-prefs-v2";
@@ -725,18 +750,24 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
     return null; // auto
   };
 
-  const renderWidgets = () => {
-    const cols = getCols();
-    if (cols !== null) {
-      // Fixed column layout — chunk widgets into rows of `cols`
+  const renderWidgets = (): React.ReactNode => {
+    const overrideCols = getCols();
+
+    // ── Fixed-column override (1col / 2col / 3col) ──
+    if (overrideCols !== null) {
       const rows: WidgetDef[][] = [];
-      for (let i = 0; i < activeWidgets.length; i += cols) {
-        rows.push(activeWidgets.slice(i, i + cols));
+      for (let i = 0; i < activeWidgets.length; i += overrideCols) {
+        rows.push(activeWidgets.slice(i, i + overrideCols));
       }
       return rows.map((row, ri) => (
-        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px" }}>
+        <div key={ri} style={{
+          display: "grid",
+          gridTemplateColumns: `repeat(${overrideCols}, 1fr)`,
+          gap: "16px",
+          alignItems: "stretch",
+        }}>
           {row.map(w => (
-            <GlowCard key={w.id} style={w.id === "weekday" ? { padding: "14px 18px", borderRadius: "12px" } : undefined}>
+            <GlowCard key={w.id} style={{ padding: getPadding(12 / overrideCols) }}>
               <SectionTitle>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </GlowCard>
@@ -744,22 +775,35 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         </div>
       ));
     }
-    // Auto layout: pair halves, full stays solo
+
+    // ── Auto layout: row-packing algorithm (rows sum to 12) ──
+    // Widgets declare their ideal colSpan; we pack greedily left-to-right.
+    // Each row uses `Xfr` columns → proportional widths, always tight.
     const rows: WidgetDef[][] = [];
-    let i = 0;
-    while (i < activeWidgets.length) {
-      const w = activeWidgets[i];
-      if (w.size === "full") { rows.push([w]); i++; }
-      else {
-        const next = activeWidgets[i + 1];
-        if (next && next.size === "half") { rows.push([w, next]); i += 2; }
-        else { rows.push([w]); i++; }
+    let current: WidgetDef[] = [];
+    let used = 0;
+
+    for (const w of activeWidgets) {
+      if (used + w.colSpan > 12 && current.length > 0) {
+        rows.push(current);
+        current = [w];
+        used = w.colSpan;
+      } else {
+        current.push(w);
+        used += w.colSpan;
       }
     }
+    if (current.length > 0) rows.push(current);
+
     return rows.map((row, ri) => (
-      <div key={ri} style={{ display: "grid", gridTemplateColumns: row.length === 2 ? "1fr 1fr" : "1fr", gap: "16px" }}>
+      <div key={ri} style={{
+        display: "grid",
+        gridTemplateColumns: row.map(w => `${w.colSpan}fr`).join(" "),
+        gap: "16px",
+        alignItems: "stretch",
+      }}>
         {row.map(w => (
-          <GlowCard key={w.id} style={w.id === "weekday" ? { padding: "14px 18px", borderRadius: "12px" } : undefined}>
+          <GlowCard key={w.id} style={{ padding: getPadding(w.colSpan) }}>
             <SectionTitle>{w.name}</SectionTitle>
             <w.component entries={entries} />
           </GlowCard>
@@ -773,8 +817,8 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-        <p style={{ color: "#374151", fontSize: "12px" }}>
-          {active.length} / {WIDGETS.length} widgets
+        <p style={{ color: "#374151", fontSize: "12px", fontVariantNumeric: "tabular-nums" }}>
+          {active.length} / {WIDGETS.length} widgets active
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
           {/* Layout switcher */}
@@ -805,9 +849,10 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       </div>
 
       {entries.length === 0 && (
-        <GlowCard style={{ textAlign: "center", padding: "60px" }}>
-          <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
-          <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades yet – Statistics will appear once you add trades.</p>
+        <GlowCard style={{ textAlign: "center", padding: "48px 24px" }}>
+          <p style={{ fontSize: "32px", marginBottom: "12px" }}>📊</p>
+          <p style={{ color: "#6B7280", fontSize: "14px", fontWeight: 500 }}>No trades yet</p>
+          <p style={{ color: "#374151", fontSize: "13px", marginTop: "4px" }}>Statistics will appear once you add trades.</p>
         </GlowCard>
       )}
 
