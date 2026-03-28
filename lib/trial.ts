@@ -14,7 +14,7 @@ export function hasActiveSubscription(
 ): boolean {
   if (user.subscription_status === "lifetime") return true;
   if (user.subscription_status === "active") {
-    if (!user.current_period_end) return true;
+    if (!user.current_period_end) return false;
     return new Date(user.current_period_end) > new Date();
   }
   return false;

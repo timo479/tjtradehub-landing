@@ -203,10 +203,8 @@ export async function POST(req: Request) {
     }
 
     if (closedDeals.length === 0) {
-      // On first sync, don't advance the timestamp — MetaAPI may still be loading history
-      if (!isFirstSync) {
-        await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
-      }
+      // Always advance the timestamp so we don't re-fetch 2 years on every sync
+      await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
       return NextResponse.json({ synced: 0, skipped: 0 });
     }
 
