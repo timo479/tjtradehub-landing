@@ -91,8 +91,10 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     heartbeatTimer.current = setInterval(() => {
       // Hard 4h session limit – force undeploy to prevent overnight billing
       if (Date.now() - sessionStart > MAX_SESSION_MS) {
-        fetch("/api/meta/deploy", { method: "DELETE" }).catch(() => null);
         stopHeartbeat();
+        fetch("/api/meta/deploy", { method: "DELETE" }).catch(() => {
+          setError("4h session limit reached – failed to disconnect automatically. Please click Disconnect manually.");
+        });
         return;
       }
       sendHeartbeat();

@@ -9,7 +9,11 @@ const schema = z.object({
   email: z.string().email(),
 });
 
+const MIN_RESPONSE_MS = 1200; // constant-time response to prevent timing attacks
+
 export async function POST(req: NextRequest) {
+  const start = Date.now();
+
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
   const rl = rateLimit(ip, "forgot-password", 3, 60 * 60 * 1000);
   if (!rl.allowed) {
@@ -36,8 +40,14 @@ export async function POST(req: NextRequest) {
     .eq("email", email)
     .single();
 
-  // Always return success to avoid user enumeration
+  const pad = async () => {
+    const elapsed = Date.now() - start;
+    if (elapsed < MIN_RESPONSE_MS) await new Promise(r => setTimeout(r, MIN_RESPONSE_MS - elapsed));
+  };
+
+  // Always return success to avoid user enumeration – pad time to prevent timing attacks
   if (!user) {
+    await pad();
     return NextResponse.json({ success: true });
   }
 
@@ -53,8 +63,10 @@ export async function POST(req: NextRequest) {
     await sendPasswordResetEmail(email, token);
   } catch (err) {
     console.error("Reset email error:", err);
+    await pad();
     return NextResponse.json({ error: "Failed to send email. Please try again in a moment." }, { status: 500 });
   }
 
+  await pad();
   return NextResponse.json({ success: true });
 }

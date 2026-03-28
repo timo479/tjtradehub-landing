@@ -24,11 +24,6 @@ export default function BillingPage() {
     setLoading(true);
     setError("");
 
-    // TikTok: InitiateCheckout
-    if (typeof window !== "undefined" && (window as any).ttq) {
-      (window as any).ttq.track("InitiateCheckout", { value: 29, currency: "USD" });
-    }
-
     try {
       const res = await fetch("/api/stripe/create-checkout", {
         method: "POST",
@@ -45,6 +40,11 @@ export default function BillingPage() {
         setError(data.error || "Failed to start checkout");
         setLoading(false);
         return;
+      }
+
+      // TikTok: InitiateCheckout – only fire after confirmed checkout session creation
+      if (typeof window !== "undefined" && (window as any).ttq) {
+        (window as any).ttq.track("InitiateCheckout", { value: 29, currency: "USD" });
       }
 
       window.location.href = data.url;
