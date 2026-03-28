@@ -211,7 +211,9 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     setSaving(true);
     setError(null);
 
-    const tradeDate = new Date(`${date}T${time || "00:00"}`).toISOString();
+    const [yr, mo, da] = date.split("-").map(Number);
+    const [hr, mi] = (time || "00:00").split(":").map(Number);
+    const tradeDate = new Date(yr, mo - 1, da, hr, mi).toISOString();
 
     const rulesArr = journal.rules.map(r => ({ id: r.id, text: r.text, compliant: rulesFollowed[r.id] ?? true }));
 
