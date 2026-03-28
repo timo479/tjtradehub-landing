@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 interface FieldValue {
   id: string;
@@ -41,6 +41,57 @@ const fmt = (n: number, digits = 2) =>
 
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+// ─── Layout System (mirrors WidgetGrid) ──────────────────────────────────────
+type ColSpan = 4 | 6 | 8 | 12;
+type Layout = "auto" | "wide" | "compact" | "full";
+const LAYOUT_KEY = "tj-layout-v2"; // shared with WidgetGrid
+const LAYOUTS: { id: Layout; title: string }[] = [
+  { id: "auto",    title: "Smart (auto-size)" },
+  { id: "wide",    title: "Wide (max 2 per row)" },
+  { id: "compact", title: "Compact (max 3 per row)" },
+  { id: "full",    title: "Full width (stacked)" },
+];
+const getMaxPerRow = (l: Layout): number =>
+  l === "full" ? 1 : l === "wide" ? 2 : l === "compact" ? 3 : Infinity;
+
+function LayoutIcon({ id }: { id: Layout }) {
+  const f = { fill: "currentColor" } as const;
+  if (id === "full") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="1" y="6" width="12" height="3" rx="1" {...f} opacity=".6"/>
+      <rect x="1" y="11" width="12" height="2" rx="1" {...f} opacity=".4"/>
+    </svg>
+  );
+  if (id === "wide") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="5.5" height="5.5" rx="1" {...f}/>
+      <rect x="7.5" y="1" width="5.5" height="5.5" rx="1" {...f}/>
+      <rect x="1" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="7.5" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
+    </svg>
+  );
+  if (id === "compact") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="5.25" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="9.5" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="1" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="5.25" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="9.5" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+    </svg>
+  );
+  return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="1" y="6" width="7.5" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="9.5" y="6" width="3.5" height="3" rx="1" {...f} opacity=".6"/>
+      <rect x="1" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
+      <rect x="8" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
+    </svg>
+  );
+}
 
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
@@ -382,6 +433,20 @@ function TradeCalendar({ entries }: { entries: Entry[] }) {
 // ─── Main StatsView ──────────────────────────────────────────────────────────
 
 export default function StatsView({ entries }: Props) {
+  const [layout, setLayout] = useState<Layout>("auto");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LAYOUT_KEY) as Layout | null;
+      if (saved && LAYOUTS.some(l => l.id === saved)) setLayout(saved);
+    } catch { /* ignore */ }
+  }, []);
+
+  const changeLayout = (l: Layout) => {
+    setLayout(l);
+    try { localStorage.setItem(LAYOUT_KEY, l); } catch { /* ignore */ }
+  };
+
   const stats = useMemo(() => {
     const pnlEntries = entries.map(e => ({ e, pnl: getPnl(e) })).filter(x => x.pnl !== null) as { e: Entry; pnl: number }[];
     const pnls = pnlEntries.map(x => x.pnl);
@@ -392,17 +457,13 @@ export default function StatsView({ entries }: Props) {
     const best = pnls.length > 0 ? Math.max(...pnls) : 0;
     const worst = pnls.length > 0 ? Math.min(...pnls) : 0;
 
-    // Max Drawdown
     let peak = 0, cum = 0, maxDD = 0;
     const sorted = [...pnlEntries].sort((a, b) => new Date(a.e.trade_date).getTime() - new Date(b.e.trade_date).getTime());
     for (const { pnl } of sorted) {
-      cum += pnl;
-      if (cum > peak) peak = cum;
-      const dd = peak - cum;
-      if (dd > maxDD) maxDD = dd;
+      cum += pnl; if (cum > peak) peak = cum;
+      const dd = peak - cum; if (dd > maxDD) maxDD = dd;
     }
 
-    // Streak
     let streak = 0, currentStreak = 0;
     let streakType: "win" | "loss" | null = null;
     for (const pnl of [...pnls].reverse()) {
@@ -412,7 +473,16 @@ export default function StatsView({ entries }: Props) {
       else break;
     }
 
-    return { total, wins, losses, avg, best, worst, maxDD, streak, streakType, hasPnl: pnls.length > 0, pnlCount: pnls.length };
+    // Content-aware colSpans (same logic as WidgetGrid)
+    const activeDays = new Set(pnlEntries.map(({ e }) => new Date(e.trade_date).getDay())).size;
+    const equityColSpan: ColSpan = pnls.length >= 15 ? 12 : 8;
+    const weekdayColSpan: ColSpan = activeDays >= 4 ? 8 : 6;
+
+    return {
+      total, wins, losses, avg, best, worst, maxDD, streak, streakType,
+      hasPnl: pnls.length > 0, pnlCount: pnls.length,
+      equityColSpan, weekdayColSpan,
+    };
   }, [entries]);
 
   const sectionTitle = (title: string) => (
@@ -431,63 +501,127 @@ export default function StatsView({ entries }: Props) {
     );
   }
 
+  // ── Section definitions with content-aware colSpans ───────────────────────
+  type SectionDef = {
+    id: string; colSpan: ColSpan; wrapGlow: boolean;
+    title?: string; padding?: string; content: React.ReactNode;
+  };
+
+  const sections: SectionDef[] = [
+    {
+      id: "kpi-cards", colSpan: 12, wrapGlow: false,
+      content: (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
+          <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
+          {stats.hasPnl && <>
+            <KpiCard label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
+            <KpiCard label="Win Rate" value={`${stats.pnlCount > 0 ? Math.round((stats.wins / stats.pnlCount) * 100) : 0}%`} color={stats.wins / (stats.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444"} sub={`${stats.wins}W · ${stats.losses}L`} />
+            <KpiCard label="Avg P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
+            <KpiCard label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
+            <KpiCard label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
+            <KpiCard label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
+            <KpiCard label="Current Streak" value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`} color={stats.streakType === "win" ? "#22c55e" : "#ef4444"} />
+          </>}
+        </div>
+      ),
+    },
+    ...(stats.hasPnl ? [{
+      id: "equity-curve", colSpan: stats.equityColSpan, wrapGlow: true,
+      title: "Equity Curve", padding: "24px 24px",
+      content: <EquityCurve entries={entries} />,
+    }] as SectionDef[] : []),
+    ...(stats.hasPnl ? [{
+      id: "winloss", colSpan: 4 as ColSpan, wrapGlow: true,
+      title: "Win / Loss", padding: "16px 16px",
+      content: <WinLossDonut wins={stats.wins} losses={stats.losses} />,
+    }] as SectionDef[] : []),
+    ...(stats.hasPnl ? [{
+      id: "weekday", colSpan: stats.weekdayColSpan, wrapGlow: true,
+      title: "Avg P&L by Weekday", padding: "16px 24px",
+      content: <WeekdayBars entries={entries} />,
+    }] as SectionDef[] : []),
+    {
+      id: "calendar", colSpan: 12, wrapGlow: true,
+      title: "Trade Calendar", padding: "24px 24px",
+      content: (
+        <>
+          <TradeCalendar entries={entries} />
+          <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+            {[
+              { color: "rgba(34,197,94,0.6)", label: "Positive day" },
+              { color: "rgba(239,68,68,0.6)", label: "Negative day" },
+              { color: "rgba(107,114,128,0.3)", label: "Break-even / no P&L" },
+              { color: "#0d1117", label: "No trade" },
+            ].map(l => (
+              <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: "1px solid #1F2937" }} />
+                <span style={{ color: "#4B5563", fontSize: "11px" }}>{l.label}</span>
+              </div>
+            ))}
+          </div>
+        </>
+      ),
+    },
+  ];
+
+  // ── Row-packing (same algorithm as WidgetGrid) ────────────────────────────
+  const maxPR = getMaxPerRow(layout);
+  const rows: SectionDef[][] = [];
+  let current: SectionDef[] = [];
+  let used = 0;
+  for (const sec of sections) {
+    if ((used + sec.colSpan > 12 || current.length >= maxPR) && current.length > 0) {
+      rows.push(current); current = [sec]; used = sec.colSpan;
+    } else { current.push(sec); used += sec.colSpan; }
+  }
+  if (current.length > 0) rows.push(current);
+
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-      {/* Row 1 – KPI mini-cards (Large: full width) */}
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
-        <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
-        {stats.hasPnl && <>
-          <KpiCard label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
-          <KpiCard label="Win Rate" value={`${stats.pnlCount > 0 ? Math.round((stats.wins / stats.pnlCount) * 100) : 0}%`} color={stats.wins / (stats.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444"} sub={`${stats.wins}W · ${stats.losses}L`} />
-          <KpiCard label="Avg P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
-          <KpiCard label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
-          <KpiCard label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
-          <KpiCard label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
-          <KpiCard label="Current Streak" value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`} color={stats.streakType === "win" ? "#22c55e" : "#ef4444"} />
-        </>}
-      </div>
-
-      {/* Row 2 – Equity Curve (Large: 12fr) */}
-      {stats.hasPnl && (
-        <GlowSection style={{ padding: "24px 24px" }}>
-          {sectionTitle("Equity Curve")}
-          <EquityCurve entries={entries} />
-        </GlowSection>
-      )}
-
-      {/* Row 3 – Win/Loss (4fr) + Weekday (8fr) */}
-      {stats.hasPnl && (
-        <div style={{ display: "grid", gridTemplateColumns: "4fr 8fr", gap: "16px", alignItems: "stretch" }}>
-          <GlowSection style={{ padding: "16px 16px" }}>
-            {sectionTitle("Win / Loss")}
-            <WinLossDonut wins={stats.wins} losses={stats.losses} />
-          </GlowSection>
-          <GlowSection style={{ padding: "16px 24px" }}>
-            {sectionTitle("Avg P&L by Weekday")}
-            <WeekdayBars entries={entries} />
-          </GlowSection>
-        </div>
-      )}
-
-      {/* Row 4 – Trade Calendar (Large: 12fr) */}
-      <GlowSection style={{ padding: "24px 24px" }}>
-        {sectionTitle("Trade Calendar")}
-        <TradeCalendar entries={entries} />
-        <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
-          {[
-            { color: "rgba(34,197,94,0.6)", label: "Positive day" },
-            { color: "rgba(239,68,68,0.6)", label: "Negative day" },
-            { color: "rgba(107,114,128,0.3)", label: "Break-even / no P&L" },
-            { color: "#0d1117", label: "No trade" },
-          ].map(l => (
-            <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: "1px solid #1F2937" }} />
-              <span style={{ color: "#4B5563", fontSize: "11px" }}>{l.label}</span>
-            </div>
+      {/* Layout Switcher */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+        <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+          {LAYOUTS.map(l => (
+            <button
+              key={l.id}
+              title={l.title}
+              onClick={() => changeLayout(l.id)}
+              style={{
+                display: "flex", alignItems: "center", justifyContent: "center",
+                width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
+                backgroundColor: layout === l.id ? "#1F2937" : "transparent",
+                color: layout === l.id ? "#8B5CF6" : "#4B5563",
+                transition: "background 0.15s, color 0.15s",
+              }}
+            >
+              <LayoutIcon id={l.id} />
+            </button>
           ))}
         </div>
-      </GlowSection>
+      </div>
+
+      {/* Section rows */}
+      {rows.map((row, ri) => {
+        const alone = row.length === 1;
+        return (
+          <div key={ri} style={{
+            display: "grid",
+            gridTemplateColumns: alone ? "1fr" : row.map(s => `${s.colSpan}fr`).join(" "),
+            gap: "16px",
+            alignItems: "stretch",
+          }}>
+            {row.map(sec => sec.wrapGlow ? (
+              <GlowSection key={sec.id} style={{ padding: sec.padding }}>
+                {sec.title && sectionTitle(sec.title)}
+                {sec.content}
+              </GlowSection>
+            ) : (
+              <div key={sec.id}>{sec.content}</div>
+            ))}
+          </div>
+        );
+      })}
 
     </div>
   );

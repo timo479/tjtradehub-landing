@@ -714,6 +714,58 @@ const WIDGETS: WidgetDef[] = [
 
 const STORAGE_KEY = "tj-widget-prefs-v3";
 
+// ─── Layout System ────────────────────────────────────────────────────────────
+// 4 modes – all use content-first fr-sizing + row-packing with a maxPerRow cap.
+// Shared LAYOUT_KEY keeps both WidgetGrid and StatsView in sync.
+type Layout = "auto" | "wide" | "compact" | "full";
+const LAYOUT_KEY = "tj-layout-v2";
+const LAYOUTS: { id: Layout; title: string }[] = [
+  { id: "auto",    title: "Smart (auto-size)" },
+  { id: "wide",    title: "Wide (max 2 per row)" },
+  { id: "compact", title: "Compact (max 3 per row)" },
+  { id: "full",    title: "Full width (stacked)" },
+];
+const getMaxPerRow = (l: Layout): number =>
+  l === "full" ? 1 : l === "wide" ? 2 : l === "compact" ? 3 : Infinity;
+
+function LayoutIcon({ id }: { id: Layout }) {
+  const f = { fill: "currentColor" } as const;
+  if (id === "full") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="1" y="6" width="12" height="3" rx="1" {...f} opacity=".6"/>
+      <rect x="1" y="11" width="12" height="2" rx="1" {...f} opacity=".4"/>
+    </svg>
+  );
+  if (id === "wide") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="5.5" height="5.5" rx="1" {...f}/>
+      <rect x="7.5" y="1" width="5.5" height="5.5" rx="1" {...f}/>
+      <rect x="1" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="7.5" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
+    </svg>
+  );
+  if (id === "compact") return (
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="5.25" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="9.5" y="1" width="3.5" height="5" rx="1" {...f}/>
+      <rect x="1" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="5.25" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+      <rect x="9.5" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
+    </svg>
+  );
+  return ( // auto / smart
+    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
+      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="1" y="6" width="7.5" height="3" rx="1" {...f} opacity=".9"/>
+      <rect x="9.5" y="6" width="3.5" height="3" rx="1" {...f} opacity=".6"/>
+      <rect x="1" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
+      <rect x="8" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
+    </svg>
+  );
+}
+
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
@@ -731,14 +783,22 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
+      const savedLayout = localStorage.getItem(LAYOUT_KEY) as Layout | null;
+      if (savedLayout && LAYOUTS.some(l => l.id === savedLayout)) setLayout(savedLayout);
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
+
+  const changeLayout = (l: Layout) => {
+    setLayout(l);
+    try { localStorage.setItem(LAYOUT_KEY, l); } catch { /* ignore */ }
+  };
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -766,14 +826,16 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
   const renderWidgets = (): React.ReactNode => {
     // Row-packing: greedy left-to-right, rows sum to 12.
+    // Layout mode caps how many widgets can share a row (maxPerRow).
     // Lone widget in a row → 1fr (full width).
+    const maxPR = getMaxPerRow(layout);
     const rows: WidgetDef[][] = [];
     let current: WidgetDef[] = [];
     let used = 0;
 
     for (const w of visible) {
       const span = spans[w.id];
-      if (used + span > 12 && current.length > 0) {
+      if ((used + span > 12 || current.length >= maxPR) && current.length > 0) {
         rows.push(current);
         current = [w];
         used = span;
@@ -813,6 +875,25 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           {active.length} / {WIDGETS.length} widgets active
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+          {/* Layout switcher */}
+          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+            {LAYOUTS.map(l => (
+              <button
+                key={l.id}
+                title={l.title}
+                onClick={() => changeLayout(l.id)}
+                style={{
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
+                  backgroundColor: layout === l.id ? "#1F2937" : "transparent",
+                  color: layout === l.id ? "#8B5CF6" : "#4B5563",
+                  transition: "background 0.15s, color 0.15s",
+                }}
+              >
+                <LayoutIcon id={l.id} />
+              </button>
+            ))}
+          </div>
           <button
             onClick={() => setEditOpen(true)}
             style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
