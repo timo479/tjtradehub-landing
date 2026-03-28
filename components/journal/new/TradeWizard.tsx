@@ -66,14 +66,17 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
 
   const toLocalDate = (d: Date) =>
     `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  const initDate = entry ? toLocalDate(new Date(entry.trade_date)) : toLocalDate(new Date());
-  const initTime = entry
-    ? new Date(entry.trade_date).toTimeString().slice(0, 5)
-    : new Date().toTimeString().slice(0, 5);
 
-  // Step 1
-  const [date, setDate] = useState(initDate);
-  const [time, setTime] = useState(initTime);
+  // Step 1 — initialized empty to avoid SSR timezone mismatch (server = UTC, user = local)
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+
+  // Set correct LOCAL date/time after mount (client-side only)
+  useEffect(() => {
+    const d = entry ? new Date(entry.trade_date) : new Date();
+    setDate(toLocalDate(d));
+    setTime(d.toTimeString().slice(0, 5));
+  }, []);
   const [symbol, setSymbol] = useState(getInitialValue(entry, "Symbol"));
   const [direction, setDirection] = useState(getInitialValue(entry, "Direction"));
 
