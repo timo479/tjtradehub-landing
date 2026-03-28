@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -698,7 +698,9 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
 }
 
 // ─── NEW Widget: Trade Analysis Table ─────────────────────────────────────────
-function WTradeAnalysis({ entries }: { entries: Trade[] }) {
+function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journal }) {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+
   const sorted = useMemo(() =>
     [...entries].sort((a, b) => new Date(b.trade_date).getTime() - new Date(a.trade_date).getTime()).slice(0, 50),
     [entries]
@@ -727,41 +729,90 @@ function WTradeAnalysis({ entries }: { entries: Trade[] }) {
           {sorted.map(t => {
             const p = pnlNum(t);
             const rules = getRulesArr(t);
-            const broken = rules.filter(r => !r.compliant).length;
+            const brokenRules = rules.filter(r => !r.compliant);
             const emos = getEmotions(t);
             const dir = getField(t, "Direction");
+            const d = new Date(t.trade_date);
+            const tradeHHMM = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+            const outsideSession = !!(journal.time_from && journal.time_to && (tradeHHMM < journal.time_from || tradeHHMM > journal.time_to));
+            const totalBreaks = brokenRules.length + (outsideSession ? 1 : 0);
+            const hasData = rules.length > 0 || outsideSession;
+            const isExpanded = expandedId === t.id;
+
             return (
-              <tr key={t.id}>
-                <td style={{ ...td, color: "#6B7280" }}>{new Date(t.trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</td>
-                <td style={{ ...td, color: "#F9FAFB", fontWeight: 600 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: p !== null ? (p >= 0 ? "#22c55e" : "#ef4444") : "#374151", flexShrink: 0 }} />
-                    {getField(t, "Symbol") ?? "—"}
-                  </div>
-                </td>
-                <td style={td}>
-                  {dir && <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "4px", backgroundColor: dir === "Long" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)", color: dir === "Long" ? "#22c55e" : "#ef4444" }}>{dir === "Long" ? "▲L" : "▼S"}</span>}
-                </td>
-                <td style={{ ...td, color: "#9CA3AF" }}>{getField(t, "Setup") ?? <span style={{ color: "#374151" }}>—</span>}</td>
-                <td style={{ ...td, textAlign: "right" }}>
-                  {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: "#374151" }}>—</span>}
-                </td>
-                <td style={td}>
-                  <div style={{ display: "flex", gap: "3px", flexWrap: "wrap" }}>
-                    {emos.slice(0, 2).map(e => (
-                      <span key={e} style={{ padding: "1px 6px", borderRadius: "8px", fontSize: "10px", backgroundColor: `${EMOTION_COLORS[e] ?? "#6B7280"}22`, color: EMOTION_COLORS[e] ?? "#6B7280" }}>{e}</span>
-                    ))}
-                    {emos.length > 2 && <span style={{ color: "#6B7280", fontSize: "10px" }}>+{emos.length - 2}</span>}
-                  </div>
-                </td>
-                <td style={td}>
-                  {rules.length > 0
-                    ? broken === 0
-                      ? <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600 }}>✓ All OK</span>
-                      : <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: 600 }}>✗ {broken} broken</span>
-                    : <span style={{ color: "#374151", fontSize: "12px" }}>—</span>}
-                </td>
-              </tr>
+              <React.Fragment key={t.id}>
+                <tr onClick={() => setExpandedId(isExpanded ? null : t.id)}
+                  style={{ borderBottom: isExpanded ? "none" : "1px solid #0f1923", cursor: "pointer", transition: "background 0.15s", backgroundColor: isExpanded ? "rgba(255,255,255,0.02)" : undefined }}
+                  onMouseEnter={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(255,255,255,0.02)"; }}
+                  onMouseLeave={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = ""; }}>
+                  <td style={{ ...td, color: "#6B7280" }}>{d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</td>
+                  <td style={{ ...td, color: "#F9FAFB", fontWeight: 600 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: p !== null ? (p >= 0 ? "#22c55e" : "#ef4444") : "#374151", flexShrink: 0 }} />
+                      {getField(t, "Symbol") ?? "—"}
+                    </div>
+                  </td>
+                  <td style={td}>
+                    {dir && <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "4px", backgroundColor: dir === "Long" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)", color: dir === "Long" ? "#22c55e" : "#ef4444" }}>{dir === "Long" ? "▲L" : "▼S"}</span>}
+                  </td>
+                  <td style={{ ...td, color: "#9CA3AF" }}>{getField(t, "Setup") ?? <span style={{ color: "#374151" }}>—</span>}</td>
+                  <td style={{ ...td, textAlign: "right" }}>
+                    {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: "#374151" }}>—</span>}
+                  </td>
+                  <td style={td}>
+                    <div style={{ display: "flex", gap: "3px", flexWrap: "wrap" }}>
+                      {emos.slice(0, 2).map(e => (
+                        <span key={e} style={{ padding: "1px 6px", borderRadius: "8px", fontSize: "10px", backgroundColor: `${EMOTION_COLORS[e] ?? "#6B7280"}22`, color: EMOTION_COLORS[e] ?? "#6B7280" }}>{e}</span>
+                      ))}
+                      {emos.length > 2 && <span style={{ color: "#6B7280", fontSize: "10px" }}>+{emos.length - 2}</span>}
+                    </div>
+                  </td>
+                  <td style={td}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                      {totalBreaks > 0
+                        ? <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: 600 }}>✗ {totalBreaks} break{totalBreaks > 1 ? "s" : ""}</span>
+                        : hasData
+                          ? <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600 }}>✓ All OK</span>
+                          : <span style={{ color: "#374151", fontSize: "12px" }}>—</span>}
+                      <span style={{ color: "#4B5563", fontSize: "11px" }}>{isExpanded ? "▲" : "▼"}</span>
+                    </div>
+                  </td>
+                </tr>
+                {isExpanded && (
+                  <tr>
+                    <td colSpan={7} style={{ backgroundColor: "#0d1219", borderBottom: "1px solid #1F2937", padding: "0" }}>
+                      <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "6px" }}>
+                        {totalBreaks === 0 && (
+                          <p style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600, margin: 0 }}>✓ All rules followed for this trade</p>
+                        )}
+                        {outsideSession && (
+                          <div style={{ display: "flex", alignItems: "center", gap: "8px", backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "8px", padding: "6px 10px" }}>
+                            <span style={{ fontSize: "14px" }}>⏰</span>
+                            <span style={{ color: "#ef4444", fontSize: "12px" }}>
+                              Outside trading hours — trade at <strong>{tradeHHMM}</strong>, allowed: <strong>{journal.time_from}–{journal.time_to}</strong>
+                            </span>
+                          </div>
+                        )}
+                        {brokenRules.map(r => (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "8px", backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", borderRadius: "8px", padding: "6px 10px" }}>
+                            <span style={{ color: "#ef4444", fontSize: "13px", fontWeight: 700 }}>✗</span>
+                            <span style={{ color: "#ef4444", fontSize: "12px" }}>{r.text}</span>
+                          </div>
+                        ))}
+                        {rules.filter(r => r.compliant).map(r => (
+                          <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "4px 10px" }}>
+                            <span style={{ color: "#22c55e", fontSize: "13px" }}>✓</span>
+                            <span style={{ color: "#6B7280", fontSize: "12px" }}>{r.text}</span>
+                          </div>
+                        ))}
+                        {!hasData && (
+                          <p style={{ color: "#4B5563", fontSize: "12px", margin: 0 }}>No rule data logged for this trade.</p>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </React.Fragment>
             );
           })}
         </tbody>
@@ -789,7 +840,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "risk-discipline", name: "Risk Discipline",        desc: "How consistently you stick to your risk % rule",      icon: "🎯", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRiskDiscipline entries={entries} journal={journal} /> },
   { id: "rule-compliance",name: "Rule Compliance",        desc: "How often each journal rule was followed",            icon: "✅", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WRuleCompliance entries={entries} journal={journal} /> },
   { id: "emotions-breaks",name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", size: "full", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
-  { id: "trade-analysis", name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", size: "full", defaultOn: true,  component: ({ entries }) => <WTradeAnalysis entries={entries} /> },
+  { id: "trade-analysis", name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WTradeAnalysis entries={entries} journal={journal} /> },
   { id: "histogram",      name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", size: "full", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
   { id: "profit-factor",  name: "Profit Factor",          desc: "Profit Factor, Gross Profit/Loss, Expectancy",        icon: "⚡", size: "half", defaultOn: false, component: ({ entries }) => <WProfitFactor entries={entries} /> },
   { id: "frequency",      name: "Trade Frequency",        desc: "Number of trades per month over the last 8 months",   icon: "🔢", size: "full", defaultOn: false, component: ({ entries }) => <WFrequency entries={entries} /> },
