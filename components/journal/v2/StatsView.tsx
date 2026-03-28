@@ -27,7 +27,7 @@ const getPnl = (entry: Entry): number | null => {
     const label = (fv.template_fields?.label ?? "").toLowerCase();
     if (
       fv.template_fields?.field_type === "number" &&
-      (label.includes("p&l") || label.includes("pnl") || label.includes("profit") || label.includes("gewinn") || label.includes("gain"))
+      (label.includes("p&l") || label.includes("pnl") || label === "profit" || label.includes("gewinn") || label.includes("gain"))
     ) {
       const n = parseFloat(fv.value);
       return isNaN(n) ? null : n;
