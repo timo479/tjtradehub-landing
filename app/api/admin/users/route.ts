@@ -39,11 +39,11 @@ export async function GET() {
       u.subscription_status === "trialing" &&
       new Date(u.trial_ends_at).getTime() < nowTs
   ).length;
-  const converted = nonAdmins.filter(
+  const everSubscribed = nonAdmins.filter(
     (u) => u.subscription_status === "active" || u.subscription_status === "canceled"
   ).length;
-  const conversionBase = converted + expiredNonConverted;
-  const conversionRate = conversionBase > 0 ? Math.round((converted / conversionBase) * 100) : 0;
+  const conversionBase = everSubscribed + expiredNonConverted;
+  const conversionRate = conversionBase > 0 ? Math.round((activeUsers.length / conversionBase) * 100) : 0;
 
   // Registrations per day (last 14 days)
   const regByDay: Record<string, number> = {};

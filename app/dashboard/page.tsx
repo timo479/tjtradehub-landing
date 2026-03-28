@@ -63,7 +63,7 @@ export default async function DashboardPage() {
   };
 
   const now = new Date();
-  const nowMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const nowMonth = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, "0")}`;
   const monthEntries = allEntries.filter((e) => e.trade_date?.slice(0, 7) === nowMonth);
 
   const pnls = allEntries.map(getPnl).filter((v): v is number => v !== null);
