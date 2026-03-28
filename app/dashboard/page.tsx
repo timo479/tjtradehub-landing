@@ -172,9 +172,9 @@ export default async function DashboardPage() {
       </header>
 
       {/* Main */}
-      <main className="mx-auto px-6 py-12" style={{ maxWidth: "1200px" }}>
+      <main className="mx-auto px-6 py-8" style={{ maxWidth: "1200px" }}>
         {/* Welcome */}
-        <div className="mb-10">
+        <div className="mb-8">
           <h2 className="text-3xl font-bold mb-2" style={{ color: "#F9FAFB" }}>
             Welcome back, {name?.split(" ")[0]} 👋
           </h2>
@@ -189,12 +189,12 @@ export default async function DashboardPage() {
         <DashboardKpiCards cards={cards} />
 
         {/* MetaAPI */}
-        <div className="mb-8" data-tour="metaconnect">
+        <div className="mb-6" data-tour="metaconnect">
           <MetaConnect isSubscribed={isSubscribed} />
         </div>
 
         {/* Statistiken Widget Grid */}
-        <div className="mb-10" data-tour="dashboard-stats">
+        <div className="mb-8" data-tour="dashboard-stats">
           <DashboardStats />
         </div>
 
