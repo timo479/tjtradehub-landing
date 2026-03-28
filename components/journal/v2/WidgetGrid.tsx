@@ -825,24 +825,34 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   if (!loaded) return null;
 
   const renderWidgets = (): React.ReactNode => {
-    // Row-packing: greedy left-to-right, rows sum to 12.
-    // Layout mode caps how many widgets can share a row (maxPerRow).
-    // Lone widget in a row → 1fr (full width).
-    const maxPR = getMaxPerRow(layout);
+    // ── Fixed-column layouts: wide=2col / compact=3col / full=1col ──────────
+    // Each widget gets the same width (repeat(N, 1fr)) → visually distinct rows.
+    if (layout !== "auto") {
+      const cols = layout === "full" ? 1 : layout === "wide" ? 2 : 3;
+      const rows: WidgetDef[][] = [];
+      for (let i = 0; i < visible.length; i += cols) rows.push(visible.slice(i, i + cols));
+      return rows.map((row, ri) => (
+        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px", alignItems: "stretch" }}>
+          {row.map(w => (
+            <GlowCard key={w.id} style={{ padding: getPadding(12 / cols) }}>
+              <SectionTitle>{w.name}</SectionTitle>
+              <w.component entries={entries} />
+            </GlowCard>
+          ))}
+        </div>
+      ));
+    }
+
+    // ── Auto: content-first row-packing with fr proportions ─────────────────
+    // Each widget declares its natural size via getColSpan(); rows sum to 12fr.
     const rows: WidgetDef[][] = [];
     let current: WidgetDef[] = [];
     let used = 0;
-
     for (const w of visible) {
       const span = spans[w.id];
-      if ((used + span > 12 || current.length >= maxPR) && current.length > 0) {
-        rows.push(current);
-        current = [w];
-        used = span;
-      } else {
-        current.push(w);
-        used += span;
-      }
+      if (used + span > 12 && current.length > 0) {
+        rows.push(current); current = [w]; used = span;
+      } else { current.push(w); used += span; }
     }
     if (current.length > 0) rows.push(current);
 

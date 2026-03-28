@@ -564,17 +564,26 @@ export default function StatsView({ entries }: Props) {
     },
   ];
 
-  // ── Row-packing (same algorithm as WidgetGrid) ────────────────────────────
-  const maxPR = getMaxPerRow(layout);
-  const rows: SectionDef[][] = [];
-  let current: SectionDef[] = [];
-  let used = 0;
-  for (const sec of sections) {
-    if ((used + sec.colSpan > 12 || current.length >= maxPR) && current.length > 0) {
-      rows.push(current); current = [sec]; used = sec.colSpan;
-    } else { current.push(sec); used += sec.colSpan; }
+  // ── Row-packing: same logic as WidgetGrid ─────────────────────────────────
+  let rows: SectionDef[][];
+
+  if (layout !== "auto") {
+    // Fixed equal-column grid: wide=2col, compact=3col, full=1col
+    const cols = layout === "full" ? 1 : layout === "wide" ? 2 : 3;
+    rows = [];
+    for (let i = 0; i < sections.length; i += cols) rows.push(sections.slice(i, i + cols));
+  } else {
+    // Content-first fr-proportional packing
+    rows = [];
+    let current: SectionDef[] = [];
+    let used = 0;
+    for (const sec of sections) {
+      if (used + sec.colSpan > 12 && current.length > 0) {
+        rows.push(current); current = [sec]; used = sec.colSpan;
+      } else { current.push(sec); used += sec.colSpan; }
+    }
+    if (current.length > 0) rows.push(current);
   }
-  if (current.length > 0) rows.push(current);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -604,10 +613,11 @@ export default function StatsView({ entries }: Props) {
       {/* Section rows */}
       {rows.map((row, ri) => {
         const alone = row.length === 1;
+        const isFixed = layout !== "auto";
         return (
           <div key={ri} style={{
             display: "grid",
-            gridTemplateColumns: alone ? "1fr" : row.map(s => `${s.colSpan}fr`).join(" "),
+            gridTemplateColumns: alone ? "1fr" : isFixed ? `repeat(${row.length}, 1fr)` : row.map(s => `${s.colSpan}fr`).join(" "),
             gap: "16px",
             alignItems: "stretch",
           }}>
