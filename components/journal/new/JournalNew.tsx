@@ -562,6 +562,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                 const d = new Date(trade.trade_date);
                 const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
                 const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+                const tradeHHMM = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                const outsideSession = !!(activeJournal?.time_from && activeJournal?.time_to && (tradeHHMM < activeJournal.time_from || tradeHHMM > activeJournal.time_to));
                 return (
                   <tr key={trade.id} onClick={() => setDetailTrade(trade)}
                     style={{ borderBottom: "1px solid #1F2937", cursor: "pointer", transition: "background 0.15s" }}
@@ -569,7 +571,10 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                     onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = ""}>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ color: "#9CA3AF", fontSize: "13px" }}>{dateStr}</div>
-                      <div style={{ color: "#4B5563", fontSize: "11px" }}>{timeStr}</div>
+                      <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                        <span style={{ color: outsideSession ? "#ef4444" : "#4B5563", fontSize: "11px" }}>{timeStr}</span>
+                        {outsideSession && <span title="Outside trading hours" style={{ fontSize: "11px" }}>⏰</span>}
+                      </div>
                     </td>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
@@ -653,6 +658,24 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                     </div>
                   );
                 } catch { return null; }
+              })()}
+              {/* Session Rule Break */}
+              {activeJournal.time_from && activeJournal.time_to && (() => {
+                const d = new Date(detailTrade.trade_date);
+                const tradeTime = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                const outside = tradeTime < activeJournal.time_from || tradeTime > activeJournal.time_to;
+                if (!outside) return null;
+                return (
+                  <div style={{ backgroundColor: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: "10px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "10px" }}>
+                    <span style={{ fontSize: "18px" }}>⏰</span>
+                    <div>
+                      <p style={{ color: "#ef4444", fontSize: "13px", fontWeight: 600, margin: 0 }}>Outside Trading Hours — Rule Break</p>
+                      <p style={{ color: "#9CA3AF", fontSize: "12px", margin: "2px 0 0" }}>
+                        Trade at <strong style={{ color: "#F9FAFB" }}>{tradeTime}</strong> — allowed session: <strong style={{ color: "#F9FAFB" }}>{activeJournal.time_from}–{activeJournal.time_to}</strong>
+                      </p>
+                    </div>
+                  </div>
+                );
               })()}
               {/* Notes */}
               {getField(detailTrade, "Notes") && <div><p style={{ color: "#6B7280", fontSize: "11px", textTransform: "uppercase", letterSpacing: ".04em", marginBottom: "4px" }}>Notes</p><p style={{ color: "#D1D5DB", fontSize: "14px", lineHeight: 1.6 }}>{getField(detailTrade, "Notes")}</p></div>}
