@@ -560,9 +560,10 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                 const p = pnlNum(trade);
                 const emos = getEmotions(trade);
                 const d = new Date(trade.trade_date);
-                const dateStr = d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" });
-                const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-                const tradeHHMM = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                // Use UTC methods – we store local time as UTC to avoid timezone shifts
+                const dateStr = `${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCFullYear()).slice(2)}`;
+                const timeStr = `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`;
+                const tradeHHMM = timeStr;
                 const outsideSession = !!(activeJournal?.time_from && activeJournal?.time_to && (tradeHHMM < activeJournal.time_from || tradeHHMM > activeJournal.time_to));
                 return (
                   <tr key={trade.id} onClick={() => setDetailTrade(trade)}
@@ -622,7 +623,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "17px" }}>{getField(detailTrade, "Symbol") ?? "Trade"} — {getField(detailTrade, "Direction")}</h3>
-                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "2px" }}>{new Date(detailTrade.trade_date).toLocaleString("en-GB")}</p>
+                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "2px" }}>{(() => { const d = new Date(detailTrade.trade_date); return `${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${d.getUTCFullYear()} ${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`; })()}</p>
               </div>
               <button onClick={() => setDetailTrade(null)} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "22px" }}>×</button>
             </div>
@@ -662,7 +663,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
               {/* Session Rule Break */}
               {activeJournal.time_from && activeJournal.time_to && (() => {
                 const d = new Date(detailTrade.trade_date);
-                const tradeTime = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+                const tradeTime = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
                 const outside = tradeTime < activeJournal.time_from || tradeTime > activeJournal.time_to;
                 if (!outside) return null;
                 return (

@@ -64,18 +64,17 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const editing = !!entry;
   const fieldMap = useMemo(() => buildFieldMap(journal), [journal]);
 
-  const toLocalDate = (d: Date) =>
-    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  // Always read/write dates as UTC – we store local time AS UTC to avoid timezone issues entirely
+  const toUTCDate = (d: Date) =>
+    `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, "0")}-${String(d.getUTCDate()).padStart(2, "0")}`;
 
-  // Step 1 — initialized empty to avoid SSR timezone mismatch (server = UTC, user = local)
   const [date, setDate] = useState("");
   const [time, setTime] = useState("");
 
-  // Set correct LOCAL date/time after mount (client-side only)
   useEffect(() => {
     const d = entry ? new Date(entry.trade_date) : new Date();
-    setDate(toLocalDate(d));
-    setTime(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
+    setDate(toUTCDate(d));
+    setTime(`${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`);
   }, []);
   const [symbol, setSymbol] = useState(getInitialValue(entry, "Symbol"));
   const [direction, setDirection] = useState(getInitialValue(entry, "Direction"));
@@ -214,15 +213,11 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     setSaving(true);
     setError(null);
 
-    const dateVal = date || toLocalDate(new Date());
+    const dateVal = date || toUTCDate(new Date());
     const timeVal = time || "00:00";
-    // Build timezone-aware ISO string directly from user input + local offset
-    const tzOffset = new Date().getTimezoneOffset(); // UTC - local, in minutes
-    const offsetSign = tzOffset <= 0 ? "+" : "-";
-    const absOffset = Math.abs(tzOffset);
-    const oh = String(Math.floor(absOffset / 60)).padStart(2, "0");
-    const om = String(absOffset % 60).padStart(2, "0");
-    const tradeDate = `${dateVal}T${timeVal}:00.000${offsetSign}${oh}:${om}`;
+    // Store as plain UTC string – we treat the user's local time AS UTC intentionally
+    // so that getUTCHours() always returns exactly what the user typed
+    const tradeDate = `${dateVal}T${timeVal}:00`;
 
     const rulesArr = journal.rules.map(r => ({ id: r.id, text: r.text, compliant: rulesFollowed[r.id] ?? true }));
 

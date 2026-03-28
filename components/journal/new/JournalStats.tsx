@@ -733,7 +733,7 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
             const emos = getEmotions(t);
             const dir = getField(t, "Direction");
             const d = new Date(t.trade_date);
-            const tradeHHMM = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+            const tradeHHMM = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
             const outsideSession = !!(journal.time_from && journal.time_to && (tradeHHMM < journal.time_from || tradeHHMM > journal.time_to));
             const totalBreaks = brokenRules.length + (outsideSession ? 1 : 0);
             const hasData = rules.length > 0 || outsideSession;
@@ -745,7 +745,7 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
                   style={{ borderBottom: isExpanded ? "none" : "1px solid #0f1923", cursor: "pointer", transition: "background 0.15s", backgroundColor: isExpanded ? "rgba(255,255,255,0.02)" : undefined }}
                   onMouseEnter={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(255,255,255,0.02)"; }}
                   onMouseLeave={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = ""; }}>
-                  <td style={{ ...td, color: "#6B7280" }}>{d.toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit", year: "2-digit" })}</td>
+                  <td style={{ ...td, color: "#6B7280" }}>{`${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCFullYear()).slice(2)}`}</td>
                   <td style={{ ...td, color: "#F9FAFB", fontWeight: 600 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                       <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: p !== null ? (p >= 0 ? "#22c55e" : "#ef4444") : "#374151", flexShrink: 0 }} />
