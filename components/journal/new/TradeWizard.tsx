@@ -75,7 +75,7 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   useEffect(() => {
     const d = entry ? new Date(entry.trade_date) : new Date();
     setDate(toLocalDate(d));
-    setTime(d.toTimeString().slice(0, 5));
+    setTime(`${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`);
   }, []);
   const [symbol, setSymbol] = useState(getInitialValue(entry, "Symbol"));
   const [direction, setDirection] = useState(getInitialValue(entry, "Direction"));
@@ -198,8 +198,6 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const dateInputRef = useRef<HTMLInputElement>(null);
-  const timeInputRef = useRef<HTMLInputElement>(null);
 
   const goTo = (n: number) => {
     setSlideBack(n < step);
@@ -216,11 +214,15 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     setSaving(true);
     setError(null);
 
-    const dateVal = dateInputRef.current?.value || date;
-    const timeVal = timeInputRef.current?.value || time || "00:00";
-    const [yr, mo, da] = dateVal.split("-").map(Number);
-    const [hr, mi] = timeVal.split(":").map(Number);
-    const tradeDate = new Date(yr, mo - 1, da, hr, mi).toISOString();
+    const dateVal = date || toLocalDate(new Date());
+    const timeVal = time || "00:00";
+    // Build timezone-aware ISO string directly from user input + local offset
+    const tzOffset = new Date().getTimezoneOffset(); // UTC - local, in minutes
+    const offsetSign = tzOffset <= 0 ? "+" : "-";
+    const absOffset = Math.abs(tzOffset);
+    const oh = String(Math.floor(absOffset / 60)).padStart(2, "0");
+    const om = String(absOffset % 60).padStart(2, "0");
+    const tradeDate = `${dateVal}T${timeVal}:00.000${offsetSign}${oh}:${om}`;
 
     const rulesArr = journal.rules.map(r => ({ id: r.id, text: r.text, compliant: rulesFollowed[r.id] ?? true }));
 
@@ -327,11 +329,11 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Date</label>
-                <input ref={dateInputRef} type="date" style={inp} value={date} onChange={e => setDate(e.target.value)} required />
+                <input type="date" style={inp} value={date} onChange={e => setDate(e.target.value)} required />
               </div>
               <div>
                 <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Time</label>
-                <input ref={timeInputRef} type="time" style={inp} value={time} onChange={e => setTime(e.target.value)} />
+                <input type="time" style={inp} value={time} onChange={e => setTime(e.target.value)} />
               </div>
             </div>
 
