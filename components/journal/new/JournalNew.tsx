@@ -234,7 +234,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
     if (filter === "today") list = list.filter(t => t.trade_date.slice(0, 10) === today);
     else if (filter === "week") list = list.filter(t => new Date(t.trade_date) >= weekAgo);
     else if (filter === "month") list = list.filter(t => new Date(t.trade_date) >= monthAgo);
-    else if (filter === "review") list = list.filter(t => t.source === "mt5" && !t.is_reviewed);
+    else if (filter === "review") list = list.filter(t => t.source === "mt5" && !getField(t, "Setup") && getEmotions(t).length === 0);
 
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -264,7 +264,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
 
   const sortArrow = (col: string) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
-  const reviewCount = mt5Pending.length;
+  const reviewCount = journalTrades.filter(t => t.source === "mt5" && !getField(t, "Setup") && getEmotions(t).length === 0).length;
+  useEffect(() => { if (filter === "review" && reviewCount === 0) setFilter("all"); }, [reviewCount, filter]);
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "300px", color: "#6B7280", fontSize: "14px" }}>
@@ -512,8 +513,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
             </button>
           ))}
           {reviewCount > 0 && (
-            <button onClick={() => setShowInbox(true)}
-              style={{ padding: "6px 14px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.25)", backgroundColor: showInbox ? "rgba(239,68,68,0.12)" : "transparent", color: showInbox ? "#f87171" : "#ef4444", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
+            <button onClick={() => setFilter("review")}
+              style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${filter === "review" ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.25)"}`, backgroundColor: filter === "review" ? "rgba(239,68,68,0.12)" : "transparent", color: filter === "review" ? "#f87171" : "#ef4444", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
               Needs Review <span style={{ backgroundColor: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: "8px", padding: "0 5px", minWidth: "16px", textAlign: "center" }}>{reviewCount}</span>
             </button>
           )}
