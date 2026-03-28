@@ -432,9 +432,9 @@ export default function StatsView({ entries }: Props) {
   }
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-      {/* KPI Row */}
+      {/* Row 1 – KPI mini-cards (Large: full width) */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
         <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
         {stats.hasPnl && <>
@@ -444,43 +444,37 @@ export default function StatsView({ entries }: Props) {
           <KpiCard label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
           <KpiCard label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
           <KpiCard label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
-          <KpiCard
-            label="Current Streak"
-            value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`}
-            color={stats.streakType === "win" ? "#22c55e" : "#ef4444"}
-          />
+          <KpiCard label="Current Streak" value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`} color={stats.streakType === "win" ? "#22c55e" : "#ef4444"} />
         </>}
       </div>
 
-      {/* Equity Curve */}
+      {/* Row 2 – Equity Curve (Large: 12fr) */}
       {stats.hasPnl && (
-        <GlowSection>
+        <GlowSection style={{ padding: "24px 24px" }}>
           {sectionTitle("Equity Curve")}
           <EquityCurve entries={entries} />
         </GlowSection>
       )}
 
-      {/* Win/Loss + Weekday */}
-      <div style={{ display: "grid", gridTemplateColumns: "4fr 8fr", gap: "16px" }}>
-        {stats.hasPnl && (
-          <GlowSection>
+      {/* Row 3 – Win/Loss (4fr) + Weekday (8fr) */}
+      {stats.hasPnl && (
+        <div style={{ display: "grid", gridTemplateColumns: "4fr 8fr", gap: "16px", alignItems: "stretch" }}>
+          <GlowSection style={{ padding: "16px 16px" }}>
             {sectionTitle("Win / Loss")}
             <WinLossDonut wins={stats.wins} losses={stats.losses} />
           </GlowSection>
-        )}
-        {stats.hasPnl && (
-          <GlowSection>
+          <GlowSection style={{ padding: "16px 24px" }}>
             {sectionTitle("Avg P&L by Weekday")}
             <WeekdayBars entries={entries} />
           </GlowSection>
-        )}
-      </div>
+        </div>
+      )}
 
-      {/* Calendar */}
-      <GlowSection>
+      {/* Row 4 – Trade Calendar (Large: 12fr) */}
+      <GlowSection style={{ padding: "24px 24px" }}>
         {sectionTitle("Trade Calendar")}
         <TradeCalendar entries={entries} />
-        <div style={{ display: "flex", gap: "16px", marginTop: "14px", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
           {[
             { color: "rgba(34,197,94,0.6)", label: "Positive day" },
             { color: "rgba(239,68,68,0.6)", label: "Negative day" },
