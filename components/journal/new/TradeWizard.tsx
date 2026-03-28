@@ -39,6 +39,8 @@ interface Props {
 
 const DEFAULT_SYMBOLS = ["EUR/USD", "GBP/USD", "USD/JPY", "GBP/JPY", "NAS100", "US30", "XAUUSD"];
 const CUSTOM_SYMBOLS_KEY = "tj-custom-symbols";
+const CUSTOM_SETUPS_KEY = "tj-custom-setups";
+const DEFAULT_SETUPS = ["Breakout", "Pullback", "OB Retest", "FVG", "Liquidity Grab", "Trend Follow"];
 const EMOTIONS = ["😌 Calm", "🎯 Confident", "😰 Nervous", "🔥 FOMO", "💰 Greedy", "😨 Fearful", "😤 Frustrated", "🚀 Euphoric"];
 
 const inp: React.CSSProperties = { backgroundColor: "#1a2332", border: "1px solid #1F2937", borderRadius: "8px", padding: "9px 12px", color: "#F9FAFB", fontSize: "14px", outline: "none", width: "100%" };
@@ -113,8 +115,15 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
   const [showAddSymbol, setShowAddSymbol] = useState(false);
   const addSymbolRef = useRef<HTMLInputElement>(null);
 
+  // Custom setups (persisted in localStorage)
+  const [customSetups, setCustomSetups] = useState<string[]>([]);
+  const [newSetupInput, setNewSetupInput] = useState("");
+  const [showAddSetup, setShowAddSetup] = useState(false);
+  const addSetupRef = useRef<HTMLInputElement>(null);
+
   useEffect(() => {
     try { setCustomSymbols(JSON.parse(localStorage.getItem(CUSTOM_SYMBOLS_KEY) ?? "[]")); } catch { /* ignore */ }
+    try { setCustomSetups(JSON.parse(localStorage.getItem(CUSTOM_SETUPS_KEY) ?? "[]")); } catch { /* ignore */ }
   }, []);
 
   const addCustomSymbol = () => {
@@ -133,6 +142,24 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
     setCustomSymbols(next);
     localStorage.setItem(CUSTOM_SYMBOLS_KEY, JSON.stringify(next));
     if (symbol === s) setSymbol("");
+  };
+
+  const addCustomSetup = () => {
+    const s = newSetupInput.trim();
+    if (!s || customSetups.includes(s) || DEFAULT_SETUPS.includes(s)) { setNewSetupInput(""); setShowAddSetup(false); return; }
+    const next = [...customSetups, s];
+    setCustomSetups(next);
+    localStorage.setItem(CUSTOM_SETUPS_KEY, JSON.stringify(next));
+    setSetup(s);
+    setNewSetupInput("");
+    setShowAddSetup(false);
+  };
+
+  const removeCustomSetup = (s: string) => {
+    const next = customSetups.filter(c => c !== s);
+    setCustomSetups(next);
+    localStorage.setItem(CUSTOM_SETUPS_KEY, JSON.stringify(next));
+    if (setup === s) setSetup("");
   };
   const [slideBack, setSlideBack] = useState(false);
   const [savedEntryId, setSavedEntryId] = useState<string | null>(entry?.id ?? null);
@@ -382,8 +409,56 @@ export default function TradeWizard({ journal, entry, onClose, onSaved }: Props)
           {/* STEP 3 */}
           {step === 3 && <>
             <div>
-              <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "6px" }}>Setup</label>
-              <input style={inp} placeholder="e.g. Breakout, Pullback, OB retest..." value={setup} onChange={e => setSetup(e.target.value)} />
+              <label style={{ color: "#9CA3AF", fontSize: "12px", display: "block", marginBottom: "8px" }}>Setup</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "10px", alignItems: "center" }}>
+                {/* Default setup chips */}
+                {DEFAULT_SETUPS.map(s => (
+                  <button key={s} type="button" onClick={() => setSetup(setup === s ? "" : s)}
+                    style={{ padding: "5px 13px", borderRadius: "20px", border: `1px solid ${setup === s ? "#8B5CF6" : "#374151"}`, backgroundColor: setup === s ? "rgba(139,92,246,0.15)" : "transparent", color: setup === s ? "#A78BFA" : "#9CA3AF", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                    {s}
+                  </button>
+                ))}
+                {/* Custom setup chips */}
+                {customSetups.map(s => (
+                  <div key={s} style={{ display: "flex", alignItems: "center", gap: "2px", borderRadius: "20px", border: `1px solid ${setup === s ? "#8B5CF6" : "#374151"}`, backgroundColor: setup === s ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)", overflow: "hidden" }}>
+                    <button type="button" onClick={() => setSetup(setup === s ? "" : s)}
+                      style={{ padding: "5px 10px 5px 13px", background: "none", border: "none", color: setup === s ? "#A78BFA" : "#9CA3AF", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                      {s}
+                    </button>
+                    <button type="button" onClick={() => removeCustomSetup(s)}
+                      style={{ padding: "5px 8px 5px 2px", background: "none", border: "none", color: "#4B5563", fontSize: "13px", cursor: "pointer", lineHeight: 1 }}
+                      title="Remove">×</button>
+                  </div>
+                ))}
+                {/* Add button / inline input */}
+                {showAddSetup ? (
+                  <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+                    <input
+                      ref={addSetupRef}
+                      autoFocus
+                      value={newSetupInput}
+                      onChange={e => setNewSetupInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter") { e.preventDefault(); addCustomSetup(); } if (e.key === "Escape") { setShowAddSetup(false); setNewSetupInput(""); } }}
+                      placeholder="e.g. ICT CISD"
+                      style={{ ...inp, width: "120px", padding: "4px 10px", fontSize: "12px", borderRadius: "20px" }}
+                    />
+                    <button type="button" onClick={addCustomSetup}
+                      style={{ padding: "4px 10px", borderRadius: "20px", border: "1px solid #8B5CF6", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA", fontSize: "12px", fontWeight: 600, cursor: "pointer" }}>
+                      Add
+                    </button>
+                    <button type="button" onClick={() => { setShowAddSetup(false); setNewSetupInput(""); }}
+                      style={{ padding: "4px 8px", borderRadius: "20px", border: "1px solid #374151", backgroundColor: "transparent", color: "#6B7280", fontSize: "13px", cursor: "pointer" }}>
+                      ×
+                    </button>
+                  </div>
+                ) : (
+                  <button type="button" onClick={() => setShowAddSetup(true)}
+                    style={{ padding: "4px 11px", borderRadius: "20px", border: "1px dashed #374151", backgroundColor: "transparent", color: "#6B7280", fontSize: "12px", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ fontSize: "14px", lineHeight: 1 }}>+</span> Add
+                  </button>
+                )}
+              </div>
+              <input style={inp} placeholder="or type a custom setup..." value={setup} onChange={e => setSetup(e.target.value)} />
             </div>
 
             <div>
