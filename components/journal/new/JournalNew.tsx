@@ -264,8 +264,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
 
   const sortArrow = (col: string) => sortCol === col ? (sortDir === "asc" ? " ↑" : " ↓") : "";
 
-  const reviewCount = journalTrades.filter(t => t.source === "mt5" && !t.is_reviewed).length;
-  useEffect(() => { if (filter === "review" && reviewCount === 0) setFilter("all"); }, [reviewCount, filter]);
+  const reviewCount = mt5Pending.length;
 
   if (loading) return (
     <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "300px", color: "#6B7280", fontSize: "14px" }}>
@@ -513,8 +512,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
             </button>
           ))}
           {reviewCount > 0 && (
-            <button onClick={() => setFilter("review")}
-              style={{ padding: "6px 14px", borderRadius: "8px", border: `1px solid ${filter === "review" ? "rgba(239,68,68,0.5)" : "rgba(239,68,68,0.25)"}`, backgroundColor: filter === "review" ? "rgba(239,68,68,0.12)" : "transparent", color: filter === "review" ? "#f87171" : "#ef4444", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
+            <button onClick={() => setShowInbox(true)}
+              style={{ padding: "6px 14px", borderRadius: "8px", border: "1px solid rgba(239,68,68,0.25)", backgroundColor: showInbox ? "rgba(239,68,68,0.12)" : "transparent", color: showInbox ? "#f87171" : "#ef4444", cursor: "pointer", fontSize: "13px", display: "flex", alignItems: "center", gap: "5px" }}>
               Needs Review <span style={{ backgroundColor: "#ef4444", color: "#fff", fontSize: "10px", fontWeight: 700, borderRadius: "8px", padding: "0 5px", minWidth: "16px", textAlign: "center" }}>{reviewCount}</span>
             </button>
           )}
