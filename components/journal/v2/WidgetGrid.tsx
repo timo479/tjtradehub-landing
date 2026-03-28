@@ -587,102 +587,132 @@ function WFrequency({ entries }: { entries: Entry[] }) {
   );
 }
 
+// ─── Content-First Layout Engine ─────────────────────────────────────────────
+// No fixed layouts. Each widget computes its size from actual data at render time.
+//
+// Rules:
+//   4fr  = Small  → donut chart, instrument list (≤3), no-PnL KPI row
+//   6fr  = Medium → ≤3 month bars, weekday bars (≤3 days), profit factor
+//   8fr  = Wide   → 4+ weekday bars, 2–4 months, frequency
+//   12fr = Full   → equity curve, 5+ months, calendar, histogram, full KPI row
+
+type ColSpan = 4 | 6 | 8 | 12;
+
+const getColSpan = (id: string, entries: Entry[]): ColSpan => {
+  const pnls = entries.map(getPnl).filter((v): v is number => v !== null);
+
+  switch (id) {
+    case "kpi-cards":
+      // Only 1 metric (Total Trades) when no P&L → half-row; full row otherwise
+      return pnls.length === 0 ? 6 : 12;
+
+    case "equity-curve":
+      // ≥15 trades with P&L → full width for detail; fewer → wide
+      return pnls.length >= 15 ? 12 : 8;
+
+    case "winloss":
+      // Donut is always compact – fixed visual size
+      return 4;
+
+    case "weekday": {
+      const activeDays = new Set(
+        entries.filter(e => getPnl(e) !== null)
+          .map(e => new Date(e.trade_date).getDay())
+      ).size;
+      return activeDays >= 4 ? 8 : 6;
+    }
+
+    case "monthly-pnl": {
+      const today = new Date();
+      const activeMonths = new Set(
+        entries.filter(e => getPnl(e) !== null).map(e => {
+          const d = new Date(e.trade_date);
+          const diff = (today.getFullYear() - d.getFullYear()) * 12 + today.getMonth() - d.getMonth();
+          return diff >= 0 && diff <= 5 ? e.trade_date.slice(0, 7) : null;
+        }).filter(Boolean)
+      ).size;
+      if (activeMonths >= 4) return 12;
+      if (activeMonths >= 2) return 8;
+      return 6;
+    }
+
+    case "calendar":
+      return 12; // 3-month heatmap always needs full width
+
+    case "instrument": {
+      const instruments = new Set(
+        entries.map(e => getField(e, "instrument", "markt", "market", "asset class")).filter(Boolean)
+      ).size;
+      return instruments >= 4 ? 6 : 4;
+    }
+
+    case "profit-factor":
+      return 6; // 2×2 metrics grid – always medium
+
+    case "histogram":
+      return 12; // 8 buckets need full width
+
+    case "frequency": {
+      const today = new Date();
+      const activeMonths = new Set(
+        entries.map(e => {
+          const d = new Date(e.trade_date);
+          const diff = (today.getFullYear() - d.getFullYear()) * 12 + today.getMonth() - d.getMonth();
+          return diff >= 0 && diff <= 7 ? e.trade_date.slice(0, 7) : null;
+        }).filter(Boolean)
+      ).size;
+      return activeMonths >= 5 ? 12 : 8;
+    }
+
+    default: return 12;
+  }
+};
+
+// Widget is hidden when it has no meaningful content to show.
+// This prevents empty "No data" cards cluttering the layout.
+const hasContent = (id: string, entries: Entry[]): boolean => {
+  const pnls = entries.map(getPnl).filter((v): v is number => v !== null);
+  switch (id) {
+    case "kpi-cards":     return true;
+    case "equity-curve":  return pnls.length >= 2;
+    case "winloss":       return pnls.length >= 1;
+    case "weekday":       return pnls.length >= 1;
+    case "monthly-pnl":   return pnls.length >= 1;
+    case "calendar":      return true;
+    case "instrument":    return entries.some(e => getField(e, "instrument", "markt", "market", "asset class") !== null);
+    case "profit-factor": return pnls.some(v => v > 0) && pnls.some(v => v < 0);
+    case "histogram":     return pnls.length >= 3;
+    case "frequency":     return true;
+    default:              return true;
+  }
+};
+
 // ─── Widget Registry ──────────────────────────────────────────────────────────
-// colSpan: grid columns out of 12
-//   4  = Small  → compact: donut, single metric group
-//   6  = Medium → half-row: bar charts, lists
-//   8  = Medium-Wide → weekday bars (7 items need width)
-//   12 = Large  → full-row: equity curve, calendar, histogram
 
 interface WidgetDef {
   id: string;
   name: string;
   desc: string;
   icon: string;
-  colSpan: 4 | 5 | 6 | 7 | 8 | 12;
   defaultOn: boolean;
   component: React.FC<{ entries: Entry[] }>;
 }
 
-// Order controls row-packing (rows always sum to 12):
-//  Row 1: kpi-cards (12)
-//  Row 2: equity-curve (12)
-//  Row 3: winloss (4) + weekday (8)
-//  Row 4: monthly-pnl (12)
-//  Row 5: calendar (12)
-//  Optional row: instrument (6) + profit-factor (6) = 12
-//  Optional row: histogram (12)
-//  Optional row: frequency (12)
+// Order matters for row-packing: winloss(4) + weekday(6–8) fills a row naturally.
 const WIDGETS: WidgetDef[] = [
-  { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", colSpan: 12, defaultOn: true,  component: WKpiCards },
-  { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", colSpan: 12, defaultOn: true,  component: WEquityCurve },
-  { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", colSpan: 4,  defaultOn: true,  component: WWinLoss },
-  { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", colSpan: 8,  defaultOn: true,  component: WWeekday },
-  { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", colSpan: 12, defaultOn: true,  component: WMonthly },
-  { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", colSpan: 12, defaultOn: true,  component: WCalendar },
-  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", colSpan: 6,  defaultOn: false, component: WInstrument },
-  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", colSpan: 6,  defaultOn: false, component: WProfitFactor },
-  { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", colSpan: 12, defaultOn: false, component: WHistogram },
-  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", colSpan: 12, defaultOn: false, component: WFrequency },
+  { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", defaultOn: true,  component: WKpiCards },
+  { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", defaultOn: true,  component: WEquityCurve },
+  { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", defaultOn: true,  component: WWinLoss },
+  { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", defaultOn: true,  component: WWeekday },
+  { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", defaultOn: true,  component: WMonthly },
+  { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", defaultOn: true,  component: WCalendar },
+  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", defaultOn: false, component: WInstrument },
+  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", defaultOn: false, component: WProfitFactor },
+  { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", defaultOn: false, component: WHistogram },
+  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", defaultOn: false, component: WFrequency },
 ];
 
-const STORAGE_KEY = "tj-widget-prefs-v2";
-const LAYOUT_KEY  = "tj-widget-layout-v1";
-
-type Layout = "1col" | "auto" | "2col" | "3col";
-
-const LAYOUTS: { id: Layout; label: string; icon: React.ReactNode }[] = [
-  {
-    id: "1col", label: "Single column",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="7" width="14" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    id: "auto", label: "Auto (mixed)",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    id: "2col", label: "2 columns",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="2" y="2" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="10" y="2" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="2" y="12" width="6" height="4" rx="1.5" fill="currentColor" />
-        <rect x="10" y="12" width="6" height="4" rx="1.5" fill="currentColor" />
-      </svg>
-    ),
-  },
-  {
-    id: "3col", label: "3 columns",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-        <rect x="1" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="6.75" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="12.5" y="2" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="1" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="6.75" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="12.5" y="7" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="1" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="6.75" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
-        <rect x="12.5" y="12" width="4.5" height="4" rx="1.5" fill="currentColor" />
-      </svg>
-    ),
-  },
-];
+const STORAGE_KEY = "tj-widget-prefs-v3";
 
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
 
@@ -701,34 +731,14 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
-      const savedLayout = localStorage.getItem(LAYOUT_KEY) as Layout | null;
-      if (savedLayout) setLayout(savedLayout);
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
-
-  const changeLayout = (l: Layout) => {
-    setLayout(l);
-    localStorage.setItem(LAYOUT_KEY, l);
-  };
-
-  // Expand/restore main element width based on layout
-  useEffect(() => {
-    const main = document.querySelector("main") as HTMLElement | null;
-    if (!main) return;
-    if (layout === "2col" || layout === "3col") {
-      main.style.maxWidth = "none";
-    } else {
-      main.style.maxWidth = "1200px";
-    }
-    return () => { main.style.maxWidth = "1200px"; };
-  }, [layout]);
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -740,76 +750,58 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
   const activeWidgets = useMemo(() => WIDGETS.filter(w => active.includes(w.id)), [active]);
 
+  // Content-first: compute each widget's colSpan and visibility from actual data
+  const spans = useMemo(() => {
+    const r: Record<string, ColSpan> = {};
+    for (const w of activeWidgets) r[w.id] = getColSpan(w.id, entries);
+    return r;
+  }, [activeWidgets, entries]);
+
+  const visible = useMemo(
+    () => activeWidgets.filter(w => hasContent(w.id, entries)),
+    [activeWidgets, entries]
+  );
+
   if (!loaded) return null;
 
-  // Build widget grid based on layout
-  const getCols = () => {
-    if (layout === "1col") return 1;
-    if (layout === "2col") return 2;
-    if (layout === "3col") return 3;
-    return null; // auto
-  };
-
   const renderWidgets = (): React.ReactNode => {
-    const overrideCols = getCols();
+    // Row-packing: greedy left-to-right, rows sum to 12.
+    // Lone widget in a row → 1fr (full width).
+    const rows: WidgetDef[][] = [];
+    let current: WidgetDef[] = [];
+    let used = 0;
 
-    // ── Fixed-column override (1col / 2col / 3col) ──
-    if (overrideCols !== null) {
-      const rows: WidgetDef[][] = [];
-      for (let i = 0; i < activeWidgets.length; i += overrideCols) {
-        rows.push(activeWidgets.slice(i, i + overrideCols));
+    for (const w of visible) {
+      const span = spans[w.id];
+      if (used + span > 12 && current.length > 0) {
+        rows.push(current);
+        current = [w];
+        used = span;
+      } else {
+        current.push(w);
+        used += span;
       }
-      return rows.map((row, ri) => (
+    }
+    if (current.length > 0) rows.push(current);
+
+    return rows.map((row, ri) => {
+      const alone = row.length === 1;
+      return (
         <div key={ri} style={{
           display: "grid",
-          gridTemplateColumns: `repeat(${overrideCols}, 1fr)`,
+          gridTemplateColumns: alone ? "1fr" : row.map(w => `${spans[w.id]}fr`).join(" "),
           gap: "16px",
           alignItems: "stretch",
         }}>
           {row.map(w => (
-            <GlowCard key={w.id} style={{ padding: getPadding(12 / overrideCols) }}>
+            <GlowCard key={w.id} style={{ padding: getPadding(alone ? 12 : spans[w.id]) }}>
               <SectionTitle>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </GlowCard>
           ))}
         </div>
-      ));
-    }
-
-    // ── Auto layout: row-packing algorithm (rows sum to 12) ──
-    // Widgets declare their ideal colSpan; we pack greedily left-to-right.
-    // Each row uses `Xfr` columns → proportional widths, always tight.
-    const rows: WidgetDef[][] = [];
-    let current: WidgetDef[] = [];
-    let used = 0;
-
-    for (const w of activeWidgets) {
-      if (used + w.colSpan > 12 && current.length > 0) {
-        rows.push(current);
-        current = [w];
-        used = w.colSpan;
-      } else {
-        current.push(w);
-        used += w.colSpan;
-      }
-    }
-    if (current.length > 0) rows.push(current);
-
-    return rows.map((row, ri) => (
-      <div key={ri} style={{
-        display: "grid",
-        gridTemplateColumns: row.map(w => `${w.colSpan}fr`).join(" "),
-        gap: "16px",
-        alignItems: "stretch",
-      }}>
-        {row.map(w => (
-          <GlowCard key={w.id} style={{ padding: getPadding(w.colSpan) }}>
-            <SectionTitle>{w.name}</SectionTitle>
-            <w.component entries={entries} />
-          </GlowCard>
-        ))}
-      </div>
-    ));
+      );
+    });
   };
 
   return (
@@ -821,25 +813,6 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           {active.length} / {WIDGETS.length} widgets active
         </p>
         <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {/* Layout switcher */}
-          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-            {LAYOUTS.map(l => (
-              <button
-                key={l.id}
-                title={l.label}
-                onClick={() => changeLayout(l.id)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
-                  backgroundColor: layout === l.id ? "#1F2937" : "transparent",
-                  color: layout === l.id ? "#8B5CF6" : "#4B5563",
-                  transition: "background 0.15s, color 0.15s",
-                }}
-              >
-                {l.icon}
-              </button>
-            ))}
-          </div>
           <button
             onClick={() => setEditOpen(true)}
             style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
