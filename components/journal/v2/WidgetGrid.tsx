@@ -63,13 +63,11 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#0c0f16",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: "14px",
-        transition: "box-shadow 0.25s ease",
-        boxShadow: hovered
-          ? "0 4px 24px rgba(0,0,0,0.45)"
-          : "0 2px 10px rgba(0,0,0,0.3)",
+        background: "linear-gradient(145deg, #0f0f18, #090909)",
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
+        borderRadius: "16px",
+        boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
+        transition: "border-color 0.2s",
         ...style,
       }}
     >
@@ -78,11 +76,11 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
   );
 }
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children, color = "#8B5CF6" }: { children: React.ReactNode; color?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-      <div style={{ width: "8px", height: "8px", borderRadius: "2px", backgroundColor: "#8B5CF6", flexShrink: 0 }} />
-      <p style={{ color: "#D1D5DB", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{children}</p>
+    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px" }}>
+      <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
+      <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
     </div>
   );
 }
@@ -137,17 +135,12 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
       {items.map(item => (
-        <div key={item.label} style={{
-          background: "#080b10",
-          border: "1px solid rgba(255,255,255,0.05)",
-          borderRadius: "10px",
-          padding: "12px 16px",
-        }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "8px" }}>{item.label}</p>
-          <p style={{ color: item.color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.01em" }}>{item.value}</p>
-          {"sub" in item && item.sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "4px" }}>{item.sub}</p>}
+        <div key={item.label}>
+          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{item.label}</p>
+          <p style={{ color: item.color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{item.value}</p>
+          {"sub" in item && item.sub && <p style={{ color: "#64748b", fontSize: "11px", marginTop: "3px" }}>{item.sub}</p>}
         </div>
       ))}
     </div>
@@ -175,7 +168,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
   const line = data.map((v, i) => `${i === 0 ? "M" : "L"}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(" ");
   const fill = `${line} L${sx(data.length - 1).toFixed(1)},${z.toFixed(1)} L${PL},${z.toFixed(1)} Z`;
   const last = data[data.length - 1];
-  const color = last >= 0 ? "#22c55e" : "#ef4444";
+  const color = "#8B5CF6";
   const yLabels = [min, (min + max) / 2, max];
 
   return (
@@ -261,7 +254,7 @@ function WWeekday({ entries }: { entries: Entry[] }) {
         return (
           <g key={b.label}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
-            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
+            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={b.avg >= 0 ? "rgba(34,197,94,0.45)" : "rgba(239,68,68,0.45)"} stroke={color} strokeWidth="1" />}
             {b.count > 0 && <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
             <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
             {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
@@ -312,7 +305,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
         return (
           <g key={b.key}>
             {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
-            {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
+            {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={b.total >= 0 ? "rgba(34,197,94,0.45)" : "rgba(239,68,68,0.45)"} stroke={color} strokeWidth="1" />}
             {b.count > 0 && (
               <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="7" fontWeight="600">
                 {b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}
@@ -354,13 +347,13 @@ function WCalendar({ entries }: { entries: Entry[] }) {
     const isWeekend = dayOfWeek === 5 || dayOfWeek === 6; // Sat=5, Sun=6 (0=Mon offset)
 
     if (trade) {
-      if (trade.pnl > 0) return { bg: `rgba(34,197,94,${Math.min(0.85, 0.3 + trade.pnl / 200)})`, border: "transparent", color: "#F9FAFB" };
-      if (trade.pnl < 0) return { bg: `rgba(239,68,68,${Math.min(0.85, 0.3 + Math.abs(trade.pnl) / 200)})`, border: "transparent", color: "#F9FAFB" };
-      return { bg: "rgba(107,114,128,0.3)", border: "transparent", color: "#F9FAFB" };
+      if (trade.pnl > 0) return { bg: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.2)", color: "#22c55e" };
+      if (trade.pnl < 0) return { bg: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.2)", color: "#ef4444" };
+      return { bg: "rgba(255,255,255,0.04)", border: "transparent", color: "#64748b" };
     }
     if (holiday) return { bg: "rgba(251,146,60,0.12)", border: "rgba(251,146,60,0.4)", color: "#fb923c", label: "CLOSED" };
-    if (isWeekend) return { bg: "#0a0a0a", border: "transparent", color: "#1F2937" };
-    return { bg: "#0d1117", border: "transparent", color: "#374151" };
+    if (isWeekend) return { bg: "rgba(255,255,255,0.02)", border: "transparent", color: "#1F2937" };
+    return { bg: "rgba(255,255,255,0.04)", border: "transparent", color: "#64748b" };
   };
 
   return (
@@ -535,14 +528,9 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
       {metrics.map(x => (
-        <div key={x.label} style={{
-          background: "#080b10",
-          border: "1px solid rgba(255,255,255,0.05)",
-          borderRadius: "10px",
-          padding: "12px 16px",
-        }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "8px" }}>{x.label}</p>
-          <p style={{ color: x.color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{x.value}</p>
+        <div key={x.label}>
+          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{x.label}</p>
+          <p style={{ color: x.color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{x.value}</p>
         </div>
       ))}
     </div>
@@ -581,7 +569,7 @@ function WFrequency({ entries }: { entries: Entry[] }) {
           <g key={b.key}>
             {b.count > 0 && (
               <>
-                <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" />
+                <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="rgba(139,92,246,0.6)" stroke="rgba(139,92,246,0.5)" strokeWidth="1" />
                 <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text>
               </>
             )}
@@ -701,22 +689,23 @@ interface WidgetDef {
   name: string;
   desc: string;
   icon: string;
+  dotColor: string;
   defaultOn: boolean;
   component: React.FC<{ entries: Entry[] }>;
 }
 
 // Order matters for row-packing: winloss(4) + weekday(6–8) fills a row naturally.
 const WIDGETS: WidgetDef[] = [
-  { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", defaultOn: true,  component: WKpiCards },
-  { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", defaultOn: true,  component: WEquityCurve },
-  { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", defaultOn: true,  component: WWinLoss },
-  { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", defaultOn: true,  component: WWeekday },
-  { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", defaultOn: true,  component: WMonthly },
-  { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", defaultOn: true,  component: WCalendar },
-  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", defaultOn: false, component: WInstrument },
-  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", defaultOn: false, component: WProfitFactor },
-  { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", defaultOn: false, component: WHistogram },
-  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", defaultOn: false, component: WFrequency },
+  { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", dotColor: "#22c55e",  defaultOn: true,  component: WKpiCards },
+  { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", dotColor: "#8B5CF6",  defaultOn: true,  component: WEquityCurve },
+  { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", dotColor: "#60a5fa",  defaultOn: true,  component: WWinLoss },
+  { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", dotColor: "#8B5CF6",  defaultOn: true,  component: WWeekday },
+  { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", dotColor: "#22c55e",  defaultOn: true,  component: WMonthly },
+  { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", dotColor: "#f59e0b",  defaultOn: true,  component: WCalendar },
+  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", dotColor: "#60a5fa",  defaultOn: false, component: WInstrument },
+  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", dotColor: "#8B5CF6",  defaultOn: false, component: WProfitFactor },
+  { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", dotColor: "#ef4444",  defaultOn: false, component: WHistogram },
+  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", dotColor: "#60a5fa",  defaultOn: false, component: WFrequency },
 ];
 
 const STORAGE_KEY = "tj-widget-prefs-v3";
@@ -842,7 +831,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px", alignItems: "stretch" }}>
           {row.map(w => (
             <GlowCard key={w.id} style={{ padding: getPadding(12 / cols) }}>
-              <SectionTitle>{w.name}</SectionTitle>
+              <SectionTitle color={w.dotColor}>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </GlowCard>
           ))}
@@ -874,7 +863,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         }}>
           {row.map(w => (
             <GlowCard key={w.id} style={{ padding: getPadding(alone ? 12 : spans[w.id]) }}>
-              <SectionTitle>{w.name}</SectionTitle>
+              <SectionTitle color={w.dotColor}>{w.name}</SectionTitle>
               <w.component entries={entries} />
             </GlowCard>
           ))}

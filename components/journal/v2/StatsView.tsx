@@ -102,18 +102,16 @@ function KpiCard({ label, value, color, sub }: { label: string; value: string; c
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#080b10",
-        border: "1px solid rgba(255,255,255,0.05)",
-        borderRadius: "10px",
+        background: "linear-gradient(145deg, #0f0f18, #090909)",
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
+        borderRadius: "12px",
         padding: "12px 16px",
-        boxShadow: hovered
-          ? "0 4px 20px rgba(0,0,0,0.4)"
-          : "0 2px 8px rgba(0,0,0,0.25)",
-        transition: "box-shadow 0.25s ease",
+        boxShadow: "0 4px 16px rgba(0,0,0,.4)",
+        transition: "border-color 0.2s",
       }}
     >
-      <p style={{ color: "#6B7280", fontSize: "10px", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700 }}>{label}</p>
-      <p style={{ color, fontWeight: 800, fontSize: "22px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{value}</p>
+      <p style={{ color: "#64748b", fontSize: "10px", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700 }}>{label}</p>
+      <p style={{ color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{value}</p>
       {sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "5px" }}>{sub}</p>}
     </div>
   );
@@ -126,14 +124,12 @@ function GlowSection({ children, style }: { children: React.ReactNode; style?: R
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "#0c0f16",
-        border: "1px solid rgba(255,255,255,0.07)",
-        borderRadius: "14px",
+        background: "linear-gradient(145deg, #0f0f18, #090909)",
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
+        borderRadius: "16px",
         padding: "24px 24px",
-        boxShadow: hovered
-          ? "0 4px 24px rgba(0,0,0,0.45)"
-          : "0 2px 10px rgba(0,0,0,0.3)",
-        transition: "box-shadow 0.25s ease",
+        boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
+        transition: "border-color 0.2s",
         ...style,
       }}
     >
@@ -177,7 +173,7 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
   const fillPath = `${linePath} L${sx(data.length - 1).toFixed(1)},${z.toFixed(1)} L${PL},${z.toFixed(1)} Z`;
 
   const last = data[data.length - 1].cum;
-  const color = last >= 0 ? "#22c55e" : "#ef4444";
+  const color = "#8B5CF6";
 
   // Y axis labels
   const yLabels = [min, (min + max) / 2, max].map(v => ({ v, y: sy(v) }));
@@ -359,10 +355,10 @@ function TradeCalendar({ entries }: { entries: Entry[] }) {
 
   const cellColor = (key: string) => {
     const d = pnlByDate[key];
-    if (!d) return "#0d1117";
-    if (d.pnl > 0) return `rgba(34,197,94,${Math.min(0.9, 0.3 + d.pnl / 200)})`;
-    if (d.pnl < 0) return `rgba(239,68,68,${Math.min(0.9, 0.3 + Math.abs(d.pnl) / 200)})`;
-    return "rgba(107,114,128,0.3)";
+    if (!d) return "rgba(255,255,255,0.04)";
+    if (d.pnl > 0) return "rgba(34,197,94,0.12)";
+    if (d.pnl < 0) return "rgba(239,68,68,0.12)";
+    return "rgba(255,255,255,0.04)";
   };
 
   return (
@@ -405,15 +401,15 @@ function TradeCalendar({ entries }: { entries: Entry[] }) {
                     title={d ? `${d.count} Trade${d.count > 1 ? "s" : ""} · P&L: ${fmt(d.pnl)}` : String(day)}
                     style={{
                       aspectRatio: "1",
-                      borderRadius: "3px",
+                      borderRadius: "4px",
                       backgroundColor: cellColor(key),
-                      border: isToday ? "1px solid #8B5CF6" : "1px solid transparent",
+                      border: isToday ? "1px solid #8B5CF6" : `1px solid ${d ? (d.pnl > 0 ? "rgba(34,197,94,0.2)" : d.pnl < 0 ? "rgba(239,68,68,0.2)" : "transparent") : "transparent"}`,
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
                       fontSize: "8px",
-                      color: d ? "#F9FAFB" : "#374151",
-                      cursor: d ? "default" : "default",
+                      color: d ? (d.pnl > 0 ? "#22c55e" : d.pnl < 0 ? "#ef4444" : "#64748b") : "#64748b",
+                      cursor: "default",
                     }}
                   >
                     {day}
@@ -484,10 +480,10 @@ export default function StatsView({ entries }: Props) {
     };
   }, [entries]);
 
-  const sectionTitle = (title: string) => (
-    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-      <div style={{ width: "8px", height: "8px", borderRadius: "2px", backgroundColor: "#8B5CF6", flexShrink: 0 }} />
-      <p style={{ color: "#D1D5DB", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{title}</p>
+  const sectionTitle = (title: string, dotColor = "#8B5CF6") => (
+    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px" }}>
+      <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: dotColor, flexShrink: 0 }} />
+      <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{title}</p>
     </div>
   );
 
@@ -503,7 +499,7 @@ export default function StatsView({ entries }: Props) {
   // ── Section definitions with content-aware colSpans ───────────────────────
   type SectionDef = {
     id: string; colSpan: ColSpan; wrapGlow: boolean;
-    title?: string; padding?: string; content: React.ReactNode;
+    title?: string; dotColor?: string; padding?: string; content: React.ReactNode;
   };
 
   const sections: SectionDef[] = [
@@ -526,35 +522,34 @@ export default function StatsView({ entries }: Props) {
     },
     ...(stats.hasPnl ? [{
       id: "equity-curve", colSpan: stats.equityColSpan, wrapGlow: true,
-      title: "Equity Curve", padding: "24px 24px",
+      title: "Equity Curve", dotColor: "#8B5CF6", padding: "24px 24px",
       content: <EquityCurve entries={entries} />,
     }] as SectionDef[] : []),
     ...(stats.hasPnl ? [{
       id: "winloss", colSpan: 4 as ColSpan, wrapGlow: true,
-      title: "Win / Loss", padding: "16px 16px",
+      title: "Win / Loss", dotColor: "#60a5fa", padding: "16px 16px",
       content: <WinLossDonut wins={stats.wins} losses={stats.losses} />,
     }] as SectionDef[] : []),
     ...(stats.hasPnl ? [{
       id: "weekday", colSpan: stats.weekdayColSpan, wrapGlow: true,
-      title: "Avg P&L by Weekday", padding: "16px 24px",
+      title: "Avg P&L by Weekday", dotColor: "#8B5CF6", padding: "16px 24px",
       content: <WeekdayBars entries={entries} />,
     }] as SectionDef[] : []),
     {
       id: "calendar", colSpan: 12, wrapGlow: true,
-      title: "Trade Calendar", padding: "24px 24px",
+      title: "Trade Calendar", dotColor: "#f59e0b", padding: "24px 24px",
       content: (
         <>
           <TradeCalendar entries={entries} />
           <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
             {[
-              { color: "rgba(34,197,94,0.6)", label: "Positive day" },
-              { color: "rgba(239,68,68,0.6)", label: "Negative day" },
-              { color: "rgba(107,114,128,0.3)", label: "Break-even / no P&L" },
-              { color: "#0d1117", label: "No trade" },
+              { color: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.2)", text: "#22c55e", label: "Positive day" },
+              { color: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.2)", text: "#ef4444", label: "Negative day" },
+              { color: "rgba(255,255,255,0.04)", border: "transparent", text: "#64748b", label: "No trade" },
             ].map(l => (
               <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: "1px solid #1F2937" }} />
-                <span style={{ color: "#4B5563", fontSize: "11px" }}>{l.label}</span>
+                <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: `1px solid ${l.border}` }} />
+                <span style={{ color: "#64748b", fontSize: "11px" }}>{l.label}</span>
               </div>
             ))}
           </div>
@@ -622,7 +617,7 @@ export default function StatsView({ entries }: Props) {
           }}>
             {row.map(sec => sec.wrapGlow ? (
               <GlowSection key={sec.id} style={{ padding: sec.padding }}>
-                {sec.title && sectionTitle(sec.title)}
+                {sec.title && sectionTitle(sec.title, sec.dotColor)}
                 {sec.content}
               </GlowSection>
             ) : (
