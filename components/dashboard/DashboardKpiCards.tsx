@@ -42,12 +42,14 @@ export default function DashboardKpiCards({ cards }: { cards: KpiCard[] }) {
             style={{
               borderRadius: "14px",
               padding: "16px 20px",
-              background: `linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(${accent},0.32) 0%, transparent 65%) border-box`,
-              border: "1px solid transparent",
+              background: "linear-gradient(145deg, #110c1e, #080808)",
+              border: isHovered
+                ? `1px solid rgba(${accent},0.35)`
+                : "1px solid rgba(255,255,255,0.06)",
               boxShadow: isHovered
                 ? `0 0 28px rgba(${accent},0.18), 0 8px 32px rgba(0,0,0,0.5)`
-                : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
-              transition: "box-shadow 0.25s ease, transform 0.2s ease",
+                : "0 4px 20px rgba(0,0,0,0.35)",
+              transition: "box-shadow 0.25s ease, transform 0.2s ease, border-color 0.2s ease",
               transform: isHovered ? "translateY(-2px)" : "none",
               cursor: "default",
             }}

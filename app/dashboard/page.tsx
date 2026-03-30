@@ -105,7 +105,7 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
+    <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.22) 0%, transparent 60%), #000" }}>
       <TikTokConversion />
       {/* Trial Banner */}
       {onTrial && !isSubscribed && (
@@ -123,7 +123,7 @@ export default async function DashboardPage() {
       )}
 
       {/* Header */}
-      <header style={{ borderBottom: "1px solid #1F2937" }} className="px-6 py-5">
+      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }} className="px-6 py-5">
         <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
@@ -201,9 +201,7 @@ export default async function DashboardPage() {
         {/* Quick Actions */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
-            <div className="rounded-2xl p-6 transition-all" data-tour="quick-action-journal" style={{
-              backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer",
-            }}>
+            <div className="dash-card rounded-2xl p-6" data-tour="quick-action-journal" style={{ cursor: "pointer" }}>
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: "rgba(139,92,246,0.1)" }}>
@@ -223,7 +221,7 @@ export default async function DashboardPage() {
           </Link>
 
           <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
-            <div className="rounded-2xl p-6 transition-all" data-tour="quick-action-mt5" style={{ backgroundColor: "#111827", border: "1px solid #1F2937", cursor: "pointer" }}>
+            <div className="dash-card rounded-2xl p-6" data-tour="quick-action-mt5" style={{ cursor: "pointer" }}>
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center"
                   style={{ backgroundColor: "rgba(34,197,94,0.1)" }}>

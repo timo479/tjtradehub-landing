@@ -15,7 +15,7 @@
   --color-text-muted: #9CA3AF;
 
   /* Border Color */
-  --color-border: #1F2937;
+  --color-border: rgba(255,255,255,0.06);
 
   /* Font */
   --font-sans: var(--font-inter);
@@ -73,4 +73,45 @@ body {
 .logo-layer {
   position: absolute;
   top: 0; left: 0;
+}
+
+/* ── Scrollbar ─────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #8B5CF6; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
+
+/* ── Border Pulse ──────────────────────────────────────── */
+@keyframes border-pulse {
+  0%,100% {
+    border-color: rgba(139,92,246,.5);
+    box-shadow: 0 0 40px rgba(139,92,246,.3), 0 0 80px rgba(139,92,246,.15);
+  }
+  50% {
+    border-color: rgba(167,139,250,.95);
+    box-shadow: 0 0 80px rgba(139,92,246,.65), 0 0 160px rgba(139,92,246,.3);
+  }
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  border: 1px solid rgba(139,92,246,.5);
+  pointer-events: none;
+  z-index: 500;
+  animation: border-pulse 3s ease-in-out infinite;
+}
+
+/* ── Dashboard Card ────────────────────────────────────── */
+.dash-card {
+  background: linear-gradient(145deg, #110c1e, #080808);
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 14px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+.dash-card:hover {
+  border-color: rgba(139,92,246,0.3);
+  box-shadow: 0 0 24px rgba(139,92,246,0.12), 0 8px 32px rgba(0,0,0,0.5);
+  transform: translateY(-2px);
 }
