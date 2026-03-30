@@ -21,9 +21,42 @@ interface Trade {
 }
 interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; time_from: string; time_to: string; }
 
-interface Props { entries: Trade[]; journal: Journal; }
+interface Props { entries: Trade[]; journal: Journal; isDark?: boolean; }
 
 type Period = "today" | "week" | "month" | "year" | "all" | "custom";
+
+// ─── Theme ────────────────────────────────────────────────────────────────────
+const ThemeCtx = React.createContext(true);
+function useT() {
+  const d = React.useContext(ThemeCtx);
+  return {
+    bgCard:     d ? "linear-gradient(145deg, #110c1e, #080808)" : "linear-gradient(145deg, #ffffff, #f9fafb)",
+    bgCard2:    d ? "linear-gradient(145deg, #0f0f18, #090909)" : "linear-gradient(145deg, #f9fafb, #f3f4f6)",
+    bgTable:    d ? "rgba(0,0,0,0.3)" : "rgba(0,0,0,0.04)",
+    bgExpand:   d ? "rgba(0,0,0,0.4)" : "rgba(0,0,0,0.03)",
+    bgInput:    d ? "#1a2332" : "#f9fafb",
+    border:     d ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
+    border2:    d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)",
+    border3:    d ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)",
+    border4:    d ? "rgba(255,255,255,0.1)"  : "rgba(0,0,0,0.1)",
+    border5:    d ? "rgba(255,255,255,0.08)" : "rgba(0,0,0,0.09)",
+    svgLine:    d ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
+    svgLineZ:   d ? "#374151" : "rgba(0,0,0,0.2)",
+    svgText:    d ? "#374151" : "#9CA3AF",
+    svgDonut:   d ? "rgba(255,255,255,0.05)" : "rgba(0,0,0,0.06)",
+    text1:      d ? "#F9FAFB" : "#111827",
+    text2:      d ? "#94a3b8" : "#4B5563",
+    text3:      d ? "#64748b" : "#64748b",
+    text4:      d ? "#9CA3AF" : "#4B5563",
+    empty:      d ? "#374151" : "#D1D5DB",
+    shadow:     d ? "0 4px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)" : "0 1px 8px rgba(0,0,0,0.07)",
+    shadowHov:  d ? "0 0 0 1px rgba(139,92,246,0.2), 0 0 40px rgba(139,92,246,0.12), 0 8px 40px rgba(0,0,0,0.7)" : "0 0 0 1px rgba(139,92,246,0.2), 0 4px 20px rgba(0,0,0,0.1)",
+    prgTrack:   d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.07)",
+    rowHover:   d ? "rgba(255,255,255,0.02)" : "rgba(0,0,0,0.02)",
+    calNoTrade: d ? "rgba(255,255,255,0.03)" : "rgba(0,0,0,0.02)",
+    dragHandle: d ? "rgba(255,255,255,0.15)" : "rgba(0,0,0,0.2)",
+  };
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getField(t: Trade, label: string): string | null {
@@ -52,37 +85,30 @@ const EMOTION_COLORS: Record<string, string> = {
   Frustrated: "#ec4899", Euphoric: "#a78bfa",
 };
 
-const card: React.CSSProperties = {
-  background: "linear-gradient(145deg, #110c1e, #080808)",
-  border: "1px solid rgba(255,255,255,0.07)",
-  borderRadius: "16px", padding: "20px 22px",
-  boxShadow: "0 4px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)",
-};
-
 function SectionTitle({ children, color = "#8B5CF6", className }: { children: React.ReactNode; color?: string; className?: string }) {
+  const T = useT();
   return (
     <div className={className} style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px", userSelect: "none" }}>
       <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
-      <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
-      <span style={{ marginLeft: "auto", color: "rgba(255,255,255,0.15)", fontSize: "12px", letterSpacing: "2px" }}>⠿</span>
+      <p style={{ color: T.text3, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
+      <span style={{ marginLeft: "auto", color: T.dragHandle, fontSize: "12px", letterSpacing: "2px" }}>⠿</span>
     </div>
   );
 }
 
 function WidgetCard({ children }: { children: React.ReactNode }) {
+  const T = useT();
   const [hovered, setHovered] = useState(false);
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(145deg, #110c1e, #080808)",
-        border: `1px solid ${hovered ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.07)"}`,
+        background: T.bgCard,
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.45)" : T.border}`,
         borderRadius: "16px",
         padding: "20px 22px",
-        boxShadow: hovered
-          ? "0 0 0 1px rgba(139,92,246,0.2), 0 0 40px rgba(139,92,246,0.12), 0 8px 40px rgba(0,0,0,0.7)"
-          : "0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+        boxShadow: hovered ? T.shadowHov : T.shadow,
         transition: "border-color 0.25s, box-shadow 0.25s",
         position: "relative" as const,
         overflow: "hidden" as const,
@@ -98,6 +124,7 @@ function WidgetCard({ children }: { children: React.ReactNode }) {
 }
 
 function SmallDonut({ pct, color, label, value }: { pct: number; color: string; label: string; value: string }) {
+  const T = useT();
   const size = 82, R = 28, CX = 41, CY = 41, sw = 11;
   const circ = 2 * Math.PI * R;
   const filled = Math.max(0, Math.min(pct, 100)) / 100;
@@ -105,16 +132,16 @@ function SmallDonut({ pct, color, label, value }: { pct: number; color: string; 
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "7px" }}>
       <div style={{ position: "relative", width: size, height: size }}>
         <svg width={size} height={size}>
-          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth={sw} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke={T.svgDonut} strokeWidth={sw} />
           <circle cx={CX} cy={CY} r={R} fill="none" stroke={color} strokeWidth={sw}
             strokeDasharray={`${(circ * filled).toFixed(2)} ${(circ * (1 - filled)).toFixed(2)}`}
             transform={`rotate(-90 ${CX} ${CY})`} strokeLinecap="round" />
         </svg>
         <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: "13px", fontWeight: 800, color: "#f1f5f9", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{value}</span>
+          <span style={{ fontSize: "13px", fontWeight: 800, color: T.text1, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{value}</span>
         </div>
       </div>
-      <div style={{ fontSize: "10px", fontWeight: 600, color: "#64748b", textAlign: "center", lineHeight: 1.3 }}>
+      <div style={{ fontSize: "10px", fontWeight: 600, color: T.text3, textAlign: "center", lineHeight: 1.3 }}>
         {label.split("\n").map((ln, i) => <React.Fragment key={i}>{i > 0 && <br />}{ln}</React.Fragment>)}
       </div>
     </div>
@@ -122,7 +149,8 @@ function SmallDonut({ pct, color, label, value }: { pct: number; color: string; 
 }
 
 function NoData({ text = "Not enough data yet" }: { text?: string }) {
-  return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "32px 0" }}>{text}</div>;
+  const T = useT();
+  return <div style={{ color: T.empty, fontSize: "13px", textAlign: "center", padding: "32px 0" }}>{text}</div>;
 }
 
 // ─── Period Filtering ──────────────────────────────────────────────────────────
@@ -152,6 +180,7 @@ function applyPeriod(entries: Trade[], period: Period, from: string, to: string)
 
 // ─── Widget: KPI Overview ─────────────────────────────────────────────────────
 function WKpi({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const s = useMemo(() => {
     const pnls = entries.map(e => pnlNum(e)).filter(v => v !== null) as number[];
     const total = pnls.reduce((a, b) => a + b, 0);
@@ -198,9 +227,9 @@ function WKpi({ entries }: { entries: Trade[] }) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
       {items.map(i => (
         <div key={i.l} style={{ padding: "4px 0" }}>
-          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{i.l}</p>
+          <p style={{ color: T.text3, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{i.l}</p>
           <p style={valStyle(i.c)}>{i.v}</p>
-          {"sub" in i && i.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{i.sub}</p>}
+          {"sub" in i && i.sub && <p style={{ color: T.text2, fontSize: "10px", marginTop: "3px" }}>{i.sub}</p>}
         </div>
       ))}
     </div>
@@ -209,6 +238,7 @@ function WKpi({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: Equity Curve ─────────────────────────────────────────────────────
 function WEquity({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const data = useMemo(() => {
     const sorted = [...entries].filter(e => pnlNum(e) !== null)
       .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
@@ -239,11 +269,11 @@ function WEquity({ entries }: { entries: Trade[] }) {
       </defs>
       {[min, (min + max) / 2, max].map((v, i) => (
         <g key={i}>
-          <line x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="4,4" />
+          <line x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke={T.svgLine} strokeWidth="1" strokeDasharray="4,4" />
           <text x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>
         </g>
       ))}
-      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="#374151" strokeWidth="1" />
+      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke={T.svgLineZ} strokeWidth="1" />
       <path d={fill} fill={`url(#eq-${data.length})`} />
       <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
@@ -292,6 +322,7 @@ function WWinLoss({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: Weekday Performance ──────────────────────────────────────────────
 function WWeekday({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const bars = useMemo(() => {
     const map: Record<number, number[]> = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
     entries.forEach(e => { const p = pnlNum(e); if (p !== null) map[new Date(e.trade_date).getDay()].push(p); });
@@ -316,11 +347,11 @@ function WWeekday({ entries }: { entries: Trade[] }) {
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke={T.svgLine} strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="11" fontWeight="600">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="9">{b.count}x</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill={T.svgText} fontSize="11">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill={T.svgText} fontSize="9">{b.count}x</text>}
           </g>
         );
       })}
@@ -330,6 +361,7 @@ function WWeekday({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: Monthly P&L ──────────────────────────────────────────────────────
 function WMonthly({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const bars = useMemo(() => {
     const today = new Date();
     const result: { label: string; key: string; total: number; count: number }[] = [];
@@ -361,11 +393,11 @@ function WMonthly({ entries }: { entries: Trade[] }) {
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.key}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke={T.svgLine} strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="10" fontWeight="600">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="9">{b.count}tr</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill={T.svgText} fontSize="11">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill={T.svgText} fontSize="9">{b.count}tr</text>}
           </g>
         );
       })}
@@ -375,6 +407,7 @@ function WMonthly({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: Trade Calendar ───────────────────────────────────────────────────
 function WCalendar({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const today = new Date();
   const months = [-2, -1, 0].map(i => {
     const d = new Date(today.getFullYear(), today.getMonth() + i, 1);
@@ -402,9 +435,9 @@ function WCalendar({ entries }: { entries: Trade[] }) {
           while (cells.length % 7 !== 0) cells.push(null);
           return (
             <div key={`${y}-${m}`} style={{ flex: "1 1 200px", minWidth: "180px" }}>
-              <p style={{ color: "#9CA3AF", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{MONTHS[m]} {y}</p>
+              <p style={{ color: T.text4, fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{MONTHS[m]} {y}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: "2px", marginBottom: "2px" }}>
-                {DAYS.map(d => <div key={d} style={{ textAlign: "center", color: "#374151", fontSize: "9px" }}>{d}</div>)}
+                {DAYS.map(d => <div key={d} style={{ textAlign: "center", color: T.empty, fontSize: "9px" }}>{d}</div>)}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: "2px" }}>
                 {cells.map((day, i) => {
@@ -414,7 +447,7 @@ function WCalendar({ entries }: { entries: Trade[] }) {
                   const isToday = today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
                   const trade = pnlByDate[key];
                   const holiday = getMarketHoliday(key);
-                  let bg = "rgba(255,255,255,0.03)", border = "transparent", color = "#374151", lbl = "";
+                  let bg = T.calNoTrade, border = "transparent", color = T.empty, lbl = "";
                   if (trade) {
                     if (trade.pnl > 0) { bg = `rgba(34,197,94,${Math.min(0.85, 0.3 + trade.pnl / 200)})`; color = "#F9FAFB"; }
                     else if (trade.pnl < 0) { bg = `rgba(239,68,68,${Math.min(0.85, 0.3 + Math.abs(trade.pnl) / 200)})`; color = "#F9FAFB"; }
@@ -437,7 +470,7 @@ function WCalendar({ entries }: { entries: Trade[] }) {
       <div style={{ display: "flex", gap: "14px", marginTop: "12px", flexWrap: "wrap" }}>
         {[{ c: "rgba(34,197,94,0.6)", l: "Positive" }, { c: "rgba(239,68,68,0.6)", l: "Negative" }, { c: "rgba(107,114,128,0.3)", l: "Break-even" }, { c: "#0d1117", l: "No Trade" }].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: "1px solid rgba(255,255,255,0.06)" }} />
+            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: `1px solid ${T.border2}` }} />
             <span style={{ color: "#4B5563", fontSize: "11px" }}>{x.l}</span>
           </div>
         ))}
@@ -448,6 +481,7 @@ function WCalendar({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: P&L Distribution ─────────────────────────────────────────────────
 function WHistogram({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const bars = useMemo(() => {
     const pnls = entries.map(e => pnlNum(e)).filter(v => v !== null) as number[];
     if (!pnls.length) return [];
@@ -473,11 +507,11 @@ function WHistogram({ entries }: { entries: Trade[] }) {
         return (
           <g key={b.label}>
             {b.count > 0 && <><rect x={x} y={H - h} width={bW} height={h} rx="4" fill={barColor} opacity="0.75" /><text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill={barColor} fontSize="10" fontWeight="600">{b.count}</text></>}
-            {b.label.split("\n").map((ln, li) => <text key={li} x={x + bW / 2} y={H + 13 + li * 11} textAnchor="middle" fill="#6B7280" fontSize="8">{ln}</text>)}
+            {b.label.split("\n").map((ln, li) => <text key={li} x={x + bW / 2} y={H + 13 + li * 11} textAnchor="middle" fill={T.svgText} fontSize="8">{ln}</text>)}
           </g>
         );
       })}
-      <line x1={0} y1={H} x2={tW} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+      <line x1={0} y1={H} x2={tW} y2={H} stroke={T.svgLine} strokeWidth="1" />
     </svg>
   );
 }
@@ -516,6 +550,7 @@ function WProfitFactor({ entries }: { entries: Trade[] }) {
 
 // ─── Widget: Trade Frequency ──────────────────────────────────────────────────
 function WFrequency({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const bars = useMemo(() => {
     const today = new Date();
     const result: { label: string; key: string; count: number }[] = [];
@@ -541,7 +576,7 @@ function WFrequency({ entries }: { entries: Trade[] }) {
     <>
       <div style={{ textAlign: "right", marginBottom: "8px" }}>
         <span style={{ fontSize: "36px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", background: "linear-gradient(135deg, #c4b5fd, #8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{totalTrades}</span>
-        <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
+        <span style={{ fontSize: "11px", color: T.text3, marginLeft: "4px" }}>total</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H + PB}`} width="100%" style={{ display: "block" }}>
         {bars.map((b, i) => {
@@ -549,11 +584,11 @@ function WFrequency({ entries }: { entries: Trade[] }) {
           return (
             <g key={b.key}>
               {b.count > 0 && <><rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" /><text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="11" fontWeight="600">{b.count}</text></>}
-              <text x={x + bW / 2} y={H + 16} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
+              <text x={x + bW / 2} y={H + 16} textAnchor="middle" fill={T.svgText} fontSize="9">{b.label}</text>
             </g>
           );
         })}
-        <line x1={0} y1={H} x2={W} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
+        <line x1={0} y1={H} x2={W} y2={H} stroke={T.svgLine} strokeWidth="1" />
       </svg>
     </>
   );
@@ -561,6 +596,7 @@ function WFrequency({ entries }: { entries: Trade[] }) {
 
 // ─── NEW Widget: Setup Performance ───────────────────────────────────────────
 function WSetupPerf({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const rows = useMemo(() => {
     const map: Record<string, { pnls: number[]; count: number }> = {};
     entries.forEach(e => {
@@ -584,14 +620,14 @@ function WSetupPerf({ entries }: { entries: Trade[] }) {
 
   if (!rows.length) return <NoData text="No trades with a setup found" />;
 
-  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(255,255,255,0.06)" };
-  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid rgba(255,255,255,0.04)" };
+  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: T.text4, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: `1px solid ${T.border2}` };
+  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: `1px solid ${T.border3}` };
 
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
+          <tr style={{ backgroundColor: T.bgTable }}>
             <th style={th}>Setup</th>
             <th style={{ ...th, textAlign: "right" }}>Trades</th>
             <th style={{ ...th, textAlign: "right" }}>Win Rate</th>
@@ -602,17 +638,17 @@ function WSetupPerf({ entries }: { entries: Trade[] }) {
         <tbody>
           {rows.map(r => (
             <tr key={r.setup}>
-              <td style={{ ...td, color: "#F9FAFB", fontWeight: 600 }}>{r.setup}</td>
-              <td style={{ ...td, color: "#9CA3AF", textAlign: "right" }}>{r.trades}</td>
+              <td style={{ ...td, color: T.text1, fontWeight: 600 }}>{r.setup}</td>
+              <td style={{ ...td, color: T.text4, textAlign: "right" }}>{r.trades}</td>
               <td style={{ ...td, textAlign: "right" }}>
                 {r.winRate !== null
                   ? <span style={{ color: r.winRate >= 50 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{r.winRate}%</span>
-                  : <span style={{ color: "#374151" }}>—</span>}
+                  : <span style={{ color: T.empty }}>—</span>}
               </td>
               <td style={{ ...td, textAlign: "right" }}>
                 {r.avgPnl !== null
                   ? <span style={{ color: r.avgPnl >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{fmt(r.avgPnl)}</span>
-                  : <span style={{ color: "#374151" }}>—</span>}
+                  : <span style={{ color: T.empty }}>—</span>}
               </td>
               <td style={{ ...td, textAlign: "right" }}>
                 <span style={{ color: r.totalPnl >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{fmt(r.totalPnl)}</span>
@@ -686,6 +722,7 @@ function WRiskDiscipline({ entries, journal }: { entries: Trade[]; journal: Jour
 
 // ─── NEW Widget: Rule Compliance ──────────────────────────────────────────────
 function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Journal }) {
+  const T = useT();
   const bars = useMemo(() => {
     return journal.rules.map(rule => {
       let followed = 0, total = 0;
@@ -718,13 +755,13 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
         <span style={{ color: "#D1D5DB", fontSize: "13px", flex: 1, paddingRight: "16px" }}>{b.text}</span>
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-          <span style={{ color: "#6B7280", fontSize: "11px" }}>{b.followed}/{b.total}</span>
+          <span style={{ color: T.text3, fontSize: "11px" }}>{b.followed}/{b.total}</span>
           <span style={{ color: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444", fontWeight: 700, fontSize: "13px", minWidth: "38px", textAlign: "right" }}>
             {b.pct !== null ? `${b.pct}%` : "—"}
           </span>
         </div>
       </div>
-      <div style={{ height: "6px", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "3px", overflow: "hidden" }}>
+      <div style={{ height: "6px", backgroundColor: T.prgTrack, borderRadius: "3px", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${b.pct ?? 0}%`, borderRadius: "3px", transition: "width 0.4s ease", backgroundColor: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444" }} />
       </div>
     </div>
@@ -736,7 +773,7 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
         <>
           <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Session Rule</p>
           {renderBar(timeBar)}
-          {bars.length > 0 && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "4px" }} />}
+          {bars.length > 0 && <div style={{ borderTop: `1px solid ${T.border2}`, paddingTop: "4px" }} />}
         </>
       )}
       {bars.length > 0 && (
@@ -751,6 +788,7 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
 
 // ─── NEW Widget: Emotions at Rule Breaks ──────────────────────────────────────
 function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
+  const T = useT();
   const bars = useMemo(() => {
     const count: Record<string, number> = {};
     entries.forEach(e => {
@@ -766,7 +804,7 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-      <p style={{ color: "#6B7280", fontSize: "12px", marginBottom: "4px" }}>Which emotions appear most when you break rules?</p>
+      <p style={{ color: T.text3, fontSize: "12px", marginBottom: "4px" }}>Which emotions appear most when you break rules?</p>
       {bars.map(([emotion, count]) => {
         const pct = Math.round((count / maxCount) * 100);
         const color = EMOTION_COLORS[emotion] ?? "#6B7280";
@@ -774,9 +812,9 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
           <div key={emotion}>
             <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
               <span style={{ color, fontSize: "13px", fontWeight: 500 }}>{emotion}</span>
-              <span style={{ color: "#6B7280", fontSize: "11px" }}>{count}x</span>
+              <span style={{ color: T.text3, fontSize: "11px" }}>{count}x</span>
             </div>
-            <div style={{ height: "6px", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "3px", overflow: "hidden" }}>
+            <div style={{ height: "6px", backgroundColor: T.prgTrack, borderRadius: "3px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${pct}%`, backgroundColor: `${color}99`, borderRadius: "3px", transition: "width 0.4s ease" }} />
             </div>
           </div>
@@ -788,6 +826,7 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
 
 // ─── NEW Widget: Trade Analysis Table ─────────────────────────────────────────
 function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journal }) {
+  const T = useT();
   const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const sorted = useMemo(() =>
@@ -797,14 +836,14 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
 
   if (!sorted.length) return <NoData text="No trades in this period" />;
 
-  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" };
-  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid rgba(255,255,255,0.04)" };
+  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: T.text4, textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: `1px solid ${T.border2}`, whiteSpace: "nowrap" };
+  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: `1px solid ${T.border3}` };
 
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
+          <tr style={{ backgroundColor: T.bgTable }}>
             <th style={th}>Date</th>
             <th style={th}>Symbol</th>
             <th style={th}>Dir</th>
@@ -831,29 +870,29 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
             return (
               <React.Fragment key={t.id}>
                 <tr onClick={() => setExpandedId(isExpanded ? null : t.id)}
-                  style={{ borderBottom: isExpanded ? "none" : "1px solid #0f1923", cursor: "pointer", transition: "background 0.15s", backgroundColor: isExpanded ? "rgba(255,255,255,0.02)" : undefined }}
-                  onMouseEnter={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = "rgba(255,255,255,0.02)"; }}
+                  style={{ borderBottom: isExpanded ? "none" : `1px solid ${T.bgCard2}`, cursor: "pointer", transition: "background 0.15s", backgroundColor: isExpanded ? T.rowHover : undefined }}
+                  onMouseEnter={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = T.rowHover; }}
                   onMouseLeave={e => { if (!isExpanded) (e.currentTarget as HTMLTableRowElement).style.backgroundColor = ""; }}>
-                  <td style={{ ...td, color: "#6B7280" }}>{`${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCFullYear()).slice(2)}`}</td>
-                  <td style={{ ...td, color: "#F9FAFB", fontWeight: 600 }}>
+                  <td style={{ ...td, color: T.text3 }}>{`${String(d.getUTCDate()).padStart(2,"0")}/${String(d.getUTCMonth()+1).padStart(2,"0")}/${String(d.getUTCFullYear()).slice(2)}`}</td>
+                  <td style={{ ...td, color: T.text1, fontWeight: 600 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                      <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: p !== null ? (p >= 0 ? "#22c55e" : "#ef4444") : "#374151", flexShrink: 0 }} />
+                      <div style={{ width: "5px", height: "5px", borderRadius: "50%", backgroundColor: p !== null ? (p >= 0 ? "#22c55e" : "#ef4444") : T.empty, flexShrink: 0 }} />
                       {getField(t, "Symbol") ?? "—"}
                     </div>
                   </td>
                   <td style={td}>
                     {dir && <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "4px", backgroundColor: dir === "Long" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)", color: dir === "Long" ? "#22c55e" : "#ef4444" }}>{dir === "Long" ? "▲L" : "▼S"}</span>}
                   </td>
-                  <td style={{ ...td, color: "#9CA3AF" }}>{getField(t, "Setup") ?? <span style={{ color: "#374151" }}>—</span>}</td>
+                  <td style={{ ...td, color: T.text4 }}>{getField(t, "Setup") ?? <span style={{ color: T.empty }}>—</span>}</td>
                   <td style={{ ...td, textAlign: "right" }}>
-                    {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: "#374151" }}>—</span>}
+                    {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700 }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: T.empty }}>—</span>}
                   </td>
                   <td style={td}>
                     <div style={{ display: "flex", gap: "3px", flexWrap: "wrap" }}>
                       {emos.slice(0, 2).map(e => (
                         <span key={e} style={{ padding: "1px 6px", borderRadius: "8px", fontSize: "10px", backgroundColor: `${EMOTION_COLORS[e] ?? "#6B7280"}22`, color: EMOTION_COLORS[e] ?? "#6B7280" }}>{e}</span>
                       ))}
-                      {emos.length > 2 && <span style={{ color: "#6B7280", fontSize: "10px" }}>+{emos.length - 2}</span>}
+                      {emos.length > 2 && <span style={{ color: T.text3, fontSize: "10px" }}>+{emos.length - 2}</span>}
                     </div>
                   </td>
                   <td style={td}>
@@ -862,14 +901,14 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
                         ? <span style={{ color: "#ef4444", fontSize: "12px", fontWeight: 600 }}>✗ {totalBreaks} break{totalBreaks > 1 ? "s" : ""}</span>
                         : hasData
                           ? <span style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600 }}>✓ All OK</span>
-                          : <span style={{ color: "#374151", fontSize: "12px" }}>—</span>}
+                          : <span style={{ color: T.empty, fontSize: "12px" }}>—</span>}
                       <span style={{ color: "#4B5563", fontSize: "11px" }}>{isExpanded ? "▲" : "▼"}</span>
                     </div>
                   </td>
                 </tr>
                 {isExpanded && (
                   <tr>
-                    <td colSpan={7} style={{ backgroundColor: "rgba(0,0,0,0.4)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "0" }}>
+                    <td colSpan={7} style={{ backgroundColor: T.bgExpand, borderBottom: `1px solid ${T.border2}`, padding: "0" }}>
                       <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "6px" }}>
                         {totalBreaks === 0 && (
                           <p style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600, margin: 0 }}>✓ All rules followed for this trade</p>
@@ -891,7 +930,7 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
                         {rules.filter(r => r.compliant).map(r => (
                           <div key={r.id} style={{ display: "flex", alignItems: "center", gap: "8px", padding: "4px 10px" }}>
                             <span style={{ color: "#22c55e", fontSize: "13px" }}>✓</span>
-                            <span style={{ color: "#6B7280", fontSize: "12px" }}>{r.text}</span>
+                            <span style={{ color: T.text3, fontSize: "12px" }}>{r.text}</span>
                           </div>
                         ))}
                         {!hasData && (
@@ -965,7 +1004,8 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-export default function JournalStats({ entries, journal }: Props) {
+function JournalStatsInner({ entries, journal }: Props) {
+  const T = useT();
   const [period, setPeriod] = useState<Period>("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
@@ -1050,7 +1090,7 @@ export default function JournalStats({ entries, journal }: Props) {
 
   if (!loaded) return null;
 
-  const inpStyle: React.CSSProperties = { backgroundColor: "#1a2332", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "6px 10px", color: "#F9FAFB", fontSize: "13px", outline: "none" };
+  const inpStyle: React.CSSProperties = { backgroundColor: T.bgInput, border: `1px solid ${T.border2}`, borderRadius: "8px", padding: "6px 10px", color: T.text1, fontSize: "13px", outline: "none" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -1080,11 +1120,11 @@ export default function JournalStats({ entries, journal }: Props) {
       )}
 
       {/* Period Filter Bar */}
-      <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+      <div style={{ background: T.bgCard2, border: `1px solid ${T.border2}`, borderRadius: "12px", boxShadow: T.shadow, padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
           {(["today", "week", "month", "year", "all", "custom"] as Period[]).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              style={{ padding: "6px 13px", borderRadius: "8px", border: `1px solid ${period === p ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.08)"}`, backgroundColor: period === p ? "rgba(139,92,246,0.1)" : "transparent", color: period === p ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: period === p ? 600 : 400 }}>
+              style={{ padding: "6px 13px", borderRadius: "8px", border: `1px solid ${period === p ? "rgba(139,92,246,0.5)" : T.border5}`, backgroundColor: period === p ? "rgba(139,92,246,0.1)" : "transparent", color: period === p ? "#A78BFA" : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: period === p ? 600 : 400 }}>
               {p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
           ))}
@@ -1092,14 +1132,14 @@ export default function JournalStats({ entries, journal }: Props) {
         {period === "custom" && (
           <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
             <input type="date" value={customFrom} onChange={e => setCustomFrom(e.target.value)} style={inpStyle} />
-            <span style={{ color: "#6B7280", fontSize: "13px" }}>→</span>
+            <span style={{ color: T.text3, fontSize: "13px" }}>→</span>
             <input type="date" value={customTo} onChange={e => setCustomTo(e.target.value)} style={inpStyle} />
           </div>
         )}
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
-          <span style={{ color: "#6B7280", fontSize: "13px" }}>{filtered.length} trade{filtered.length !== 1 ? "s" : ""}</span>
+          <span style={{ color: T.text3, fontSize: "13px" }}>{filtered.length} trade{filtered.length !== 1 ? "s" : ""}</span>
           <button onClick={() => setEditOpen(true)}
-            style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.04)", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+            style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: `1px solid ${T.border4}`, backgroundColor: T.border3, color: T.text4, cursor: "pointer", fontSize: "13px" }}>
             ⊞ Edit Widgets
           </button>
         </div>
@@ -1147,25 +1187,25 @@ export default function JournalStats({ entries, journal }: Props) {
       {editOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex" }} onClick={() => setEditOpen(false)}>
           <div style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }} />
-          <div style={{ width: "360px", maxWidth: "95vw", background: "linear-gradient(145deg, #0e0a1a, #080808)", borderLeft: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", height: "100%" }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: "24px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+          <div style={{ width: "360px", maxWidth: "95vw", background: T.bgCard, borderLeft: `1px solid ${T.border2}`, display: "flex", flexDirection: "column", height: "100%" }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: "24px", borderBottom: `1px solid ${T.border2}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <div>
-                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Widgets</h3>
-                <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} of {WIDGETS.length} active</p>
+                <h3 style={{ color: T.text1, fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Widgets</h3>
+                <p style={{ color: T.text3, fontSize: "12px", marginTop: "4px" }}>{active.length} of {WIDGETS.length} active</p>
               </div>
               <div style={{ display: "flex", gap: "8px" }}>
-                <button onClick={resetLayout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "12px" }}>Reset Layout</button>
+                <button onClick={resetLayout} style={{ padding: "8px 14px", borderRadius: "10px", border: `1px solid ${T.border4}`, backgroundColor: "transparent", color: T.text4, cursor: "pointer", fontSize: "12px" }}>Reset Layout</button>
                 <button onClick={() => setEditOpen(false)} style={{ padding: "8px 18px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>Done</button>
               </div>
             </div>
             <div style={{ flex: 1, overflowY: "scroll", padding: "16px" }}>
-              <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Active</p>
+              <p style={{ color: T.text3, fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Active</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
                 {WIDGETS.filter(w => active.includes(w.id)).map(w => (
-                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: T.bgCard2, borderRadius: "12px", border: `1px solid ${T.border2}` }}>
                     <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: "#F9FAFB", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
+                      <p style={{ color: T.text1, fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
                       <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
                     </div>
                     <Toggle on={true} onChange={() => toggle(w.id)} />
@@ -1174,14 +1214,14 @@ export default function JournalStats({ entries, journal }: Props) {
               </div>
               {WIDGETS.some(w => !active.includes(w.id)) && (
                 <>
-                  <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Available</p>
+                  <p style={{ color: T.text3, fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Available</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     {WIDGETS.filter(w => !active.includes(w.id)).map(w => (
-                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", opacity: 0.7 }}>
+                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: T.bgCard2, borderRadius: "12px", border: `1px solid ${T.border2}`, opacity: 0.7 }}>
                         <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: "#9CA3AF", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
-                          <p style={{ color: "#374151", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
+                          <p style={{ color: T.text4, fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
+                          <p style={{ color: T.empty, fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
                         </div>
                         <Toggle on={false} onChange={() => toggle(w.id)} />
                       </div>
@@ -1194,5 +1234,13 @@ export default function JournalStats({ entries, journal }: Props) {
         </div>
       )}
     </div>
+  );
+}
+
+export default function JournalStats({ entries, journal, isDark = true }: Props) {
+  return (
+    <ThemeCtx.Provider value={isDark}>
+      <JournalStatsInner entries={entries} journal={journal} />
+    </ThemeCtx.Provider>
   );
 }

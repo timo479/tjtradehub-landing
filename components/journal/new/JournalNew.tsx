@@ -533,7 +533,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Statistics View */}
       {view === "stats" && activeJournal && (
-        <JournalStats entries={journalTrades} journal={activeJournal} />
+        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} />
       )}
 
       {/* Trades View */}
