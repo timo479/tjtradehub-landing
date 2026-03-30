@@ -453,11 +453,10 @@ function WHistogram({ entries }: { entries: Trade[] }) {
 
   if (!bars.length || bars.every(b => b.count === 0)) return <NoData />;
   const maxCount = Math.max(1, ...bars.map(b => b.count));
-  const H = 100, bW = 36, gap = 8, tW = bars.length * (bW + gap) - gap + 20;
+  const H = 100, bW = 52, gap = 14, tW = bars.length * (bW + gap) - gap + 24;
 
   return (
-    <div style={{ height: "180px" }}>
-    <svg viewBox={`0 0 ${tW} ${H + 36}`} preserveAspectRatio="none" width="100%" height="100%" style={{ display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${H + 36}`} width="100%" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 10;
         const h = (b.count / maxCount) * (H - 16);
@@ -471,7 +470,6 @@ function WHistogram({ entries }: { entries: Trade[] }) {
       })}
       <line x1={0} y1={H} x2={tW} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
     </svg>
-    </div>
   );
 }
 
@@ -925,7 +923,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "emotions-breaks", name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", dotColor: "#ef4444", size: "half", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
   { id: "profit-factor",   name: "Profit Factor",          desc: "Profit Factor, Gross Profit/Loss, Expectancy",        icon: "⚡", dotColor: "#8B5CF6", size: "half", defaultOn: true,  component: ({ entries }) => <WProfitFactor entries={entries} /> },
   { id: "trade-analysis",  name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", dotColor: "#94a3b8", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WTradeAnalysis entries={entries} journal={journal} /> },
-  { id: "histogram",       name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", dotColor: "#ef4444", size: "full", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
+  { id: "histogram",       name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", dotColor: "#ef4444", size: "half", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
 ];
 
 const STORAGE_KEY = "tj-stats-prefs-v1";
