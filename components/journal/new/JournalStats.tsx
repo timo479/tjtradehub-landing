@@ -978,20 +978,20 @@ const STORAGE_KEY = "tj-stats-prefs-v1";
 const LAYOUT_KEY  = "tj-layout-v2";
 
 const DEFAULT_LAYOUT: Layout[] = [
-  { i: "kpi",             x: 0,  y: 0,  w: 3,  h: 6,  minW: 2, minH: 4 },
-  { i: "equity",          x: 3,  y: 0,  w: 6,  h: 6,  minW: 3, minH: 4 },
-  { i: "winloss",         x: 9,  y: 0,  w: 3,  h: 6,  minW: 2, minH: 4 },
-  { i: "weekday",         x: 0,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
-  { i: "monthly",         x: 4,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
-  { i: "frequency",       x: 8,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
-  { i: "calendar",        x: 0,  y: 11, w: 4,  h: 6,  minW: 3, minH: 4 },
-  { i: "setup-perf",      x: 4,  y: 11, w: 5,  h: 6,  minW: 3, minH: 4 },
-  { i: "risk-discipline", x: 9,  y: 11, w: 3,  h: 6,  minW: 2, minH: 4 },
-  { i: "rule-compliance", x: 0,  y: 17, w: 6,  h: 6,  minW: 3, minH: 4 },
-  { i: "emotions-breaks", x: 6,  y: 17, w: 6,  h: 5,  minW: 3, minH: 4 },
-  { i: "profit-factor",   x: 0,  y: 23, w: 4,  h: 5,  minW: 2, minH: 3 },
-  { i: "histogram",       x: 4,  y: 23, w: 8,  h: 5,  minW: 3, minH: 3 },
-  { i: "trade-analysis",  x: 0,  y: 28, w: 12, h: 9,  minW: 6, minH: 5 },
+  { i: "kpi",             x: 0,  y: 0,  w: 3,  h: 6,  minW: 1, minH: 2 },
+  { i: "equity",          x: 3,  y: 0,  w: 6,  h: 6,  minW: 2, minH: 2 },
+  { i: "winloss",         x: 9,  y: 0,  w: 3,  h: 6,  minW: 1, minH: 2 },
+  { i: "weekday",         x: 0,  y: 6,  w: 4,  h: 5,  minW: 1, minH: 2 },
+  { i: "monthly",         x: 4,  y: 6,  w: 4,  h: 5,  minW: 1, minH: 2 },
+  { i: "frequency",       x: 8,  y: 6,  w: 4,  h: 5,  minW: 1, minH: 2 },
+  { i: "calendar",        x: 0,  y: 11, w: 4,  h: 6,  minW: 1, minH: 2 },
+  { i: "setup-perf",      x: 4,  y: 11, w: 5,  h: 6,  minW: 2, minH: 2 },
+  { i: "risk-discipline", x: 9,  y: 11, w: 3,  h: 6,  minW: 1, minH: 2 },
+  { i: "rule-compliance", x: 0,  y: 17, w: 6,  h: 6,  minW: 2, minH: 2 },
+  { i: "emotions-breaks", x: 6,  y: 17, w: 6,  h: 5,  minW: 2, minH: 2 },
+  { i: "profit-factor",   x: 0,  y: 23, w: 4,  h: 5,  minW: 1, minH: 2 },
+  { i: "histogram",       x: 4,  y: 23, w: 8,  h: 5,  minW: 2, minH: 2 },
+  { i: "trade-analysis",  x: 0,  y: 28, w: 12, h: 9,  minW: 2, minH: 2 },
 ];
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
@@ -1167,7 +1167,7 @@ function JournalStatsInner({ entries, journal }: Props) {
           draggableHandle=".widget-drag-handle"
           isResizable
           isDraggable
-          resizeHandles={["se"]}
+          resizeHandles={["se", "sw", "s", "e"]}
         >
           {activeWidgets.map(w => (
             <div key={w.id}>
