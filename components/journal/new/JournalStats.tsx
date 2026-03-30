@@ -986,15 +986,18 @@ export default function JournalStats({ entries, journal }: Props) {
       }
     } catch {}
     setLoaded(true);
+  }, []);
 
-    // Measure container width
+  // Measure grid container width — runs after loaded=true so gridRef is populated
+  useEffect(() => {
+    if (!loaded) return;
     const el = gridRef.current;
     if (!el) return;
     setGridWidth(el.offsetWidth);
     const ro = new ResizeObserver(() => setGridWidth(el.offsetWidth));
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [loaded]);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
     setLayout(prev => {
@@ -1112,7 +1115,7 @@ export default function JournalStats({ entries, journal }: Props) {
 
       {/* Widget Grid — drag & resizable */}
       {filtered.length > 0 && (
-        <div ref={gridRef}>
+        <div ref={gridRef} style={{ width: "100%" }}>
         <ReactGridLayout
           width={gridWidth}
           layout={activeLayout}
