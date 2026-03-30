@@ -153,7 +153,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
 
   if (data.length < 2) return <NoData text="Need at least 2 trades with P&L" />;
 
-  const W = 600, H = 200, PL = 48, PR = 14, PT = 12, PB = 24;
+  const W = 600, H = 215, PL = 48, PR = 14, PT = 16, PB = 28;
   const cW = W - PL - PR, cH = H - PT - PB;
   const min = Math.min(0, ...data), max = Math.max(0, ...data), range = max - min || 1;
   const sx = (i: number) => PL + (i / (data.length - 1)) * cW;
@@ -165,7 +165,8 @@ function WEquity({ entries }: { entries: Trade[] }) {
   const color = "#8B5CF6";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "215px" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
       <defs>
         <linearGradient id={`sg2-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -183,6 +184,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
       <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
     </svg>
+    </div>
   );
 }
 
@@ -195,22 +197,29 @@ function WWinLoss({ entries }: { entries: Trade[] }) {
 
   if (!total) return <NoData />;
   const pct = wins / total;
-  const R = 40, CX = 56, CY = 56, sw = 13, circ = 2 * Math.PI * R;
+  const R = 48, CX = 65, CY = 65, sw = 14, circ = 2 * Math.PI * R;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-      <svg width="112" height="112" viewBox="0 0 112 112" style={{ flexShrink: 0 }}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.25" />
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
-          strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`} transform={`rotate(-90 ${CX} ${CY})`} />
-        <text x={CX} y={CY - 4} textAnchor="middle" fill="#F9FAFB" fontSize="15" fontWeight="700">{Math.round(pct * 100)}%</text>
-        <text x={CX} y={CY + 12} textAnchor="middle" fill="#6B7280" fontSize="9">Win Rate</text>
-      </svg>
+    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <div style={{ position: "relative", width: "130px", height: "130px", flexShrink: 0 }}>
+        <svg width="130" height="130" viewBox="0 0 130 130">
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.25" />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
+            strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`} transform={`rotate(-90 ${CX} ${CY})`} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ color: "#F9FAFB", fontWeight: 800, fontSize: "24px", lineHeight: 1 }}>{Math.round(pct * 100)}%</span>
+          <span style={{ color: "#6B7280", fontSize: "10px", marginTop: "3px" }}>Win Rate</span>
+        </div>
+      </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-        {[{ c: "#22c55e", l: `${wins} Wins` }, { c: "#ef4444", l: `${losses} Losses` }, { c: "#374151", l: `${total - wins - losses} Break-even` }].map(x => (
-          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c }} />
-            <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{x.l}</span>
+        {[{ c: "#22c55e", l: "Wins", n: wins }, { c: "#ef4444", l: "Losses", n: losses }, { c: "#374151", l: "Break-even", n: total - wins - losses }].map(x => (
+          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "8px", justifyContent: "space-between" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "7px" }}>
+              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: x.c }} />
+              <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{x.l}</span>
+            </div>
+            <strong style={{ color: "#F9FAFB", fontSize: "13px", fontWeight: 700 }}>{x.n}</strong>
           </div>
         ))}
       </div>
@@ -235,7 +244,8 @@ function WWeekday({ entries }: { entries: Trade[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "260px", height: "auto", display: "block" }}>
+    <div style={{ height: "170px" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
         const h = b.avg >= 0 ? (Math.abs(b.avg) / maxAbs) * maxPos : (Math.abs(b.avg) / maxAbs) * maxNeg;
@@ -251,6 +261,7 @@ function WWeekday({ entries }: { entries: Trade[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -278,7 +289,8 @@ function WMonthly({ entries }: { entries: Trade[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", maxWidth: "480px", height: "auto", display: "block" }}>
+    <div style={{ height: "170px" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
         const h = b.total >= 0 ? (Math.abs(b.total) / maxAbs) * maxPos : (Math.abs(b.total) / maxAbs) * maxNeg;
@@ -294,6 +306,7 @@ function WMonthly({ entries }: { entries: Trade[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -455,22 +468,28 @@ function WFrequency({ entries }: { entries: Trade[] }) {
     return result;
   }, [entries]);
 
+  const totalTrades = bars.reduce((s, b) => s + b.count, 0);
   const maxCount = Math.max(1, ...bars.map(b => b.count));
   const H = 100, bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 20;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "auto", display: "block" }}>
-      {bars.map((b, i) => {
-        const x = i * (bW + gap) + 10; const h = (b.count / maxCount) * (H - 12);
-        return (
-          <g key={b.key}>
-            {b.count > 0 && <><rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" /><text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text></>}
-            <text x={x + bW / 2} y={H + 13} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
-          </g>
-        );
-      })}
-      <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
-    </svg>
+    <>
+      <p style={{ fontSize: "36px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", background: "linear-gradient(135deg, #c4b5fd, #8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "12px" }}>{totalTrades}</p>
+      <div style={{ height: "128px" }}>
+      <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "100%", display: "block" }}>
+        {bars.map((b, i) => {
+          const x = i * (bW + gap) + 10; const h = (b.count / maxCount) * (H - 12);
+          return (
+            <g key={b.key}>
+              {b.count > 0 && <><rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" /><text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text></>}
+              <text x={x + bW / 2} y={H + 13} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
+            </g>
+          );
+        })}
+        <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
+      </svg>
+      </div>
+    </>
   );
 }
 
@@ -873,16 +892,6 @@ const WIDGETS: WidgetDef[] = [
 ];
 
 const STORAGE_KEY = "tj-stats-prefs-v1";
-const LAYOUT_KEY   = "tj-widget-layout-v1";
-
-type Layout = "1col" | "auto" | "2col" | "3col";
-
-const LAYOUTS: { id: Layout; label: string; icon: React.ReactNode }[] = [
-  { id: "1col", label: "Single column", icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor"/></svg> },
-  { id: "auto", label: "Auto (mixed)",  icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="14" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="14" height="4" rx="1.5" fill="currentColor"/></svg> },
-  { id: "2col", label: "2 columns",     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="2" y="2" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="2" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="7" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="2" y="12" width="6" height="4" rx="1.5" fill="currentColor"/><rect x="10" y="12" width="6" height="4" rx="1.5" fill="currentColor"/></svg> },
-  { id: "3col", label: "3 columns",     icon: <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="2" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="1" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="7" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="1" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="6.75" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/><rect x="12.5" y="12" width="4.5" height="4" rx="1.5" fill="currentColor"/></svg> },
-];
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -901,29 +910,13 @@ export default function JournalStats({ entries, journal }: Props) {
   const [editOpen, setEditOpen] = useState(false);
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [loaded, setLoaded] = useState(false);
-  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
     try {
       const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s));
-      const l = localStorage.getItem(LAYOUT_KEY) as Layout | null; if (l) setLayout(l);
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
-
-  const changeLayout = (l: Layout) => { setLayout(l); localStorage.setItem(LAYOUT_KEY, l); };
-
-  // Expand/restore main element width based on layout
-  useEffect(() => {
-    const main = document.querySelector("main") as HTMLElement | null;
-    if (!main) return;
-    if (layout === "2col" || layout === "3col") {
-      main.style.maxWidth = "none";
-    } else {
-      main.style.maxWidth = "1200px";
-    }
-    return () => { main.style.maxWidth = "1200px"; };
-  }, [layout]);
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -944,30 +937,21 @@ export default function JournalStats({ entries, journal }: Props) {
     return { starting: journal.starting_balance, totalPnl, current };
   }, [entries, journal.starting_balance]);
 
-  const getCols = () => { if (layout === "1col") return 1; if (layout === "2col") return 2; if (layout === "3col") return 3; return null; };
-
-  const renderWidgets = () => {
-    const cols = getCols();
-    if (cols !== null) {
-      const rows: WidgetDef[][] = [];
-      for (let i = 0; i < activeWidgets.length; i += cols) rows.push(activeWidgets.slice(i, i + cols));
-      return rows.map((row, ri) => (
-        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "20px" }}>
-          {row.map(w => <div key={w.id} style={card}><SectionTitle>{w.icon} {w.name}</SectionTitle><w.component entries={filtered} journal={journal} /></div>)}
-        </div>
-      ));
-    }
+  const cell = (id: string) => {
+    if (!active.includes(id)) return null;
+    const w = WIDGETS.find(x => x.id === id);
+    if (!w) return null;
     return (
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "20px" }}>
-        {activeWidgets.map(w => (
-          <div key={w.id} style={{ ...card, gridColumn: w.size === "full" ? "span 12" : "span 6" }}>
-            <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
-            <w.component entries={filtered} journal={journal} />
-          </div>
-        ))}
+      <div key={w.id} style={card}>
+        <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+        <w.component entries={filtered} journal={journal} />
       </div>
     );
   };
+
+  // IDs assigned to fixed rows (not part of "extra" row)
+  const fixedIds = ["kpi", "equity", "winloss", "weekday", "monthly", "frequency", "calendar", "setup-perf", "risk-discipline"];
+  const extraWidgets = activeWidgets.filter(w => !fixedIds.includes(w.id));
 
   if (!loaded) return null;
 
@@ -1019,14 +1003,6 @@ export default function JournalStats({ entries, journal }: Props) {
         )}
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ color: "#6B7280", fontSize: "13px" }}>{filtered.length} trade{filtered.length !== 1 ? "s" : ""}</span>
-          {/* Layout switcher */}
-          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-            {LAYOUTS.map(l => (
-              <button key={l.id} title={l.label} onClick={() => changeLayout(l.id)} style={{ display: "flex", alignItems: "center", justifyContent: "center", width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer", backgroundColor: layout === l.id ? "#1F2937" : "transparent", color: layout === l.id ? "#8B5CF6" : "#4B5563", transition: "background 0.15s, color 0.15s" }}>
-                {l.icon}
-              </button>
-            ))}
-          </div>
           <button onClick={() => setEditOpen(true)}
             style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
             ⊞ Edit Widgets
@@ -1042,8 +1018,37 @@ export default function JournalStats({ entries, journal }: Props) {
         </div>
       )}
 
-      {/* Widget Rows */}
-      {filtered.length > 0 && renderWidgets()}
+      {/* Widget Rows — fixed layout matching HTML reference */}
+      {filtered.length > 0 && (
+        <>
+          {/* Row 1: KPI (1fr) | Equity (2fr) | Win/Loss (1fr) */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "20px", alignItems: "stretch" }}>
+            {cell("kpi")}{cell("equity")}{cell("winloss")}
+          </div>
+
+          {/* Row 2: Weekday | Monthly | Frequency */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", alignItems: "stretch" }}>
+            {cell("weekday")}{cell("monthly")}{cell("frequency")}
+          </div>
+
+          {/* Row 3: Calendar | Setup Perf | Risk Discipline */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", alignItems: "stretch" }}>
+            {cell("calendar")}{cell("setup-perf")}{cell("risk-discipline")}
+          </div>
+
+          {/* Extra widgets (histogram, rule-compliance, emotions-breaks, profit-factor, trade-analysis) */}
+          {extraWidgets.length > 0 && (
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "20px" }}>
+              {extraWidgets.map(w => (
+                <div key={w.id} style={{ ...card, gridColumn: w.size === "full" ? "span 12" : "span 6" }}>
+                  <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+                  <w.component entries={filtered} journal={journal} />
+                </div>
+              ))}
+            </div>
+          )}
+        </>
+      )}
 
       {/* Edit Widgets Side Panel */}
       {editOpen && (

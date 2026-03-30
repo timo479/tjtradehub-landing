@@ -2,16 +2,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
 
-// ─── Design Tokens ────────────────────────────────────────────────────────────
-// Spacing: 8 · 12 · 16 · 24 · 32px  (strict 8px grid)
-// colSpan: 4=small · 5–8=medium · 12=large
-const PADDING: Record<string, string> = {
-  sm: "16px 16px",   // colSpan 4   → compact KPI / donut
-  md: "16px 24px",   // colSpan 5–8 → charts
-  lg: "24px 24px",   // colSpan 12  → full-width panels
-};
-const getPadding = (colSpan: number) =>
-  colSpan <= 4 ? PADDING.sm : colSpan <= 8 ? PADDING.md : PADDING.lg;
+// ─── Design Token ─────────────────────────────────────────────────────────────
+const W_PAD = "20px 22px"; // widget padding — matches HTML reference
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -159,7 +151,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
 
   if (data.length < 2) return <NoData />;
 
-  const W = 600, H = 160, PL = 48, PR = 14, PT = 12, PB = 24;
+  const W = 600, H = 215, PL = 48, PR = 14, PT = 16, PB = 28;
   const cW = W - PL - PR, cH = H - PT - PB;
   const min = Math.min(0, ...data), max = Math.max(0, ...data), range = max - min || 1;
   const sx = (i: number) => PL + (i / (data.length - 1)) * cW;
@@ -172,7 +164,8 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
   const yLabels = [min, (min + max) / 2, max];
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "215px" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
       <defs>
         <linearGradient id={`eq-g-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -186,6 +179,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
       {yLabels.map((v, i) => <text key={i} x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>)}
     </svg>
+    </div>
   );
 }
 
@@ -199,23 +193,32 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
 
   if (!total) return <NoData />;
   const pct = wins / total;
-  const R = 40, CX = 56, CY = 56, sw = 13, circ = 2 * Math.PI * R;
+  const R = 48, CX = 65, CY = 65, sw = 14, circ = 2 * Math.PI * R;
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
-      <svg viewBox="0 0 112 112" style={{ width: "130px", height: "130px" }}>
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={sw} opacity="0.2" />
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
-          strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`}
-          transform={`rotate(-90 ${CX} ${CY})`} />
-        <text x={CX} y={CY - 4} textAnchor="middle" fill="#F9FAFB" fontSize="15" fontWeight="700">{Math.round(pct * 100)}%</text>
-        <text x={CX} y={CY + 12} textAnchor="middle" fill="#6B7280" fontSize="9">Win Rate</text>
-      </svg>
-      <div style={{ display: "flex", gap: "16px" }}>
-        {[{ c: "#22c55e", l: `${wins} Wins` }, { c: "#ef4444", l: `${losses} Losses` }, { c: "#374151", l: `${total - wins - losses} Break-even` }].map(x => (
-          <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "7px" }}>
-            <div style={{ width: "7px", height: "7px", borderRadius: "2px", backgroundColor: x.c }} />
-            <span style={{ color: "#9CA3AF", fontSize: "12px" }}>{x.l}</span>
+    <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
+      <div style={{ position: "relative", width: "130px", height: "130px", flexShrink: 0 }}>
+        <svg width="130" height="130" viewBox="0 0 130 130" style={{ display: "block" }}>
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth={sw} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
+            strokeDasharray={`${circ * pct} ${circ * (1 - pct)}`}
+            transform={`rotate(-90 ${CX} ${CY})`} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+          <span style={{ fontSize: "24px", fontWeight: 800, color: "#f1f5f9", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{Math.round(pct * 100)}%</span>
+          <span style={{ fontSize: "10px", color: "#64748b", marginTop: "2px" }}>Win Rate</span>
+        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {[
+          { dot: "#22c55e", label: "Wins", count: wins },
+          { dot: "#ef4444", label: "Losses", count: losses },
+          { dot: "#64748b", label: "Break-even", count: total - wins - losses },
+        ].map(x => (
+          <div key={x.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: x.dot, flexShrink: 0 }} />
+            <span style={{ fontSize: "13px", color: "#94a3b8", flex: 1 }}>{x.label}</span>
+            <strong style={{ color: "#f1f5f9", fontWeight: 700, paddingLeft: "12px" }}>{x.count}</strong>
           </div>
         ))}
       </div>
@@ -243,7 +246,8 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "170px" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
         const h = b.avg >= 0
@@ -262,6 +266,7 @@ function WWeekday({ entries }: { entries: Entry[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -294,7 +299,8 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   const maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "170px" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
         const h = b.total >= 0
@@ -317,6 +323,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -557,40 +564,42 @@ function WFrequency({ entries }: { entries: Entry[] }) {
     return result;
   }, [entries]);
 
+  const totalTrades = bars.reduce((s, b) => s + b.count, 0);
   const maxCount = Math.max(1, ...bars.map(b => b.count));
   const H = 100, bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 20;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "auto", display: "block" }}>
-      {bars.map((b, i) => {
-        const x = i * (bW + gap) + 10;
-        const h = (b.count / maxCount) * (H - 12);
-        return (
-          <g key={b.key}>
-            {b.count > 0 && (
-              <>
-                <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="rgba(139,92,246,0.6)" stroke="rgba(139,92,246,0.5)" strokeWidth="1" />
-                <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text>
-              </>
-            )}
-            <text x={x + bW / 2} y={H + 13} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
-          </g>
-        );
-      })}
-      <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
-    </svg>
+    <>
+      <div style={{ textAlign: "right", marginBottom: "8px" }}>
+        <span style={{ fontSize: "36px", fontWeight: 800, background: "linear-gradient(135deg,#c4b5fd,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontVariantNumeric: "tabular-nums" }}>{totalTrades}</span>
+        <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
+      </div>
+      <div style={{ height: "128px" }}>
+      <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "100%", display: "block" }}>
+        {bars.map((b, i) => {
+          const x = i * (bW + gap) + 10;
+          const h = (b.count / maxCount) * (H - 12);
+          return (
+            <g key={b.key}>
+              {b.count > 0 && (
+                <>
+                  <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="rgba(139,92,246,0.6)" stroke="rgba(139,92,246,0.5)" strokeWidth="1" />
+                  <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text>
+                </>
+              )}
+              <text x={x + bW / 2} y={H + 13} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
+            </g>
+          );
+        })}
+        <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
+      </svg>
+      </div>
+    </>
   );
 }
 
-// ─── Content-First Layout Engine ─────────────────────────────────────────────
-// No fixed layouts. Each widget computes its size from actual data at render time.
-//
-// Rules:
-//   4fr  = Small  → donut chart, instrument list (≤3), no-PnL KPI row
-//   6fr  = Medium → ≤3 month bars, weekday bars (≤3 days), profit factor
-//   8fr  = Wide   → 4+ weekday bars, 2–4 months, frequency
-//   12fr = Full   → equity curve, 5+ months, calendar, histogram, full KPI row
-
+// kept for reference but no longer used in fixed-row layout
+/* eslint-disable @typescript-eslint/no-unused-vars */
 type ColSpan = 4 | 6 | 8 | 12;
 
 const getColSpan = (id: string, entries: Entry[]): ColSpan => {
@@ -694,18 +703,17 @@ interface WidgetDef {
   component: React.FC<{ entries: Entry[] }>;
 }
 
-// Order matters for row-packing: winloss(4) + weekday(6–8) fills a row naturally.
 const WIDGETS: WidgetDef[] = [
   { id: "kpi-cards",     name: "KPI Overview",         desc: "Trades, P&L, Win Rate, Drawdown, Streak and more",   icon: "📊", dotColor: "#22c55e",  defaultOn: true,  component: WKpiCards },
   { id: "equity-curve",  name: "Equity Curve",         desc: "Cumulative P&L across all trades",                   icon: "📈", dotColor: "#8B5CF6",  defaultOn: true,  component: WEquityCurve },
   { id: "winloss",       name: "Win / Loss",           desc: "Wins, Losses and Break-even as donut chart",         icon: "🎯", dotColor: "#60a5fa",  defaultOn: true,  component: WWinLoss },
   { id: "weekday",       name: "Weekday Performance",  desc: "Average P&L by weekday",                             icon: "📅", dotColor: "#8B5CF6",  defaultOn: true,  component: WWeekday },
   { id: "monthly-pnl",   name: "Monthly P&L",          desc: "P&L for the last 6 months",                          icon: "🗓️", dotColor: "#22c55e",  defaultOn: true,  component: WMonthly },
+  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", dotColor: "#60a5fa",  defaultOn: true,  component: WFrequency },
   { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", dotColor: "#f59e0b",  defaultOn: true,  component: WCalendar },
-  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", dotColor: "#60a5fa",  defaultOn: false, component: WInstrument },
-  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", dotColor: "#8B5CF6",  defaultOn: false, component: WProfitFactor },
+  { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", dotColor: "#60a5fa",  defaultOn: true,  component: WInstrument },
+  { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", dotColor: "#8B5CF6",  defaultOn: true,  component: WProfitFactor },
   { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", dotColor: "#ef4444",  defaultOn: false, component: WHistogram },
-  { id: "frequency",     name: "Trade Frequency",      desc: "Number of trades per month over the last 8 months",  icon: "🔢", dotColor: "#60a5fa",  defaultOn: false, component: WFrequency },
 ];
 
 const STORAGE_KEY = "tj-widget-prefs-v3";
@@ -715,53 +723,6 @@ const STORAGE_KEY = "tj-widget-prefs-v3";
 // Shared LAYOUT_KEY keeps both WidgetGrid and StatsView in sync.
 type Layout = "auto" | "wide" | "compact" | "full";
 const LAYOUT_KEY = "tj-layout-v2";
-const LAYOUTS: { id: Layout; title: string }[] = [
-  { id: "auto",    title: "Smart (auto-size)" },
-  { id: "wide",    title: "Wide (max 2 per row)" },
-  { id: "compact", title: "Compact (max 3 per row)" },
-  { id: "full",    title: "Full width (stacked)" },
-];
-const getMaxPerRow = (l: Layout): number =>
-  l === "full" ? 1 : l === "wide" ? 2 : l === "compact" ? 3 : Infinity;
-
-function LayoutIcon({ id }: { id: Layout }) {
-  const f = { fill: "currentColor" } as const;
-  if (id === "full") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="1" y="6" width="12" height="3" rx="1" {...f} opacity=".6"/>
-      <rect x="1" y="11" width="12" height="2" rx="1" {...f} opacity=".4"/>
-    </svg>
-  );
-  if (id === "wide") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="5.5" height="5.5" rx="1" {...f}/>
-      <rect x="7.5" y="1" width="5.5" height="5.5" rx="1" {...f}/>
-      <rect x="1" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="7.5" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
-    </svg>
-  );
-  if (id === "compact") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="5.25" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="9.5" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="1" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="5.25" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="9.5" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-    </svg>
-  );
-  return ( // auto / smart
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="1" y="6" width="7.5" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="9.5" y="6" width="3.5" height="3" rx="1" {...f} opacity=".6"/>
-      <rect x="1" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
-      <rect x="8" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
-    </svg>
-  );
-}
-
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
@@ -779,22 +740,14 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
-  const [layout, setLayout] = useState<Layout>("auto");
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
-      const savedLayout = localStorage.getItem(LAYOUT_KEY) as Layout | null;
-      if (savedLayout && LAYOUTS.some(l => l.id === savedLayout)) setLayout(savedLayout);
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
-
-  const changeLayout = (l: Layout) => {
-    setLayout(l);
-    try { localStorage.setItem(LAYOUT_KEY, l); } catch { /* ignore */ }
-  };
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -806,106 +759,30 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
   const activeWidgets = useMemo(() => WIDGETS.filter(w => active.includes(w.id)), [active]);
 
-  // Content-first: compute each widget's colSpan and visibility from actual data
-  const spans = useMemo(() => {
-    const r: Record<string, ColSpan> = {};
-    for (const w of activeWidgets) r[w.id] = getColSpan(w.id, entries);
-    return r;
-  }, [activeWidgets, entries]);
-
-  const visible = useMemo(
-    () => activeWidgets.filter(w => hasContent(w.id, entries)),
-    [activeWidgets, entries]
-  );
-
   if (!loaded) return null;
 
-  const renderWidgets = (): React.ReactNode => {
-    // ── Fixed-column layouts: wide=2col / compact=3col / full=1col ──────────
-    // Each widget gets the same width (repeat(N, 1fr)) → visually distinct rows.
-    if (layout !== "auto") {
-      const cols = layout === "full" ? 1 : layout === "wide" ? 2 : 3;
-      const rows: WidgetDef[][] = [];
-      for (let i = 0; i < visible.length; i += cols) rows.push(visible.slice(i, i + cols));
-      return rows.map((row, ri) => (
-        <div key={ri} style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)`, gap: "16px", alignItems: "stretch" }}>
-          {row.map(w => (
-            <GlowCard key={w.id} style={{ padding: getPadding(12 / cols) }}>
-              <SectionTitle color={w.dotColor}>{w.name}</SectionTitle>
-              <w.component entries={entries} />
-            </GlowCard>
-          ))}
-        </div>
-      ));
-    }
-
-    // ── Auto: content-first row-packing with fr proportions ─────────────────
-    // Each widget declares its natural size via getColSpan(); rows sum to 12fr.
-    const rows: WidgetDef[][] = [];
-    let current: WidgetDef[] = [];
-    let used = 0;
-    for (const w of visible) {
-      const span = spans[w.id];
-      if (used + span > 12 && current.length > 0) {
-        rows.push(current); current = [w]; used = span;
-      } else { current.push(w); used += span; }
-    }
-    if (current.length > 0) rows.push(current);
-
-    return rows.map((row, ri) => {
-      const alone = row.length === 1;
-      return (
-        <div key={ri} style={{
-          display: "grid",
-          gridTemplateColumns: alone ? "1fr" : row.map(w => `${spans[w.id]}fr`).join(" "),
-          gap: "16px",
-          alignItems: "stretch",
-        }}>
-          {row.map(w => (
-            <GlowCard key={w.id} style={{ padding: getPadding(alone ? 12 : spans[w.id]) }}>
-              <SectionTitle color={w.dotColor}>{w.name}</SectionTitle>
-              <w.component entries={entries} />
-            </GlowCard>
-          ))}
-        </div>
-      );
-    });
+  // Helper: render one widget cell (or empty placeholder if toggled off)
+  const cell = (id: string): React.ReactNode => {
+    const w = WIDGETS.find(x => x.id === id);
+    if (!w || !active.includes(id)) return <div key={id} />;
+    return (
+      <GlowCard key={id} style={{ padding: W_PAD }}>
+        <SectionTitle color={w.dotColor}>{w.name}</SectionTitle>
+        <w.component entries={entries} />
+      </GlowCard>
+    );
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-        <p style={{ color: "#374151", fontSize: "12px", fontVariantNumeric: "tabular-nums" }}>
-          {active.length} / {WIDGETS.length} widgets active
-        </p>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          {/* Layout switcher */}
-          <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-            {LAYOUTS.map(l => (
-              <button
-                key={l.id}
-                title={l.title}
-                onClick={() => changeLayout(l.id)}
-                style={{
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
-                  backgroundColor: layout === l.id ? "#1F2937" : "transparent",
-                  color: layout === l.id ? "#8B5CF6" : "#4B5563",
-                  transition: "background 0.15s, color 0.15s",
-                }}
-              >
-                <LayoutIcon id={l.id} />
-              </button>
-            ))}
-          </div>
-          <button
-            onClick={() => setEditOpen(true)}
-            style={{ display: "flex", alignItems: "center", gap: "8px", padding: "8px 16px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
-            <span>⊞</span> Edit Statistics
-          </button>
-        </div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+        <button
+          onClick={() => setEditOpen(true)}
+          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+          ⊞ Edit Widgets
+        </button>
       </div>
 
       {entries.length === 0 && (
@@ -916,8 +793,33 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         </GlowCard>
       )}
 
-      {/* Widget Rows */}
-      {entries.length > 0 && renderWidgets()}
+      {/* Row 1: KPI (1fr) | Equity Curve (2fr) | Win/Loss (1fr) */}
+      {entries.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
+          {cell("kpi-cards")}{cell("equity-curve")}{cell("winloss")}
+        </div>
+      )}
+
+      {/* Row 2: Weekday | Monthly P&L | Frequency */}
+      {entries.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
+          {cell("weekday")}{cell("monthly-pnl")}{cell("frequency")}
+        </div>
+      )}
+
+      {/* Row 3: Calendar | Instrument | Profit Factor */}
+      {entries.length > 0 && (
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
+          {cell("calendar")}{cell("instrument")}{cell("profit-factor")}
+        </div>
+      )}
+
+      {/* Row 4: Histogram (full width, only if active) */}
+      {entries.length > 0 && active.includes("histogram") && (
+        <GlowCard style={{ padding: W_PAD }}>
+          {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle color={w.dotColor}>{w.name}</SectionTitle><WHistogram entries={entries} /></>; })()}
+        </GlowCard>
+      )}
 
       {/* Edit Panel Overlay */}
       {editOpen && (
@@ -926,7 +828,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           <div style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }} />
           {/* Panel */}
           <div
-            style={{ width: "360px", maxWidth: "95vw", backgroundColor: "#111827", borderLeft: "1px solid #1F2937", display: "flex", flexDirection: "column", height: "100%" }}
+            style={{ width: "360px", maxWidth: "95vw", background: "linear-gradient(180deg, #0a0614, #050505)", borderLeft: "1px solid rgba(139,92,246,0.15)", display: "flex", flexDirection: "column", height: "100%" }}
             onClick={e => e.stopPropagation()}>
 
             {/* Panel Header */}
@@ -951,7 +853,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
                 {WIDGETS.filter(w => active.includes(w.id)).map(w => (
-                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", backgroundColor: "#0d1117", borderRadius: "12px", border: "1px solid #1F2937" }}>
+                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ color: "#F9FAFB", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
@@ -970,7 +872,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     {WIDGETS.filter(w => !active.includes(w.id)).map(w => (
-                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", backgroundColor: "#0d1117", borderRadius: "12px", border: "1px solid #1F2937", opacity: 0.7 }}>
+                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", opacity: 0.7 }}>
                         <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ color: "#9CA3AF", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>

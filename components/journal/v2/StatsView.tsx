@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 
 interface FieldValue {
   id: string;
@@ -42,77 +42,14 @@ const fmt = (n: number, digits = 2) =>
 const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-// ─── Layout System (mirrors WidgetGrid) ──────────────────────────────────────
-type ColSpan = 4 | 6 | 8 | 12;
-type Layout = "auto" | "wide" | "compact" | "full";
-const LAYOUT_KEY = "tj-layout-v2"; // shared with WidgetGrid
-const LAYOUTS: { id: Layout; title: string }[] = [
-  { id: "auto",    title: "Smart (auto-size)" },
-  { id: "wide",    title: "Wide (max 2 per row)" },
-  { id: "compact", title: "Compact (max 3 per row)" },
-  { id: "full",    title: "Full width (stacked)" },
-];
-const getMaxPerRow = (l: Layout): number =>
-  l === "full" ? 1 : l === "wide" ? 2 : l === "compact" ? 3 : Infinity;
-
-function LayoutIcon({ id }: { id: Layout }) {
-  const f = { fill: "currentColor" } as const;
-  if (id === "full") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="1" y="6" width="12" height="3" rx="1" {...f} opacity=".6"/>
-      <rect x="1" y="11" width="12" height="2" rx="1" {...f} opacity=".4"/>
-    </svg>
-  );
-  if (id === "wide") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="5.5" height="5.5" rx="1" {...f}/>
-      <rect x="7.5" y="1" width="5.5" height="5.5" rx="1" {...f}/>
-      <rect x="1" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="7.5" y="8" width="5.5" height="5" rx="1" {...f} opacity=".6"/>
-    </svg>
-  );
-  if (id === "compact") return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="5.25" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="9.5" y="1" width="3.5" height="5" rx="1" {...f}/>
-      <rect x="1" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="5.25" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-      <rect x="9.5" y="8" width="3.5" height="5" rx="1" {...f} opacity=".6"/>
-    </svg>
-  );
-  return (
-    <svg width="14" height="14" viewBox="0 0 14 14" style={{ display: "block" }}>
-      <rect x="1" y="1" width="12" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="1" y="6" width="7.5" height="3" rx="1" {...f} opacity=".9"/>
-      <rect x="9.5" y="6" width="3.5" height="3" rx="1" {...f} opacity=".6"/>
-      <rect x="1" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
-      <rect x="8" y="11" width="5" height="2" rx="1" {...f} opacity=".5"/>
-    </svg>
-  );
-}
-
 // ─── Sub-Components ──────────────────────────────────────────────────────────
 
-function KpiCard({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) {
-  const [hovered, setHovered] = useState(false);
+function KpiItem({ label, value, color, sub }: { label: string; value: string; color: string; sub?: string }) {
   return (
-    <div
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
-      style={{
-        background: "linear-gradient(145deg, #0f0f18, #090909)",
-        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
-        borderRadius: "12px",
-        padding: "12px 16px",
-        boxShadow: "0 4px 16px rgba(0,0,0,.4)",
-        transition: "border-color 0.2s",
-      }}
-    >
-      <p style={{ color: "#64748b", fontSize: "10px", marginBottom: "4px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700 }}>{label}</p>
+    <div>
+      <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{label}</p>
       <p style={{ color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{value}</p>
-      {sub && <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "5px" }}>{sub}</p>}
+      {sub && <p style={{ color: "#64748b", fontSize: "11px", marginTop: "3px" }}>{sub}</p>}
     </div>
   );
 }
@@ -127,7 +64,7 @@ function GlowSection({ children, style }: { children: React.ReactNode; style?: R
         background: "linear-gradient(145deg, #0f0f18, #090909)",
         border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
         borderRadius: "16px",
-        padding: "24px 24px",
+        padding: "20px 22px",
         boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
         transition: "border-color 0.2s",
         ...style,
@@ -152,13 +89,13 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   if (data.length < 2) return (
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "160px", color: "#374151", fontSize: "13px" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "215px", color: "#374151", fontSize: "13px" }}>
       At least 2 trades with P&L required
     </div>
   );
 
-  const W = 600, H = 160;
-  const PL = 48, PR = 12, PT = 12, PB = 24;
+  const W = 600, H = 215;
+  const PL = 48, PR = 12, PT = 16, PB = 28;
   const cW = W - PL - PR, cH = H - PT - PB;
 
   const min = Math.min(0, ...data.map(d => d.cum));
@@ -184,7 +121,8 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
   const lastDate = sorted[sorted.length - 1]?.trade_date ? new Date(sorted[sorted.length - 1].trade_date).toLocaleDateString("en-GB", { day: "2-digit", month: "2-digit" }) : "";
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "215px" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
       <defs>
         <linearGradient id="eq-fill" x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.25" />
@@ -219,6 +157,7 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
       <text x={PL} y={H - 4} textAnchor="start" fill="#4B5563" fontSize="10">{firstDate}</text>
       <text x={W - PR} y={H - 4} textAnchor="end" fill="#4B5563" fontSize="10">{lastDate}</text>
     </svg>
+    </div>
   );
 }
 
@@ -227,42 +166,35 @@ function WinLossDonut({ wins, losses }: { wins: number; losses: number }) {
   if (total === 0) return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "20px" }}>No data</div>;
 
   const winPct = wins / total;
-  const R = 40, CX = 56, CY = 56, stroke = 12;
+  const R = 48, CX = 65, CY = 65, sw = 14;
   const circ = 2 * Math.PI * R;
-  const winDash = circ * winPct;
 
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-      <svg width="112" height="112" viewBox="0 0 112 112" style={{ flexShrink: 0 }}>
-        {/* Background ring */}
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#1F2937" strokeWidth={stroke} />
-        {/* Loss arc */}
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#ef4444" strokeWidth={stroke}
-          strokeDasharray={circ} strokeDashoffset={0}
-          strokeLinecap="butt" transform={`rotate(-90 ${CX} ${CY})`} opacity="0.3" />
-        {/* Win arc */}
-        <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={stroke}
-          strokeDasharray={`${winDash} ${circ - winDash}`}
-          strokeLinecap="butt" transform={`rotate(-90 ${CX} ${CY})`} />
-        {/* Center text */}
-        <text x={CX} y={CY - 4} textAnchor="middle" fill="#F9FAFB" fontSize="14" fontWeight="700">
-          {Math.round(winPct * 100)}%
-        </text>
-        <text x={CX} y={CY + 12} textAnchor="middle" fill="#6B7280" fontSize="9">Win Rate</text>
-      </svg>
-      <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "#22c55e", flexShrink: 0 }} />
-          <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{wins} Wins</span>
+      <div style={{ position: "relative", width: "130px", height: "130px", flexShrink: 0 }}>
+        <svg width="130" height="130" viewBox="0 0 130 130" style={{ display: "block" }}>
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(239,68,68,0.2)" strokeWidth={sw} />
+          <circle cx={CX} cy={CY} r={R} fill="none" stroke="#22c55e" strokeWidth={sw}
+            strokeDasharray={`${circ * winPct} ${circ * (1 - winPct)}`}
+            transform={`rotate(-90 ${CX} ${CY})`} />
+        </svg>
+        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
+          <span style={{ fontSize: "24px", fontWeight: 800, color: "#f1f5f9", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{Math.round(winPct * 100)}%</span>
+          <span style={{ fontSize: "10px", color: "#64748b", marginTop: "2px" }}>Win Rate</span>
         </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "#ef4444", flexShrink: 0 }} />
-          <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{losses} Losses</span>
-        </div>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: "#374151", flexShrink: 0 }} />
-          <span style={{ color: "#9CA3AF", fontSize: "13px" }}>{total - wins - losses} Break-even</span>
-        </div>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+        {[
+          { dot: "#22c55e", label: "Wins", count: wins },
+          { dot: "#ef4444", label: "Losses", count: losses },
+          { dot: "#64748b", label: "Break-even", count: total - wins - losses },
+        ].map(x => (
+          <div key={x.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: x.dot, flexShrink: 0 }} />
+            <span style={{ fontSize: "13px", color: "#94a3b8", flex: 1 }}>{x.label}</span>
+            <strong style={{ color: "#f1f5f9", fontWeight: 700, paddingLeft: "12px" }}>{x.count}</strong>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -289,7 +221,8 @@ function WeekdayBars({ entries }: { entries: Entry[] }) {
   const totalW = bars.length * (barW + gap) - gap + 20;
 
   return (
-    <svg viewBox={`0 0 ${totalW} ${H + 28}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "170px" }}>
+    <svg viewBox={`0 0 ${totalW} ${H + 28}`} style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (barW + gap) + 10;
         const pct = b.avg / maxAbs;
@@ -326,6 +259,7 @@ function WeekdayBars({ entries }: { entries: Entry[] }) {
         );
       })}
     </svg>
+    </div>
   );
 }
 
@@ -427,20 +361,6 @@ function TradeCalendar({ entries }: { entries: Entry[] }) {
 // ─── Main StatsView ──────────────────────────────────────────────────────────
 
 export default function StatsView({ entries }: Props) {
-  const [layout, setLayout] = useState<Layout>("auto");
-
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(LAYOUT_KEY) as Layout | null;
-      if (saved && LAYOUTS.some(l => l.id === saved)) setLayout(saved);
-    } catch { /* ignore */ }
-  }, []);
-
-  const changeLayout = (l: Layout) => {
-    setLayout(l);
-    try { localStorage.setItem(LAYOUT_KEY, l); } catch { /* ignore */ }
-  };
-
   const stats = useMemo(() => {
     const pnlEntries = entries.map(e => ({ e, pnl: getPnl(e) })).filter(x => x.pnl !== null) as { e: Entry; pnl: number }[];
     const pnls = pnlEntries.map(x => x.pnl);
@@ -468,15 +388,9 @@ export default function StatsView({ entries }: Props) {
       if (type === streakType) streak++; else break;
     }
 
-    // Content-aware colSpans (same logic as WidgetGrid)
-    const activeDays = new Set(pnlEntries.map(({ e }) => new Date(e.trade_date).getDay())).size;
-    const equityColSpan: ColSpan = pnls.length >= 15 ? 12 : 8;
-    const weekdayColSpan: ColSpan = activeDays >= 4 ? 8 : 6;
-
     return {
       total, wins, losses, avg, best, worst, maxDD, streak, streakType,
       hasPnl: pnls.length > 0, pnlCount: pnls.length,
-      equityColSpan, weekdayColSpan,
     };
   }, [entries]);
 
@@ -496,136 +410,71 @@ export default function StatsView({ entries }: Props) {
     );
   }
 
-  // ── Section definitions with content-aware colSpans ───────────────────────
-  type SectionDef = {
-    id: string; colSpan: ColSpan; wrapGlow: boolean;
-    title?: string; dotColor?: string; padding?: string; content: React.ReactNode;
-  };
+  const kpiContent = (
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+      <KpiItem label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
+      {stats.hasPnl && <>
+        <KpiItem label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
+        <KpiItem label="Win Rate" value={`${stats.pnlCount > 0 ? Math.round((stats.wins / stats.pnlCount) * 100) : 0}%`} color={stats.wins / (stats.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444"} sub={`${stats.wins}W · ${stats.losses}L`} />
+        <KpiItem label="Avg P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
+        <KpiItem label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
+        <KpiItem label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
+        <KpiItem label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
+        <KpiItem label="Current Streak" value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`} color={stats.streakType === "win" ? "#22c55e" : "#ef4444"} />
+      </>}
+    </div>
+  );
 
-  const sections: SectionDef[] = [
-    {
-      id: "kpi-cards", colSpan: 12, wrapGlow: false,
-      content: (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
-          <KpiCard label="Total Trades" value={String(entries.length)} color="#F9FAFB" />
-          {stats.hasPnl && <>
-            <KpiCard label="Total P&L" value={fmt(stats.total)} color={stats.total >= 0 ? "#22c55e" : "#ef4444"} />
-            <KpiCard label="Win Rate" value={`${stats.pnlCount > 0 ? Math.round((stats.wins / stats.pnlCount) * 100) : 0}%`} color={stats.wins / (stats.pnlCount || 1) >= 0.5 ? "#22c55e" : "#ef4444"} sub={`${stats.wins}W · ${stats.losses}L`} />
-            <KpiCard label="Avg P&L / Trade" value={fmt(stats.avg)} color={stats.avg >= 0 ? "#22c55e" : "#ef4444"} />
-            <KpiCard label="Best Trade" value={fmt(stats.best)} color="#22c55e" />
-            <KpiCard label="Worst Trade" value={fmt(stats.worst)} color="#ef4444" />
-            <KpiCard label="Max. Drawdown" value={`-${stats.maxDD.toFixed(2)}`} color="#F59E0B" />
-            <KpiCard label="Current Streak" value={`${stats.streak}x ${stats.streakType === "win" ? "Win" : "Loss"}`} color={stats.streakType === "win" ? "#22c55e" : "#ef4444"} />
-          </>}
-        </div>
-      ),
-    },
-    ...(stats.hasPnl ? [{
-      id: "equity-curve", colSpan: stats.equityColSpan, wrapGlow: true,
-      title: "Equity Curve", dotColor: "#8B5CF6", padding: "24px 24px",
-      content: <EquityCurve entries={entries} />,
-    }] as SectionDef[] : []),
-    ...(stats.hasPnl ? [{
-      id: "winloss", colSpan: 4 as ColSpan, wrapGlow: true,
-      title: "Win / Loss", dotColor: "#60a5fa", padding: "16px 16px",
-      content: <WinLossDonut wins={stats.wins} losses={stats.losses} />,
-    }] as SectionDef[] : []),
-    ...(stats.hasPnl ? [{
-      id: "weekday", colSpan: stats.weekdayColSpan, wrapGlow: true,
-      title: "Avg P&L by Weekday", dotColor: "#8B5CF6", padding: "16px 24px",
-      content: <WeekdayBars entries={entries} />,
-    }] as SectionDef[] : []),
-    {
-      id: "calendar", colSpan: 12, wrapGlow: true,
-      title: "Trade Calendar", dotColor: "#f59e0b", padding: "24px 24px",
-      content: (
-        <>
-          <TradeCalendar entries={entries} />
-          <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
-            {[
-              { color: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.2)", text: "#22c55e", label: "Positive day" },
-              { color: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.2)", text: "#ef4444", label: "Negative day" },
-              { color: "rgba(255,255,255,0.04)", border: "transparent", text: "#64748b", label: "No trade" },
-            ].map(l => (
-              <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: `1px solid ${l.border}` }} />
-                <span style={{ color: "#64748b", fontSize: "11px" }}>{l.label}</span>
-              </div>
-            ))}
+  const calendarContent = (
+    <>
+      <TradeCalendar entries={entries} />
+      <div style={{ display: "flex", gap: "16px", marginTop: "12px", flexWrap: "wrap" }}>
+        {[
+          { color: "rgba(34,197,94,0.12)", border: "rgba(34,197,94,0.2)", label: "Positive day" },
+          { color: "rgba(239,68,68,0.12)", border: "rgba(239,68,68,0.2)", label: "Negative day" },
+          { color: "rgba(255,255,255,0.04)", border: "transparent", label: "No trade" },
+        ].map(l => (
+          <div key={l.label} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: l.color, border: `1px solid ${l.border}` }} />
+            <span style={{ color: "#64748b", fontSize: "11px" }}>{l.label}</span>
           </div>
-        </>
-      ),
-    },
-  ];
-
-  // ── Row-packing: same logic as WidgetGrid ─────────────────────────────────
-  let rows: SectionDef[][];
-
-  if (layout !== "auto") {
-    // Fixed equal-column grid: wide=2col, compact=3col, full=1col
-    const cols = layout === "full" ? 1 : layout === "wide" ? 2 : 3;
-    rows = [];
-    for (let i = 0; i < sections.length; i += cols) rows.push(sections.slice(i, i + cols));
-  } else {
-    // Content-first fr-proportional packing
-    rows = [];
-    let current: SectionDef[] = [];
-    let used = 0;
-    for (const sec of sections) {
-      if (used + sec.colSpan > 12 && current.length > 0) {
-        rows.push(current); current = [sec]; used = sec.colSpan;
-      } else { current.push(sec); used += sec.colSpan; }
-    }
-    if (current.length > 0) rows.push(current);
-  }
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-      {/* Layout Switcher */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-        <div style={{ display: "flex", backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "3px", gap: "2px" }}>
-          {LAYOUTS.map(l => (
-            <button
-              key={l.id}
-              title={l.title}
-              onClick={() => changeLayout(l.id)}
-              style={{
-                display: "flex", alignItems: "center", justifyContent: "center",
-                width: "32px", height: "28px", borderRadius: "7px", border: "none", cursor: "pointer",
-                backgroundColor: layout === l.id ? "#1F2937" : "transparent",
-                color: layout === l.id ? "#8B5CF6" : "#4B5563",
-                transition: "background 0.15s, color 0.15s",
-              }}
-            >
-              <LayoutIcon id={l.id} />
-            </button>
-          ))}
-        </div>
+      {/* Row 1: KPI (1fr) | Equity Curve (2fr) | Win/Loss (1fr) */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
+        <GlowSection>
+          {sectionTitle("KPI Overview", "#22c55e")}
+          {kpiContent}
+        </GlowSection>
+        <GlowSection>
+          {sectionTitle("Equity Curve", "#8B5CF6")}
+          <EquityCurve entries={entries} />
+        </GlowSection>
+        <GlowSection>
+          {sectionTitle("Win / Loss", "#60a5fa")}
+          <WinLossDonut wins={stats.wins} losses={stats.losses} />
+        </GlowSection>
       </div>
 
-      {/* Section rows */}
-      {rows.map((row, ri) => {
-        const alone = row.length === 1;
-        const isFixed = layout !== "auto";
-        return (
-          <div key={ri} style={{
-            display: "grid",
-            gridTemplateColumns: alone ? "1fr" : isFixed ? `repeat(${row.length}, 1fr)` : row.map(s => `${s.colSpan}fr`).join(" "),
-            gap: "16px",
-            alignItems: "stretch",
-          }}>
-            {row.map(sec => sec.wrapGlow ? (
-              <GlowSection key={sec.id} style={{ padding: sec.padding }}>
-                {sec.title && sectionTitle(sec.title, sec.dotColor)}
-                {sec.content}
-              </GlowSection>
-            ) : (
-              <div key={sec.id}>{sec.content}</div>
-            ))}
-          </div>
-        );
-      })}
+      {/* Row 2: Weekday Performance (full width) */}
+      {stats.hasPnl && (
+        <GlowSection>
+          {sectionTitle("Avg P&L by Weekday", "#8B5CF6")}
+          <WeekdayBars entries={entries} />
+        </GlowSection>
+      )}
+
+      {/* Row 3: Trade Calendar (full width) */}
+      <GlowSection>
+        {sectionTitle("Trade Calendar", "#f59e0b")}
+        {calendarContent}
+      </GlowSection>
 
     </div>
   );
