@@ -132,10 +132,10 @@ function EquityCurve({ entries }: { entries: Entry[] }) {
 
       {/* Grid lines */}
       {yLabels.map(({ y }, i) => (
-        <line key={i} x1={PL} y1={y} x2={W - PR} y2={y} stroke="#1F2937" strokeWidth="1" strokeDasharray="4,4" />
+        <line key={i} x1={PL} y1={y} x2={W - PR} y2={y} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="4,4" />
       ))}
       {/* Zero line */}
-      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="#374151" strokeWidth="1" />
+      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="rgba(255,255,255,0.1)" strokeWidth="1" />
 
       {/* Fill */}
       <path d={fillPath} fill="url(#eq-fill)" />
@@ -234,7 +234,7 @@ function WeekdayBars({ entries }: { entries: Entry[] }) {
         return (
           <g key={b.label}>
             {/* Zero line */}
-            {i === 0 && <line x1={0} y1={midY} x2={totalW} y2={midY} stroke="#1F2937" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={midY} x2={totalW} y2={midY} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />}
             {/* Bar */}
             {b.count > 0 && (
               <rect

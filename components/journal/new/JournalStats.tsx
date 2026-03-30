@@ -230,7 +230,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
       </defs>
       {[min, (min + max) / 2, max].map((v, i) => (
         <g key={i}>
-          <line x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke="#1F2937" strokeWidth="1" strokeDasharray="4,4" />
+          <line x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="4,4" />
           <text x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>
         </g>
       ))}
@@ -307,7 +307,7 @@ function WWeekday({ entries }: { entries: Trade[] }) {
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="11" fontWeight="600">{b.avg.toFixed(1)}</text>}
             <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
@@ -352,7 +352,7 @@ function WMonthly({ entries }: { entries: Trade[] }) {
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.key}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="10" fontWeight="600">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
             <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
@@ -405,7 +405,7 @@ function WCalendar({ entries }: { entries: Trade[] }) {
                   const isToday = today.getDate() === day && today.getMonth() === m && today.getFullYear() === y;
                   const trade = pnlByDate[key];
                   const holiday = getMarketHoliday(key);
-                  let bg = "#0d1117", border = "transparent", color = "#374151", lbl = "";
+                  let bg = "rgba(255,255,255,0.03)", border = "transparent", color = "#374151", lbl = "";
                   if (trade) {
                     if (trade.pnl > 0) { bg = `rgba(34,197,94,${Math.min(0.85, 0.3 + trade.pnl / 200)})`; color = "#F9FAFB"; }
                     else if (trade.pnl < 0) { bg = `rgba(239,68,68,${Math.min(0.85, 0.3 + Math.abs(trade.pnl) / 200)})`; color = "#F9FAFB"; }
@@ -428,7 +428,7 @@ function WCalendar({ entries }: { entries: Trade[] }) {
       <div style={{ display: "flex", gap: "14px", marginTop: "12px", flexWrap: "wrap" }}>
         {[{ c: "rgba(34,197,94,0.6)", l: "Positive" }, { c: "rgba(239,68,68,0.6)", l: "Negative" }, { c: "rgba(107,114,128,0.3)", l: "Break-even" }, { c: "#0d1117", l: "No Trade" }].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: "1px solid #1F2937" }} />
+            <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: "1px solid rgba(255,255,255,0.06)" }} />
             <span style={{ color: "#4B5563", fontSize: "11px" }}>{x.l}</span>
           </div>
         ))}
@@ -468,7 +468,7 @@ function WHistogram({ entries }: { entries: Trade[] }) {
           </g>
         );
       })}
-      <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
+      <line x1={0} y1={H} x2={tW} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
     </svg>
   );
 }
@@ -544,7 +544,7 @@ function WFrequency({ entries }: { entries: Trade[] }) {
             </g>
           );
         })}
-        <line x1={0} y1={H} x2={W} y2={H} stroke="#1F2937" strokeWidth="1" />
+        <line x1={0} y1={H} x2={W} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
       </svg>
     </>
   );
@@ -575,14 +575,14 @@ function WSetupPerf({ entries }: { entries: Trade[] }) {
 
   if (!rows.length) return <NoData text="No trades with a setup found" />;
 
-  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #1F2937" };
-  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid #0f1923" };
+  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(255,255,255,0.06)" };
+  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid rgba(255,255,255,0.04)" };
 
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ backgroundColor: "#0f1923" }}>
+          <tr style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
             <th style={th}>Setup</th>
             <th style={{ ...th, textAlign: "right" }}>Trades</th>
             <th style={{ ...th, textAlign: "right" }}>Win Rate</th>
@@ -715,7 +715,7 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
           </span>
         </div>
       </div>
-      <div style={{ height: "6px", backgroundColor: "#1F2937", borderRadius: "3px", overflow: "hidden" }}>
+      <div style={{ height: "6px", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "3px", overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${b.pct ?? 0}%`, borderRadius: "3px", transition: "width 0.4s ease", backgroundColor: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444" }} />
       </div>
     </div>
@@ -727,7 +727,7 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
         <>
           <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Session Rule</p>
           {renderBar(timeBar)}
-          {bars.length > 0 && <div style={{ borderTop: "1px solid #1F2937", paddingTop: "4px" }} />}
+          {bars.length > 0 && <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "4px" }} />}
         </>
       )}
       {bars.length > 0 && (
@@ -767,7 +767,7 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
               <span style={{ color, fontSize: "13px", fontWeight: 500 }}>{emotion}</span>
               <span style={{ color: "#6B7280", fontSize: "11px" }}>{count}x</span>
             </div>
-            <div style={{ height: "6px", backgroundColor: "#1F2937", borderRadius: "3px", overflow: "hidden" }}>
+            <div style={{ height: "6px", backgroundColor: "rgba(255,255,255,0.06)", borderRadius: "3px", overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${pct}%`, backgroundColor: `${color}99`, borderRadius: "3px", transition: "width 0.4s ease" }} />
             </div>
           </div>
@@ -788,14 +788,14 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
 
   if (!sorted.length) return <NoData text="No trades in this period" />;
 
-  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid #1F2937", whiteSpace: "nowrap" };
-  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid #0f1923" };
+  const th: React.CSSProperties = { padding: "10px 14px", textAlign: "left", fontSize: "10px", fontWeight: 600, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em", borderBottom: "1px solid rgba(255,255,255,0.06)", whiteSpace: "nowrap" };
+  const td: React.CSSProperties = { padding: "10px 14px", fontSize: "13px", borderBottom: "1px solid rgba(255,255,255,0.04)" };
 
   return (
     <div style={{ overflowX: "auto" }}>
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
         <thead>
-          <tr style={{ backgroundColor: "#0f1923" }}>
+          <tr style={{ backgroundColor: "rgba(0,0,0,0.3)" }}>
             <th style={th}>Date</th>
             <th style={th}>Symbol</th>
             <th style={th}>Dir</th>
@@ -860,7 +860,7 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
                 </tr>
                 {isExpanded && (
                   <tr>
-                    <td colSpan={7} style={{ backgroundColor: "#0d1219", borderBottom: "1px solid #1F2937", padding: "0" }}>
+                    <td colSpan={7} style={{ backgroundColor: "rgba(0,0,0,0.4)", borderBottom: "1px solid rgba(255,255,255,0.06)", padding: "0" }}>
                       <div style={{ padding: "12px 16px", display: "flex", flexDirection: "column", gap: "6px" }}>
                         {totalBreaks === 0 && (
                           <p style={{ color: "#22c55e", fontSize: "12px", fontWeight: 600, margin: 0 }}>✓ All rules followed for this trade</p>
@@ -1005,7 +1005,7 @@ export default function JournalStats({ entries, journal }: Props) {
 
   if (!loaded) return null;
 
-  const inpStyle: React.CSSProperties = { backgroundColor: "#1a2332", border: "1px solid #1F2937", borderRadius: "8px", padding: "6px 10px", color: "#F9FAFB", fontSize: "13px", outline: "none" };
+  const inpStyle: React.CSSProperties = { backgroundColor: "#1a2332", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "8px", padding: "6px 10px", color: "#F9FAFB", fontSize: "13px", outline: "none" };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
@@ -1039,7 +1039,7 @@ export default function JournalStats({ entries, journal }: Props) {
         <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
           {(["today", "week", "month", "year", "all", "custom"] as Period[]).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
-              style={{ padding: "6px 13px", borderRadius: "8px", border: `1px solid ${period === p ? "rgba(139,92,246,0.5)" : "#374151"}`, backgroundColor: period === p ? "rgba(139,92,246,0.1)" : "transparent", color: period === p ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: period === p ? 600 : 400 }}>
+              style={{ padding: "6px 13px", borderRadius: "8px", border: `1px solid ${period === p ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.08)"}`, backgroundColor: period === p ? "rgba(139,92,246,0.1)" : "transparent", color: period === p ? "#A78BFA" : "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: period === p ? 600 : 400 }}>
               {p.charAt(0).toUpperCase() + p.slice(1)}
             </button>
           ))}
@@ -1054,7 +1054,7 @@ export default function JournalStats({ entries, journal }: Props) {
         <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "8px" }}>
           <span style={{ color: "#6B7280", fontSize: "13px" }}>{filtered.length} trade{filtered.length !== 1 ? "s" : ""}</span>
           <button onClick={() => setEditOpen(true)}
-            style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+            style={{ display: "flex", alignItems: "center", gap: "7px", padding: "7px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "rgba(255,255,255,0.04)", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
             ⊞ Edit Widgets
           </button>
         </div>
@@ -1106,8 +1106,8 @@ export default function JournalStats({ entries, journal }: Props) {
       {editOpen && (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, display: "flex" }} onClick={() => setEditOpen(false)}>
           <div style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }} />
-          <div style={{ width: "360px", maxWidth: "95vw", backgroundColor: "#111827", borderLeft: "1px solid #1F2937", display: "flex", flexDirection: "column", height: "100%" }} onClick={e => e.stopPropagation()}>
-            <div style={{ padding: "24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+          <div style={{ width: "360px", maxWidth: "95vw", background: "linear-gradient(145deg, #0e0a1a, #080808)", borderLeft: "1px solid rgba(255,255,255,0.06)", display: "flex", flexDirection: "column", height: "100%" }} onClick={e => e.stopPropagation()}>
+            <div style={{ padding: "24px", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <div>
                 <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Widgets</h3>
                 <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} of {WIDGETS.length} active</p>
