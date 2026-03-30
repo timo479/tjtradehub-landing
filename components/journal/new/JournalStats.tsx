@@ -300,7 +300,7 @@ function WWeekday({ entries }: { entries: Trade[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = 8 + i * bSlot + (bSlot - bW) / 2;
         const h = b.avg >= 0 ? (Math.abs(b.avg) / maxAbs) * maxPos : (Math.abs(b.avg) / maxAbs) * maxNeg;
@@ -345,7 +345,7 @@ function WMonthly({ entries }: { entries: Trade[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = 14 + i * bSlot;
         const h = b.total >= 0 ? (Math.abs(b.total) / maxAbs) * maxPos : (Math.abs(b.total) / maxAbs) * maxNeg;
@@ -456,7 +456,8 @@ function WHistogram({ entries }: { entries: Trade[] }) {
   const H = 100, bW = 36, gap = 8, tW = bars.length * (bW + gap) - gap + 20;
 
   return (
-    <svg viewBox={`0 0 ${tW} ${H + 36}`} style={{ width: "100%", height: "auto", display: "block" }}>
+    <div style={{ height: "180px" }}>
+    <svg viewBox={`0 0 ${tW} ${H + 36}`} preserveAspectRatio="none" width="100%" height="100%" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 10;
         const h = (b.count / maxCount) * (H - 16);
@@ -470,6 +471,7 @@ function WHistogram({ entries }: { entries: Trade[] }) {
       })}
       <line x1={0} y1={H} x2={tW} y2={H} stroke="rgba(255,255,255,0.07)" strokeWidth="1" />
     </svg>
+    </div>
   );
 }
 
@@ -534,7 +536,7 @@ function WFrequency({ entries }: { entries: Trade[] }) {
         <span style={{ fontSize: "36px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", background: "linear-gradient(135deg, #c4b5fd, #8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{totalTrades}</span>
         <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H + PB}`} preserveAspectRatio="none" width="100%" height="128" style={{ display: "block" }}>
+      <svg viewBox={`0 0 ${W} ${H + PB}`} width="100%" style={{ display: "block" }}>
         {bars.map((b, i) => {
           const x = 10 + i * bSlot; const h = (b.count / maxCount) * (H - 12);
           return (
