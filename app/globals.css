@@ -103,6 +103,36 @@ body::before {
   animation: border-pulse 3s ease-in-out infinite;
 }
 
+/* ── React Grid Layout ─────────────────────────────────── */
+.react-grid-item.react-grid-placeholder {
+  background: rgba(139,92,246,0.12) !important;
+  border: 1px dashed rgba(139,92,246,0.5) !important;
+  border-radius: 16px !important;
+  opacity: 1 !important;
+}
+.react-resizable-handle { opacity: 0; transition: opacity 0.2s; }
+.react-grid-item:hover .react-resizable-handle { opacity: 1; }
+.react-resizable-handle-se {
+  background-image: none !important;
+  width: 20px !important; height: 20px !important;
+  bottom: 6px !important; right: 6px !important;
+  cursor: se-resize;
+}
+.react-resizable-handle-se::after {
+  content: '' !important;
+  position: absolute; right: 4px; bottom: 4px;
+  width: 8px; height: 8px;
+  border-right: 2px solid rgba(139,92,246,0.7) !important;
+  border-bottom: 2px solid rgba(139,92,246,0.7) !important;
+}
+.widget-drag-handle { cursor: grab; }
+.widget-drag-handle:active { cursor: grabbing; }
+.react-grid-item.react-draggable-dragging {
+  opacity: 0.9;
+  z-index: 10;
+  box-shadow: 0 0 40px rgba(139,92,246,0.3);
+}
+
 /* ── Dashboard Card ────────────────────────────────────── */
 .dash-card {
   background: linear-gradient(145deg, #110c1e, #080808);

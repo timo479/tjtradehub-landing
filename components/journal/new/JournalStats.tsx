@@ -1,6 +1,12 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
+import ReactGridLayout, { WidthProvider } from "react-grid-layout";
+import type { Layout } from "react-grid-layout";
+import "react-grid-layout/css/styles.css";
+import "react-resizable/css/styles.css";
+
+const RGL = WidthProvider(ReactGridLayout);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -55,11 +61,12 @@ const card: React.CSSProperties = {
   boxShadow: "0 4px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)",
 };
 
-function SectionTitle({ children, color = "#8B5CF6" }: { children: React.ReactNode; color?: string }) {
+function SectionTitle({ children, color = "#8B5CF6", className }: { children: React.ReactNode; color?: string; className?: string }) {
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px" }}>
+    <div className={className} style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px", userSelect: "none" }}>
       <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
       <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
+      <span style={{ marginLeft: "auto", color: "rgba(255,255,255,0.15)", fontSize: "12px", letterSpacing: "2px" }}>⠿</span>
     </div>
   );
 }
@@ -81,6 +88,10 @@ function WidgetCard({ children }: { children: React.ReactNode }) {
         transition: "border-color 0.25s, box-shadow 0.25s",
         position: "relative" as const,
         overflow: "hidden" as const,
+        height: "100%",
+        boxSizing: "border-box" as const,
+        display: "flex",
+        flexDirection: "column" as const,
       }}
     >
       {children}
@@ -927,6 +938,24 @@ const WIDGETS: WidgetDef[] = [
 ];
 
 const STORAGE_KEY = "tj-stats-prefs-v1";
+const LAYOUT_KEY  = "tj-layout-v2";
+
+const DEFAULT_LAYOUT: Layout[] = [
+  { i: "kpi",             x: 0,  y: 0,  w: 3,  h: 6,  minW: 2, minH: 4 },
+  { i: "equity",          x: 3,  y: 0,  w: 6,  h: 6,  minW: 3, minH: 4 },
+  { i: "winloss",         x: 9,  y: 0,  w: 3,  h: 6,  minW: 2, minH: 4 },
+  { i: "weekday",         x: 0,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
+  { i: "monthly",         x: 4,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
+  { i: "frequency",       x: 8,  y: 6,  w: 4,  h: 5,  minW: 3, minH: 3 },
+  { i: "calendar",        x: 0,  y: 11, w: 4,  h: 6,  minW: 3, minH: 4 },
+  { i: "setup-perf",      x: 4,  y: 11, w: 5,  h: 6,  minW: 3, minH: 4 },
+  { i: "risk-discipline", x: 9,  y: 11, w: 3,  h: 6,  minW: 2, minH: 4 },
+  { i: "rule-compliance", x: 0,  y: 17, w: 6,  h: 6,  minW: 3, minH: 4 },
+  { i: "emotions-breaks", x: 6,  y: 17, w: 6,  h: 5,  minW: 3, minH: 4 },
+  { i: "profit-factor",   x: 0,  y: 23, w: 4,  h: 5,  minW: 2, minH: 3 },
+  { i: "histogram",       x: 4,  y: 23, w: 8,  h: 5,  minW: 3, minH: 3 },
+  { i: "trade-analysis",  x: 0,  y: 28, w: 12, h: 9,  minW: 6, minH: 5 },
+];
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
   return (
@@ -944,14 +973,33 @@ export default function JournalStats({ entries, journal }: Props) {
   const [customTo, setCustomTo] = useState("");
   const [editOpen, setEditOpen] = useState(false);
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
+  const [layout, setLayout] = useState<Layout[]>(DEFAULT_LAYOUT);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
+    try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
     try {
-      const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s));
-    } catch { /* ignore */ }
+      const l = localStorage.getItem(LAYOUT_KEY);
+      if (l) {
+        const saved = JSON.parse(l) as Layout[];
+        setLayout(DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; }));
+      }
+    } catch {}
     setLoaded(true);
   }, []);
+
+  const handleLayoutChange = (newLayout: Layout[]) => {
+    setLayout(prev => {
+      const merged = prev.map(item => { const n = newLayout.find(x => x.i === item.i); return n ? { ...item, x: n.x, y: n.y, w: n.w, h: n.h } : item; });
+      try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(merged)); } catch {}
+      return merged;
+    });
+  };
+
+  const resetLayout = () => {
+    setLayout(DEFAULT_LAYOUT);
+    try { localStorage.removeItem(LAYOUT_KEY); } catch {}
+  };
 
   // Full-width layout while statistics are active — matches HTML .main
   useEffect(() => {
@@ -987,21 +1035,7 @@ export default function JournalStats({ entries, journal }: Props) {
     return { starting: journal.starting_balance, totalPnl, current };
   }, [entries, journal.starting_balance]);
 
-  const cell = (id: string) => {
-    if (!active.includes(id)) return null;
-    const w = WIDGETS.find(x => x.id === id);
-    if (!w) return null;
-    return (
-      <WidgetCard key={w.id}>
-        <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
-        <w.component entries={filtered} journal={journal} />
-      </WidgetCard>
-    );
-  };
-
-  // IDs assigned to fixed rows (not part of "extra" row)
-  const fixedIds = ["kpi", "equity", "winloss", "weekday", "monthly", "frequency", "calendar", "setup-perf", "risk-discipline"];
-  const extraWidgets = activeWidgets.filter(w => !fixedIds.includes(w.id));
+  const activeLayout = useMemo(() => layout.filter(item => active.includes(item.i)), [layout, active]);
 
   if (!loaded) return null;
 
@@ -1068,38 +1102,31 @@ export default function JournalStats({ entries, journal }: Props) {
         </div>
       )}
 
-      {/* Widget Rows — fixed layout matching HTML reference */}
+      {/* Widget Grid — drag & resizable */}
       {filtered.length > 0 && (
-        <>
-          {/* Row 1: KPI (1fr) | Equity (2fr) | Win/Loss (1fr) */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
-            {cell("kpi")}{cell("equity")}{cell("winloss")}
-          </div>
-
-          {/* Row 2: Weekday | Monthly | Frequency */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
-            {cell("weekday")}{cell("monthly")}{cell("frequency")}
-          </div>
-
-          {/* Row 3: Calendar | Setup Perf | Risk Discipline */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
-            {cell("calendar")}{cell("setup-perf")}{cell("risk-discipline")}
-          </div>
-
-          {/* Extra widgets (histogram, rule-compliance, emotions-breaks, profit-factor, trade-analysis) */}
-          {extraWidgets.length > 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "16px" }}>
-              {extraWidgets.map(w => (
-                <div key={w.id} style={{ gridColumn: w.size === "full" ? "span 12" : "span 6" }}>
-                  <WidgetCard>
-                    <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
-                    <w.component entries={filtered} journal={journal} />
-                  </WidgetCard>
+        <RGL
+          layout={activeLayout}
+          cols={12}
+          rowHeight={60}
+          margin={[16, 16]}
+          containerPadding={[0, 0]}
+          onLayoutChange={handleLayoutChange}
+          draggableHandle=".widget-drag-handle"
+          isResizable
+          isDraggable
+          resizeHandles={["se"]}
+        >
+          {activeWidgets.map(w => (
+            <div key={w.id}>
+              <WidgetCard>
+                <SectionTitle className="widget-drag-handle" color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+                <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+                  <w.component entries={filtered} journal={journal} />
                 </div>
-              ))}
+              </WidgetCard>
             </div>
-          )}
-        </>
+          ))}
+        </RGL>
       )}
 
       {/* Edit Widgets Side Panel */}
@@ -1112,7 +1139,10 @@ export default function JournalStats({ entries, journal }: Props) {
                 <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Widgets</h3>
                 <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} of {WIDGETS.length} active</p>
               </div>
-              <button onClick={() => setEditOpen(false)} style={{ padding: "8px 18px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>Done</button>
+              <div style={{ display: "flex", gap: "8px" }}>
+                <button onClick={resetLayout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.1)", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "12px" }}>Reset Layout</button>
+                <button onClick={() => setEditOpen(false)} style={{ padding: "8px 18px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>Done</button>
+              </div>
             </div>
             <div style={{ flex: 1, overflowY: "scroll", padding: "16px" }}>
               <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Active</p>
