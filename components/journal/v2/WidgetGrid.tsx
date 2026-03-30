@@ -63,14 +63,13 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(#0f1623, #111827) padding-box, linear-gradient(135deg, rgba(139,92,246,0.22) 0%, transparent 60%) border-box",
-        border: "1px solid transparent",
+        background: "#0c0f16",
+        border: "1px solid rgba(255,255,255,0.07)",
         borderRadius: "14px",
-        transition: "box-shadow 0.25s ease, transform 0.2s ease",
+        transition: "box-shadow 0.25s ease",
         boxShadow: hovered
-          ? "0 0 28px rgba(139,92,246,0.14), 0 8px 32px rgba(0,0,0,0.5)"
-          : "0 0 0 1px rgba(255,255,255,0.02), 0 4px 20px rgba(0,0,0,0.35)",
-        transform: hovered ? "translateY(-2px)" : "none",
+          ? "0 4px 24px rgba(0,0,0,0.45)"
+          : "0 2px 10px rgba(0,0,0,0.3)",
         ...style,
       }}
     >
@@ -82,8 +81,8 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
-      <div style={{ width: "3px", height: "14px", borderRadius: "2px", background: "linear-gradient(180deg, #8B5CF6, #6366f1)", flexShrink: 0 }} />
-      <p style={{ color: "#9CA3AF", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{children}</p>
+      <div style={{ width: "8px", height: "8px", borderRadius: "2px", backgroundColor: "#8B5CF6", flexShrink: 0 }} />
+      <p style={{ color: "#D1D5DB", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>{children}</p>
     </div>
   );
 }
@@ -141,8 +140,8 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(148px, 1fr))", gap: "12px" }}>
       {items.map(item => (
         <div key={item.label} style={{
-          background: "linear-gradient(#0a0e18, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.18) 0%, transparent 55%) border-box",
-          border: "1px solid transparent",
+          background: "#080b10",
+          border: "1px solid rgba(255,255,255,0.05)",
           borderRadius: "10px",
           padding: "12px 16px",
         }}>
@@ -537,8 +536,8 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
       {metrics.map(x => (
         <div key={x.label} style={{
-          background: "linear-gradient(#0a0e18, #0d1117) padding-box, linear-gradient(135deg, rgba(139,92,246,0.15) 0%, transparent 55%) border-box",
-          border: "1px solid transparent",
+          background: "#080b10",
+          border: "1px solid rgba(255,255,255,0.05)",
           borderRadius: "10px",
           padding: "12px 16px",
         }}>
