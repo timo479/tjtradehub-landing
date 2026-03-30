@@ -103,6 +103,10 @@ body::before {
   animation: border-pulse 3s ease-in-out infinite;
 }
 
+html.journal-light body::before {
+  display: none;
+}
+
 /* ── React Grid Layout ─────────────────────────────────── */
 .react-grid-item.react-grid-placeholder {
   background: rgba(139,92,246,0.12) !important;

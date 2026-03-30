@@ -79,7 +79,7 @@ function EquityCurve({ trades }: { trades: Trade[] }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 type Filter = "all" | "today" | "week" | "month" | "review";
 
-export default function JournalNew({ journalTourCompleted = false }: { journalTourCompleted?: boolean }) {
+export default function JournalNew({ journalTourCompleted = false, darkMode: darkModeProp, toggleTheme: toggleThemeProp }: { journalTourCompleted?: boolean; darkMode?: boolean; toggleTheme?: () => void }) {
   const [journals, setJournals] = useState<Journal[]>([]);
   const [allEntries, setAllEntries] = useState<Trade[]>([]);
   const [allTemplates, setAllTemplates] = useState<TemplateDef[]>([]);
@@ -110,7 +110,8 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   const [bulkJournalId, setBulkJournalId] = useState("");
   const [bulkMoving, setBulkMoving] = useState(false);
   const [showBulkModal, setShowBulkModal] = useState(false);
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkModeInternal, setDarkModeInternal] = useState(true);
+  const darkMode = darkModeProp !== undefined ? darkModeProp : darkModeInternal;
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -149,14 +150,16 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
   }, [detailTrade]);
 
   useEffect(() => {
-    try { const s = localStorage.getItem("tj-journal-theme"); if (s !== null) setDarkMode(s === "dark"); } catch {}
-  }, []);
+    if (darkModeProp === undefined) {
+      try { const s = localStorage.getItem("tj-journal-theme"); if (s !== null) setDarkModeInternal(s === "dark"); } catch {}
+    }
+  }, [darkModeProp]);
 
-  const toggleTheme = () => setDarkMode(d => {
+  const toggleTheme = toggleThemeProp ?? (() => setDarkModeInternal(d => {
     const n = !d;
     try { localStorage.setItem("tj-journal-theme", n ? "dark" : "light"); } catch {}
     return n;
-  });
+  }));
 
   const openJournal = (j: Journal) => {
     setActiveJournal(j); setView("trades"); setFilter("all"); setSearch("");
