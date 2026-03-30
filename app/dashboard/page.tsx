@@ -128,7 +128,7 @@ export default async function DashboardPage() {
           <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
               <div style={{ perspective: "150px" }}>
-                <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative", transformStyle: "preserve-3d" }}>
+                <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
                   {Array.from({ length: 16 }).map((_, i) => (
                     <Image
                       key={i}
