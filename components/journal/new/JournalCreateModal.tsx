@@ -94,7 +94,7 @@ export default function JournalCreateModal({ initial, onClose, onSaved }: Props)
 
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={onClose}>
-      <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "14px", width: "100%", maxWidth: "540px", maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
+      <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", width: "100%", maxWidth: "540px", maxHeight: "92vh", overflow: "hidden", display: "flex", flexDirection: "column" }} onClick={e => e.stopPropagation()}>
 
         {/* Header */}
         <div style={{ padding: "20px 24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>

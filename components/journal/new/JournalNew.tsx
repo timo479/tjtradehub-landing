@@ -304,7 +304,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
           {mt5Pending.map(entry => {
             const sym = getField(entry, "Symbol"); const dir = getField(entry, "Direction"); const p = pnlNum(entry);
             return (
-              <div key={entry.id} style={{ backgroundColor: "#111827", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "12px", padding: "12px 18px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
+              <div key={entry.id} style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "12px", padding: "12px 18px", display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
                 <div style={{ width: "7px", height: "7px", borderRadius: "50%", backgroundColor: "#F59E0B", flexShrink: 0 }} />
                 <span style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "15px", minWidth: "80px" }}>{sym ?? "—"}</span>
                 {dir && <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 8px", borderRadius: "5px", backgroundColor: dir === "Long" ? "rgba(34,197,94,0.15)" : "rgba(239,68,68,0.15)", color: dir === "Long" ? "#22c55e" : "#ef4444" }}>{dir === "Long" ? "▲ LONG" : "▼ SHORT"}</span>}
@@ -320,7 +320,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
 
       {/* Hero Banner (show if active journal has 7-day data) */}
       {activeJournal && sevenDayTrades.length > 0 && (
-        <div style={{ background: "linear-gradient(135deg,#111827 0%,#1a1f2e 100%)", border: "1px solid #1F2937", borderRadius: "16px", padding: "24px 28px", display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
+        <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "24px 28px", display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: "180px" }}>
             <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", color: "#6B7280", marginBottom: "8px" }}>7-Day Equity</p>
             <EquityCurve trades={journalTrades} />
@@ -349,7 +349,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
       {/* Journals Grid */}
       <div data-tour="journal-grid">
       {journals.length === 0 ? (
-        <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "60px 40px", textAlign: "center" }}>
+        <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "60px 40px", textAlign: "center" }}>
           <p style={{ fontSize: "40px", marginBottom: "16px" }}>📓</p>
           <h2 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>Create your first journal</h2>
           <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "24px" }}>Define your trading rules and start logging trades.</p>
@@ -365,9 +365,9 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
             const isActive = activeJournal?.id === j.id;
             return (
               <div key={j.id} onClick={() => openJournal(j)}
-                style={{ backgroundColor: "#111827", border: `1px solid ${isActive ? "#8B5CF6" : "#1F2937"}`, borderRadius: "12px", padding: "20px", cursor: "pointer", transition: "transform 0.2s,box-shadow 0.2s,border-color 0.2s", position: "relative", boxShadow: isActive ? "0 0 0 1px #8B5CF6" : "none" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#8B5CF6"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.borderColor = isActive ? "#8B5CF6" : "#1F2937"; }}>
+                style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: `1px solid ${isActive ? "#8B5CF6" : "rgba(255,255,255,0.06)"}`, borderRadius: "16px", padding: "20px", cursor: "pointer", transition: "border-color 0.2s", position: "relative", boxShadow: isActive ? "0 0 0 1px #8B5CF6, 0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)" : "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.25)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isActive ? "#8B5CF6" : "rgba(255,255,255,0.06)"; }}>
 
                 {/* Edit + Delete buttons (appear on hover via CSS-in-JS workaround via group) */}
                 <div style={{ display: "flex", gap: "6px", position: "absolute", top: "12px", right: "12px" }} onClick={e => e.stopPropagation()}>
@@ -385,7 +385,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
                   {j.risk_per_trade && <span>⚡ {j.risk_per_trade}% risk</span>}
                   {j.max_trades_per_day && <span>📊 max {j.max_trades_per_day}/day</span>}
                 </div>
-                <div style={{ display: "flex", gap: "16px", fontSize: "13px", borderTop: "1px solid #1F2937", paddingTop: "10px", marginTop: "4px" }}>
+                <div style={{ display: "flex", gap: "16px", fontSize: "13px", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "10px", marginTop: "4px" }}>
                   <span style={{ color: "#9CA3AF" }}>{jTrades.length} trades</span>
                   {jWr !== null && <span style={{ color: "#9CA3AF" }}>Win {jWr}%</span>}
                   {jTrades.length > 0 && <span style={{ color: jPnl >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{jPnl >= 0 ? "+" : ""}{jPnl.toFixed(2)}</span>}
@@ -400,7 +400,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
       {/* Bulk Move Modal */}
       {showBulkModal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={() => setShowBulkModal(false)}>
-          <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", width: "100%", maxWidth: "420px", padding: "28px" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", width: "100%", maxWidth: "420px", padding: "28px" }} onClick={e => e.stopPropagation()}>
             <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "17px", marginBottom: "8px" }}>Move all MT5 trades to journal</h3>
             <p style={{ color: "#6B7280", fontSize: "13px", marginBottom: "20px" }}>
               {mt5Pending.length} trade{mt5Pending.length !== 1 ? "s" : ""} will be moved. Trade data (Symbol, Direction, P&L etc.) is carried over automatically. You can add notes & emotions later via "Needs Review".
@@ -496,7 +496,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
             { label: "Win Rate Today", value: todayWinRate !== null ? `${todayWinRate}%` : "—", color: "#F9FAFB" },
             { label: "Current Streak", value: calcStreak(journalTrades), color: "#A78BFA" },
           ].map(({ label, value, color }) => (
-            <div key={label} style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "12px", padding: "14px 16px" }}>
+            <div key={label} style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "14px 16px" }}>
               <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", color: "#6B7280", marginBottom: "6px" }}>{label}</p>
               <p style={{ fontSize: "22px", fontWeight: 700, color }}>{value}</p>
             </div>
@@ -527,7 +527,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
 
       {/* Trade Table */}
       {filteredTrades.length === 0 ? (
-        <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "60px 40px", textAlign: "center" }}>
+        <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "60px 40px", textAlign: "center" }}>
           <p style={{ fontSize: "36px", marginBottom: "14px" }}>📈</p>
           <p style={{ color: "#6B7280", fontSize: "14px", marginBottom: "20px" }}>{journalTrades.length === 0 ? "No trades yet." : "No trades match the current filter."}</p>
           {journalTrades.length === 0 && (
@@ -619,7 +619,7 @@ export default function JournalNew({ journalTourCompleted = false }: { journalTo
       {/* Trade Detail Modal */}
       {detailTrade && activeJournal && (
         <div style={{ position: "fixed", inset: 0, zIndex: 200, backgroundColor: "rgba(0,0,0,0.8)", backdropFilter: "blur(4px)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }} onClick={() => setDetailTrade(null)}>
-          <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", width: "100%", maxWidth: "620px", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
+          <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", width: "100%", maxWidth: "620px", maxHeight: "90vh", overflowY: "auto" }} onClick={e => e.stopPropagation()}>
             <div style={{ padding: "20px 24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
                 <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "17px" }}>{getField(detailTrade, "Symbol") ?? "Trade"} — {getField(detailTrade, "Direction")}</h3>

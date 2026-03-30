@@ -49,15 +49,18 @@ const EMOTION_COLORS: Record<string, string> = {
 };
 
 const card: React.CSSProperties = {
-  backgroundColor: "#111827", border: "1px solid #1F2937",
+  background: "linear-gradient(145deg, #0f0f18, #090909)",
+  border: "1px solid rgba(255,255,255,0.06)",
   borderRadius: "16px", padding: "16px 20px",
+  boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
 };
 
-function SectionTitle({ children }: { children: React.ReactNode }) {
+function SectionTitle({ children, color = "#8B5CF6" }: { children: React.ReactNode; color?: string }) {
   return (
-    <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "12px" }}>
-      {children}
-    </p>
+    <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px" }}>
+      <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
+      <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
+    </div>
   );
 }
 
@@ -129,9 +132,9 @@ function WKpi({ entries }: { entries: Trade[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))", gap: "8px" }}>
       {items.map(i => (
-        <div key={i.l} style={{ backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "12px", padding: "12px 14px" }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "5px" }}>{i.l}</p>
-          <p style={{ color: i.c, fontWeight: 700, fontSize: "18px", lineHeight: 1 }}>{i.v}</p>
+        <div key={i.l} style={{ padding: "4px 0" }}>
+          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{i.l}</p>
+          <p style={{ color: i.c, fontWeight: 800, fontSize: "18px", lineHeight: 1, letterSpacing: "-0.02em" }}>{i.v}</p>
           {"sub" in i && i.sub && <p style={{ color: "#4B5563", fontSize: "10px", marginTop: "3px" }}>{i.sub}</p>}
         </div>
       ))}
@@ -159,7 +162,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
   const line = data.map((v, i) => `${i === 0 ? "M" : "L"}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(" ");
   const fill = `${line} L${sx(data.length - 1).toFixed(1)},${z.toFixed(1)} L${PL},${z.toFixed(1)} Z`;
   const last = data[data.length - 1];
-  const color = last >= 0 ? "#22c55e" : "#ef4444";
+  const color = "#8B5CF6";
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "auto", display: "block" }}>
@@ -426,9 +429,9 @@ function WProfitFactor({ entries }: { entries: Trade[] }) {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
       {metrics.map(x => (
-        <div key={x.l} style={{ backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "12px 14px" }}>
-          <p style={{ color: "#6B7280", fontSize: "10px", marginBottom: "4px" }}>{x.l}</p>
-          <p style={{ color: x.c, fontWeight: 700, fontSize: "18px" }}>{x.v}</p>
+        <div key={x.l} style={{ padding: "4px 0" }}>
+          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{x.l}</p>
+          <p style={{ color: x.c, fontWeight: 800, fontSize: "18px", lineHeight: 1, letterSpacing: "-0.02em" }}>{x.v}</p>
         </div>
       ))}
     </div>
@@ -848,25 +851,25 @@ function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journ
 // ─── Widget Registry ──────────────────────────────────────────────────────────
 interface WidgetDef {
   id: string; name: string; desc: string; icon: string;
-  size: "full" | "half"; defaultOn: boolean;
+  dotColor: string; size: "full" | "half"; defaultOn: boolean;
   component: (props: { entries: Trade[]; journal: Journal }) => React.ReactElement | null;
 }
 
 const WIDGETS: WidgetDef[] = [
-  { id: "kpi",             name: "KPI Overview",           desc: "Trades, P&L, Win Rate, Drawdown, Streak",             icon: "📊", size: "full", defaultOn: true,  component: ({ entries }) => <WKpi entries={entries} /> },
-  { id: "equity",          name: "Equity Curve",           desc: "Cumulative P&L across all trades",                    icon: "📈", size: "full", defaultOn: true,  component: ({ entries }) => <WEquity entries={entries} /> },
-  { id: "winloss",         name: "Win / Loss",             desc: "Wins, Losses and Break-even donut chart",             icon: "🎯", size: "half", defaultOn: true,  component: ({ entries }) => <WWinLoss entries={entries} /> },
-  { id: "weekday",         name: "Weekday Performance",    desc: "Average P&L by weekday",                              icon: "📅", size: "half", defaultOn: true,  component: ({ entries }) => <WWeekday entries={entries} /> },
-  { id: "monthly",         name: "Monthly P&L",            desc: "P&L bar chart for the last 6 months",                 icon: "🗓️", size: "half", defaultOn: true,  component: ({ entries }) => <WMonthly entries={entries} /> },
-  { id: "frequency",       name: "Trade Frequency",        desc: "Number of trades per month over the last 8 months",   icon: "🔢", size: "half", defaultOn: true,  component: ({ entries }) => <WFrequency entries={entries} /> },
-  { id: "calendar",        name: "Trade Calendar",         desc: "Daily P&L heatmap for the last 3 months",             icon: "📆", size: "full", defaultOn: true,  component: ({ entries }) => <WCalendar entries={entries} /> },
-  { id: "setup-perf",      name: "Setup Performance",      desc: "Win Rate and P&L broken down by setup type",          icon: "🔬", size: "full", defaultOn: true,  component: ({ entries }) => <WSetupPerf entries={entries} /> },
-  { id: "risk-discipline", name: "Risk Discipline",        desc: "How consistently you stick to your risk % rule",      icon: "🎯", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRiskDiscipline entries={entries} journal={journal} /> },
-  { id: "rule-compliance", name: "Rule Compliance",        desc: "How often each journal rule was followed",            icon: "✅", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRuleCompliance entries={entries} journal={journal} /> },
-  { id: "emotions-breaks", name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", size: "half", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
-  { id: "profit-factor",   name: "Profit Factor",          desc: "Profit Factor, Gross Profit/Loss, Expectancy",        icon: "⚡", size: "half", defaultOn: true,  component: ({ entries }) => <WProfitFactor entries={entries} /> },
-  { id: "trade-analysis",  name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WTradeAnalysis entries={entries} journal={journal} /> },
-  { id: "histogram",       name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", size: "full", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
+  { id: "kpi",             name: "KPI Overview",           desc: "Trades, P&L, Win Rate, Drawdown, Streak",             icon: "📊", dotColor: "#22c55e", size: "full", defaultOn: true,  component: ({ entries }) => <WKpi entries={entries} /> },
+  { id: "equity",          name: "Equity Curve",           desc: "Cumulative P&L across all trades",                    icon: "📈", dotColor: "#8B5CF6", size: "full", defaultOn: true,  component: ({ entries }) => <WEquity entries={entries} /> },
+  { id: "winloss",         name: "Win / Loss",             desc: "Wins, Losses and Break-even donut chart",             icon: "🎯", dotColor: "#60a5fa", size: "half", defaultOn: true,  component: ({ entries }) => <WWinLoss entries={entries} /> },
+  { id: "weekday",         name: "Weekday Performance",    desc: "Average P&L by weekday",                              icon: "📅", dotColor: "#8B5CF6", size: "half", defaultOn: true,  component: ({ entries }) => <WWeekday entries={entries} /> },
+  { id: "monthly",         name: "Monthly P&L",            desc: "P&L bar chart for the last 6 months",                 icon: "🗓️", dotColor: "#22c55e", size: "half", defaultOn: true,  component: ({ entries }) => <WMonthly entries={entries} /> },
+  { id: "frequency",       name: "Trade Frequency",        desc: "Number of trades per month over the last 8 months",   icon: "🔢", dotColor: "#60a5fa", size: "half", defaultOn: true,  component: ({ entries }) => <WFrequency entries={entries} /> },
+  { id: "calendar",        name: "Trade Calendar",         desc: "Daily P&L heatmap for the last 3 months",             icon: "📆", dotColor: "#f59e0b", size: "full", defaultOn: true,  component: ({ entries }) => <WCalendar entries={entries} /> },
+  { id: "setup-perf",      name: "Setup Performance",      desc: "Win Rate and P&L broken down by setup type",          icon: "🔬", dotColor: "#60a5fa", size: "full", defaultOn: true,  component: ({ entries }) => <WSetupPerf entries={entries} /> },
+  { id: "risk-discipline", name: "Risk Discipline",        desc: "How consistently you stick to your risk % rule",      icon: "🎯", dotColor: "#f59e0b", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRiskDiscipline entries={entries} journal={journal} /> },
+  { id: "rule-compliance", name: "Rule Compliance",        desc: "How often each journal rule was followed",            icon: "✅", dotColor: "#22c55e", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRuleCompliance entries={entries} journal={journal} /> },
+  { id: "emotions-breaks", name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", dotColor: "#ef4444", size: "half", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
+  { id: "profit-factor",   name: "Profit Factor",          desc: "Profit Factor, Gross Profit/Loss, Expectancy",        icon: "⚡", dotColor: "#8B5CF6", size: "half", defaultOn: true,  component: ({ entries }) => <WProfitFactor entries={entries} /> },
+  { id: "trade-analysis",  name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", dotColor: "#94a3b8", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WTradeAnalysis entries={entries} journal={journal} /> },
+  { id: "histogram",       name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", dotColor: "#ef4444", size: "full", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
 ];
 
 const STORAGE_KEY = "tj-stats-prefs-v1";
@@ -958,7 +961,7 @@ export default function JournalStats({ entries, journal }: Props) {
       <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "20px" }}>
         {activeWidgets.map(w => (
           <div key={w.id} style={{ ...card, gridColumn: w.size === "full" ? "span 12" : "span 6" }}>
-            <SectionTitle>{w.icon} {w.name}</SectionTitle>
+            <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
             <w.component entries={filtered} journal={journal} />
           </div>
         ))}
@@ -975,7 +978,7 @@ export default function JournalStats({ entries, journal }: Props) {
 
       {/* Account Balance Card */}
       {balanceInfo && (
-        <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "14px", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
+        <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "16px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <span style={{ fontSize: "18px" }}>💰</span>
             <span style={{ color: "#6B7280", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Account Balance</span>
@@ -998,7 +1001,7 @@ export default function JournalStats({ entries, journal }: Props) {
       )}
 
       {/* Period Filter Bar */}
-      <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "12px", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
+      <div style={{ background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
         <div style={{ display: "flex", gap: "5px", flexWrap: "wrap" }}>
           {(["today", "week", "month", "year", "all", "custom"] as Period[]).map(p => (
             <button key={p} onClick={() => setPeriod(p)}
@@ -1058,7 +1061,7 @@ export default function JournalStats({ entries, journal }: Props) {
               <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Active</p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
                 {WIDGETS.filter(w => active.includes(w.id)).map(w => (
-                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", backgroundColor: "#0d1117", borderRadius: "12px", border: "1px solid #1F2937" }}>
+                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)" }}>
                     <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ color: "#F9FAFB", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
@@ -1073,7 +1076,7 @@ export default function JournalStats({ entries, journal }: Props) {
                   <p style={{ color: "#6B7280", fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "10px", paddingLeft: "4px" }}>Available</p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     {WIDGETS.filter(w => !active.includes(w.id)).map(w => (
-                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", backgroundColor: "#0d1117", borderRadius: "12px", border: "1px solid #1F2937", opacity: 0.7 }}>
+                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", opacity: 0.7 }}>
                         <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ color: "#9CA3AF", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
