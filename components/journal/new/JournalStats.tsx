@@ -918,6 +918,14 @@ export default function JournalStats({ entries, journal }: Props) {
     setLoaded(true);
   }, []);
 
+  // Full-width layout while statistics are active
+  useEffect(() => {
+    const main = document.querySelector("main") as HTMLElement | null;
+    if (!main) return;
+    main.style.maxWidth = "none";
+    return () => { main.style.maxWidth = "1200px"; };
+  }, []);
+
   const toggle = (id: string) => {
     setActive(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
