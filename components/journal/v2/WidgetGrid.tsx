@@ -165,7 +165,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
 
   return (
     <div style={{ height: "215px" }}>
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       <defs>
         <linearGradient id={`eq-g-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -247,7 +247,7 @@ function WWeekday({ entries }: { entries: Entry[] }) {
 
   return (
     <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
         const h = b.avg >= 0
@@ -300,7 +300,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
 
   return (
     <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
         const h = b.total >= 0
@@ -575,7 +575,7 @@ function WFrequency({ entries }: { entries: Entry[] }) {
         <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
       </div>
       <div style={{ height: "128px" }}>
-      <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "100%", display: "block" }}>
+      <svg viewBox={`0 0 ${tW} ${H + 30}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
         {bars.map((b, i) => {
           const x = i * (bW + gap) + 10;
           const h = (b.count / maxCount) * (H - 12);

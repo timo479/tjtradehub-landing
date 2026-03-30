@@ -51,7 +51,7 @@ const EMOTION_COLORS: Record<string, string> = {
 const card: React.CSSProperties = {
   background: "linear-gradient(145deg, #0f0f18, #090909)",
   border: "1px solid rgba(255,255,255,0.06)",
-  borderRadius: "16px", padding: "16px 20px",
+  borderRadius: "16px", padding: "20px 22px",
   boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
 };
 
@@ -130,7 +130,7 @@ function WKpi({ entries }: { entries: Trade[] }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(110px,1fr))", gap: "8px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
       {items.map(i => (
         <div key={i.l} style={{ padding: "4px 0" }}>
           <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{i.l}</p>
@@ -166,7 +166,7 @@ function WEquity({ entries }: { entries: Trade[] }) {
 
   return (
     <div style={{ height: "215px" }}>
-    <svg viewBox={`0 0 ${W} ${H}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       <defs>
         <linearGradient id={`sg2-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -245,7 +245,7 @@ function WWeekday({ entries }: { entries: Trade[] }) {
 
   return (
     <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 8;
         const h = b.avg >= 0 ? (Math.abs(b.avg) / maxAbs) * maxPos : (Math.abs(b.avg) / maxAbs) * maxNeg;
@@ -290,7 +290,7 @@ function WMonthly({ entries }: { entries: Trade[] }) {
 
   return (
     <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
       {bars.map((b, i) => {
         const x = i * (bW + gap) + 14;
         const h = b.total >= 0 ? (Math.abs(b.total) / maxAbs) * maxPos : (Math.abs(b.total) / maxAbs) * maxNeg;
@@ -474,9 +474,12 @@ function WFrequency({ entries }: { entries: Trade[] }) {
 
   return (
     <>
-      <p style={{ fontSize: "36px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", background: "linear-gradient(135deg, #c4b5fd, #8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", marginBottom: "12px" }}>{totalTrades}</p>
+      <div style={{ textAlign: "right", marginBottom: "8px" }}>
+        <span style={{ fontSize: "36px", fontWeight: 800, lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", background: "linear-gradient(135deg, #c4b5fd, #8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>{totalTrades}</span>
+        <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
+      </div>
       <div style={{ height: "128px" }}>
-      <svg viewBox={`0 0 ${tW} ${H + 30}`} style={{ width: "100%", height: "100%", display: "block" }}>
+      <svg viewBox={`0 0 ${tW} ${H + 30}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
         {bars.map((b, i) => {
           const x = i * (bW + gap) + 10; const h = (b.count / maxCount) * (H - 12);
           return (
@@ -918,12 +921,19 @@ export default function JournalStats({ entries, journal }: Props) {
     setLoaded(true);
   }, []);
 
-  // Full-width layout while statistics are active
+  // Full-width layout while statistics are active — matches HTML .main
   useEffect(() => {
     const main = document.querySelector("main") as HTMLElement | null;
     if (!main) return;
+    const prev = { maxWidth: main.style.maxWidth, padding: main.style.padding, margin: main.style.margin };
     main.style.maxWidth = "none";
-    return () => { main.style.maxWidth = "1200px"; };
+    main.style.padding = "20px 28px 60px";
+    main.style.margin = "0";
+    return () => {
+      main.style.maxWidth = prev.maxWidth || "1200px";
+      main.style.padding = prev.padding || "";
+      main.style.margin = prev.margin || "";
+    };
   }, []);
 
   const toggle = (id: string) => {
@@ -966,7 +976,7 @@ export default function JournalStats({ entries, journal }: Props) {
   const inpStyle: React.CSSProperties = { backgroundColor: "#1a2332", border: "1px solid #1F2937", borderRadius: "8px", padding: "6px 10px", color: "#F9FAFB", fontSize: "13px", outline: "none" };
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
       {/* Account Balance Card */}
       {balanceInfo && (
@@ -1030,23 +1040,23 @@ export default function JournalStats({ entries, journal }: Props) {
       {filtered.length > 0 && (
         <>
           {/* Row 1: KPI (1fr) | Equity (2fr) | Win/Loss (1fr) */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "20px", alignItems: "stretch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
             {cell("kpi")}{cell("equity")}{cell("winloss")}
           </div>
 
           {/* Row 2: Weekday | Monthly | Frequency */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", alignItems: "stretch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
             {cell("weekday")}{cell("monthly")}{cell("frequency")}
           </div>
 
           {/* Row 3: Calendar | Setup Perf | Risk Discipline */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "20px", alignItems: "stretch" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
             {cell("calendar")}{cell("setup-perf")}{cell("risk-discipline")}
           </div>
 
           {/* Extra widgets (histogram, rule-compliance, emotions-breaks, profit-factor, trade-analysis) */}
           {extraWidgets.length > 0 && (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "20px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(12, 1fr)", gap: "16px" }}>
               {extraWidgets.map(w => (
                 <div key={w.id} style={{ ...card, gridColumn: w.size === "full" ? "span 12" : "span 6" }}>
                   <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
