@@ -55,11 +55,15 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(145deg, #0f0f18, #090909)",
-        border: `1px solid ${hovered ? "rgba(139,92,246,0.25)" : "rgba(255,255,255,0.06)"}`,
+        background: "linear-gradient(145deg, #110c1e, #080808)",
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.07)"}`,
         borderRadius: "16px",
-        boxShadow: "0 4px 32px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.04)",
-        transition: "border-color 0.2s",
+        boxShadow: hovered
+          ? "0 0 0 1px rgba(139,92,246,0.2), 0 0 40px rgba(139,92,246,0.12), 0 8px 40px rgba(0,0,0,0.7)"
+          : "0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+        transition: "border-color 0.25s, box-shadow 0.25s",
+        position: "relative" as const,
+        overflow: "hidden" as const,
         ...style,
       }}
     >
@@ -151,7 +155,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
 
   if (data.length < 2) return <NoData />;
 
-  const W = 600, H = 215, PL = 48, PR = 14, PT = 16, PB = 28;
+  const W = 900, H = 215, PL = 60, PR = 14, PT = 16, PB = 28;
   const cW = W - PL - PR, cH = H - PT - PB;
   const min = Math.min(0, ...data), max = Math.max(0, ...data), range = max - min || 1;
   const sx = (i: number) => PL + (i / (data.length - 1)) * cW;
@@ -164,8 +168,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
   const yLabels = [min, (min + max) / 2, max];
 
   return (
-    <div style={{ height: "215px" }}>
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="215" style={{ display: "block" }}>
       <defs>
         <linearGradient id={`eq-g-${data.length}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0%" stopColor={color} stopOpacity="0.3" />
@@ -179,7 +182,6 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
       {yLabels.map((v, i) => <text key={i} x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>)}
     </svg>
-    </div>
   );
 }
 
@@ -239,34 +241,29 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
-  const PT = 14, BAR = 80, PB = 24;
-  const bW = 38, gap = 14, tW = bars.length * (bW + gap) - gap + 16;
-  const mid = PT + BAR * 0.72;
-  const maxPos = BAR * 0.72 - 2;
-  const maxNeg = BAR * 0.28 - 2;
+  const W = 451, H = 170;
+  const PT = 14, BAR = 116, PB = 40;
+  const bSlot = (W - 16) / bars.length;
+  const bW = Math.round(bSlot * 0.6);
+  const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
       {bars.map((b, i) => {
-        const x = i * (bW + gap) + 8;
-        const h = b.avg >= 0
-          ? (Math.abs(b.avg) / maxAbs) * maxPos
-          : (Math.abs(b.avg) / maxAbs) * maxNeg;
+        const x = 8 + i * bSlot + (bSlot - bW) / 2;
+        const h = b.avg >= 0 ? (Math.abs(b.avg) / maxAbs) * maxPos : (Math.abs(b.avg) / maxAbs) * maxNeg;
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
-        const labelY = b.avg >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
-            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={b.avg >= 0 ? "rgba(34,197,94,0.45)" : "rgba(239,68,68,0.45)"} stroke={color} strokeWidth="1" />}
-            {b.count > 0 && <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="8" fontWeight="600">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 22} textAnchor="middle" fill="#374151" fontSize="7">{b.count}x</text>}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
+            {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="11" fontWeight="600">{b.avg.toFixed(1)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="9">{b.count}x</text>}
           </g>
         );
       })}
     </svg>
-    </div>
   );
 }
 
@@ -292,38 +289,29 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.total)));
-  const PT = 14, BAR = 80, PB = 24;
-  const bW = 44, gap = 13, tW = bars.length * (bW + gap) - gap + 28;
-  const mid = PT + BAR * 0.72;
-  const maxPos = BAR * 0.72 - 2;
-  const maxNeg = BAR * 0.28 - 2;
+  const W = 451, H = 170;
+  const PT = 14, BAR = 116, PB = 40;
+  const bSlot = (W - 28) / bars.length;
+  const bW = Math.round(bSlot * 0.65);
+  const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <div style={{ height: "170px" }}>
-    <svg viewBox={`0 0 ${tW} ${PT + BAR + PB}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
       {bars.map((b, i) => {
-        const x = i * (bW + gap) + 14;
-        const h = b.total >= 0
-          ? (Math.abs(b.total) / maxAbs) * maxPos
-          : (Math.abs(b.total) / maxAbs) * maxNeg;
+        const x = 14 + i * bSlot;
+        const h = b.total >= 0 ? (Math.abs(b.total) / maxAbs) * maxPos : (Math.abs(b.total) / maxAbs) * maxNeg;
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
-        const labelY = b.total >= 0 ? mid - h - 3 : mid + h + 9;
         return (
           <g key={b.key}>
-            {i === 0 && <line x1={0} y1={mid} x2={tW} y2={mid} stroke="#1F2937" strokeWidth="1" />}
-            {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={b.total >= 0 ? "rgba(34,197,94,0.45)" : "rgba(239,68,68,0.45)"} stroke={color} strokeWidth="1" />}
-            {b.count > 0 && (
-              <text x={x + bW / 2} y={labelY} textAnchor="middle" fill={color} fontSize="7" fontWeight="600">
-                {b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}
-              </text>
-            )}
-            <text x={x + bW / 2} y={PT + BAR + 12} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 21} textAnchor="middle" fill="#374151" fontSize="7">{b.count}tr</text>}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
+            {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="10" fontWeight="600">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="9">{b.count}tr</text>}
           </g>
         );
       })}
     </svg>
-    </div>
   );
 }
 
@@ -566,7 +554,9 @@ function WFrequency({ entries }: { entries: Entry[] }) {
 
   const totalTrades = bars.reduce((s, b) => s + b.count, 0);
   const maxCount = Math.max(1, ...bars.map(b => b.count));
-  const H = 100, bW = 32, gap = 10, tW = bars.length * (bW + gap) - gap + 20;
+  const W = 451, H = 100, PB = 30;
+  const bSlot = (W - 20) / bars.length;
+  const bW = Math.round(bSlot * 0.65);
 
   return (
     <>
@@ -574,26 +564,24 @@ function WFrequency({ entries }: { entries: Entry[] }) {
         <span style={{ fontSize: "36px", fontWeight: 800, background: "linear-gradient(135deg,#c4b5fd,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontVariantNumeric: "tabular-nums" }}>{totalTrades}</span>
         <span style={{ fontSize: "11px", color: "#64748b", marginLeft: "4px" }}>total</span>
       </div>
-      <div style={{ height: "128px" }}>
-      <svg viewBox={`0 0 ${tW} ${H + 30}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
+      <svg viewBox={`0 0 ${W} ${H + PB}`} preserveAspectRatio="none" width="100%" height="128" style={{ display: "block" }}>
         {bars.map((b, i) => {
-          const x = i * (bW + gap) + 10;
+          const x = 10 + i * bSlot;
           const h = (b.count / maxCount) * (H - 12);
           return (
             <g key={b.key}>
               {b.count > 0 && (
                 <>
-                  <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="rgba(139,92,246,0.6)" stroke="rgba(139,92,246,0.5)" strokeWidth="1" />
-                  <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="10" fontWeight="600">{b.count}</text>
+                  <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" />
+                  <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="11" fontWeight="600">{b.count}</text>
                 </>
               )}
-              <text x={x + bW / 2} y={H + 13} textAnchor="middle" fill="#6B7280" fontSize="8">{b.label}</text>
+              <text x={x + bW / 2} y={H + 16} textAnchor="middle" fill="#6B7280" fontSize="9">{b.label}</text>
             </g>
           );
         })}
-        <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
+        <line x1={0} y1={H} x2={W} y2={H} stroke="#1F2937" strokeWidth="1" />
       </svg>
-      </div>
     </>
   );
 }
