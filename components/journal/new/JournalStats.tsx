@@ -1,12 +1,10 @@
 "use client";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
-import ReactGridLayout, { WidthProvider } from "react-grid-layout";
+import ReactGridLayout from "react-grid-layout";
 import type { Layout } from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
-
-const RGL = WidthProvider(ReactGridLayout);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -975,6 +973,8 @@ export default function JournalStats({ entries, journal }: Props) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [layout, setLayout] = useState<Layout[]>(DEFAULT_LAYOUT);
   const [loaded, setLoaded] = useState(false);
+  const [gridWidth, setGridWidth] = useState(1200);
+  const gridRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
@@ -986,6 +986,14 @@ export default function JournalStats({ entries, journal }: Props) {
       }
     } catch {}
     setLoaded(true);
+
+    // Measure container width
+    const el = gridRef.current;
+    if (!el) return;
+    setGridWidth(el.offsetWidth);
+    const ro = new ResizeObserver(() => setGridWidth(el.offsetWidth));
+    ro.observe(el);
+    return () => ro.disconnect();
   }, []);
 
   const handleLayoutChange = (newLayout: Layout[]) => {
@@ -1104,7 +1112,9 @@ export default function JournalStats({ entries, journal }: Props) {
 
       {/* Widget Grid — drag & resizable */}
       {filtered.length > 0 && (
-        <RGL
+        <div ref={gridRef}>
+        <ReactGridLayout
+          width={gridWidth}
           layout={activeLayout}
           cols={12}
           rowHeight={60}
@@ -1126,7 +1136,8 @@ export default function JournalStats({ entries, journal }: Props) {
               </WidgetCard>
             </div>
           ))}
-        </RGL>
+        </ReactGridLayout>
+        </div>
       )}
 
       {/* Edit Widgets Side Panel */}
