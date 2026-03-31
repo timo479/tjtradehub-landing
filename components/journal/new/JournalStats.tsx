@@ -754,10 +754,17 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
 
   const toLabel = (text: string): string => {
     if (text.includes("\n")) return text;
-    if (text.length <= 12) return text;
-    const mid = text.lastIndexOf(" ", 11);
-    if (mid > 3) return `${text.slice(0, mid)}\n${text.slice(mid + 1, mid + 13)}${text.length > mid + 14 ? "…" : ""}`;
-    return text.slice(0, 11) + "…";
+    const words = text.split(" ");
+    const lines: string[] = [];
+    let cur = "";
+    for (const w of words) {
+      const test = cur ? cur + " " + w : w;
+      if (test.length <= 13) { cur = test; }
+      else if (lines.length < 2) { lines.push(cur); cur = w; }
+      else { cur += "…"; break; }
+    }
+    if (cur) lines.push(cur);
+    return lines.join("\n");
   };
 
   const allBars = [...(timeBar ? [timeBar] : []), ...bars];
