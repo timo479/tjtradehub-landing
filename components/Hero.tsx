@@ -110,21 +110,19 @@ export default function Hero() {
                 filter: "blur(40px)",
               }}
             />
-            <div style={{ perspective: "600px" }} className="relative z-10">
-              <div className="logo-rotate w-[220px] h-[220px] md:w-[340px] md:h-[340px]" style={{ position: "relative", transformStyle: "preserve-3d" }}>
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <Image
-                    key={i}
-                    src="/logo-tj-transparent.png"
-                    alt=""
-                    width={340}
-                    height={340}
-                    className="logo-layer object-contain"
-                    style={{ transform: `translateZ(${i * 2}px)`, opacity: i === 15 ? 1 : 0.6 }}
-                    priority={i === 0}
-                  />
-                ))}
-              </div>
+            <div className="logo-rotate-hero w-[220px] h-[220px] md:w-[340px] md:h-[340px] relative z-10" style={{ position: "relative" }}>
+              {Array.from({ length: 16 }).map((_, i) => (
+                <Image
+                  key={i}
+                  src="/logo-tj-transparent.png"
+                  alt=""
+                  width={340}
+                  height={340}
+                  className="logo-layer object-contain"
+                  style={{ transform: `translateZ(${i * 2}px)`, opacity: i === 15 ? 1 : 0.6 }}
+                  priority={i === 0}
+                />
+              ))}
             </div>
           </div>
         </div>

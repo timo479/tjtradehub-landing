@@ -65,8 +65,19 @@ body {
   to   { transform: perspective(150px) rotateY(360deg); }
 }
 
+@keyframes rotate3d-hero {
+  from { transform: perspective(600px) rotateY(0deg); }
+  to   { transform: perspective(600px) rotateY(360deg); }
+}
+
 .logo-rotate {
   animation: rotate3d 10s linear infinite;
+  will-change: transform;
+  transform-style: preserve-3d;
+}
+
+.logo-rotate-hero {
+  animation: rotate3d-hero 10s linear infinite;
   will-change: transform;
   transform-style: preserve-3d;
 }
