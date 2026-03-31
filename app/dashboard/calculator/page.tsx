@@ -18,20 +18,18 @@ export default async function CalculatorPage() {
         <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
             <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-              <div style={{ perspective: "150px" }}>
-                <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
-                  {Array.from({ length: 16 }).map((_, i) => (
-                    <Image
-                      key={i}
-                      src="/logo-tj-transparent.png"
-                      alt={i === 0 ? "TJ TradeHub" : ""}
-                      width={36}
-                      height={36}
-                      className="logo-layer object-contain"
-                      style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }}
-                    />
-                  ))}
-                </div>
+              <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
+                {Array.from({ length: 16 }).map((_, i) => (
+                  <Image
+                    key={i}
+                    src="/logo-tj-transparent.png"
+                    alt={i === 0 ? "TJ TradeHub" : ""}
+                    width={36}
+                    height={36}
+                    className="logo-layer object-contain"
+                    style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }}
+                  />
+                ))}
               </div>
               <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif" }}>
                 TJ TradeHub

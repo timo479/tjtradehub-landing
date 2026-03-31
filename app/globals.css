@@ -61,12 +61,13 @@ body {
 }
 
 @keyframes rotate3d {
-  from { transform: rotateY(0deg); }
-  to   { transform: rotateY(360deg); }
+  from { transform: perspective(150px) rotateY(0deg); }
+  to   { transform: perspective(150px) rotateY(360deg); }
 }
 
 .logo-rotate {
   animation: rotate3d 10s linear infinite;
+  will-change: transform;
 }
 
 .logo-layer {
