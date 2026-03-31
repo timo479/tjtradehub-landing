@@ -792,10 +792,14 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         </div>
       )}
 
-      {/* Row 3: Calendar | Instrument | Profit Factor */}
+      {/* Row 3: Instrument (1fr) | Calendar + Profit Factor stacked (3fr) */}
       {entries.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
-          {cell("calendar")}{cell("instrument")}{cell("profit-factor")}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 3fr", gap: "16px", alignItems: "start" }}>
+          {cell("instrument")}
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {cell("calendar")}
+            {cell("profit-factor")}
+          </div>
         </div>
       )}
 
