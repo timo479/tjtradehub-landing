@@ -1145,43 +1145,46 @@ function JournalStatsInner({ entries, journal }: Props) {
         </div>
       </div>
 
-      {/* Empty State */}
-      {filtered.length === 0 && (
-        <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: T.shadow, textAlign: "center", padding: "60px" }}>
-          <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
-          <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades in this period — try a wider range or log some trades first.</p>
-        </div>
-      )}
+      {/* Widget Grid container — always mounted so gridWidth stays accurate */}
+      <div ref={gridRef} style={{ width: "100%" }}>
 
-      {/* Widget Grid — drag & resizable */}
-      {filtered.length > 0 && (
-        <div ref={gridRef} style={{ width: "100%" }}>
-        <ReactGridLayout
-          width={gridWidth}
-          layout={activeLayout}
-          cols={12}
-          rowHeight={60}
-          margin={[16, 16]}
-          containerPadding={[0, 0]}
-          onLayoutChange={handleLayoutChange}
-          draggableHandle=".widget-drag-handle"
-          isResizable
-          isDraggable
-          resizeHandles={["se", "sw", "s", "e"]}
-        >
-          {activeWidgets.map(w => (
-            <div key={w.id}>
-              <WidgetCard>
-                <SectionTitle className="widget-drag-handle" color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
-                <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
-                  <w.component entries={filtered} journal={journal} />
-                </div>
-              </WidgetCard>
-            </div>
-          ))}
-        </ReactGridLayout>
-        </div>
-      )}
+        {/* Empty State */}
+        {filtered.length === 0 && (
+          <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: T.shadow, textAlign: "center", padding: "60px" }}>
+            <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
+            <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades in this period — try a wider range or log some trades first.</p>
+          </div>
+        )}
+
+        {/* Widget Grid — drag & resizable */}
+        {filtered.length > 0 && (
+          <ReactGridLayout
+            width={gridWidth}
+            layout={activeLayout}
+            cols={12}
+            rowHeight={60}
+            margin={[16, 16]}
+            containerPadding={[0, 0]}
+            onLayoutChange={handleLayoutChange}
+            draggableHandle=".widget-drag-handle"
+            isResizable
+            isDraggable
+            resizeHandles={["se", "sw", "s", "e"]}
+          >
+            {activeWidgets.map(w => (
+              <div key={w.id}>
+                <WidgetCard>
+                  <SectionTitle className="widget-drag-handle" color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+                  <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+                    <w.component entries={filtered} journal={journal} />
+                  </div>
+                </WidgetCard>
+              </div>
+            ))}
+          </ReactGridLayout>
+        )}
+
+      </div>
 
       {/* Edit Widgets Side Panel */}
       {editOpen && (
