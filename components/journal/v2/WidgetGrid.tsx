@@ -48,19 +48,44 @@ const fmt = (n: number) => `${n >= 0 ? "+" : ""}${n.toFixed(2)}`;
 const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 const DAYS_SHORT = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+// ─── Theme System ─────────────────────────────────────────────────────────────
+const ThemeCtx = React.createContext(true); // true = dark
+function useT() {
+  const d = React.useContext(ThemeCtx);
+  return {
+    bgCard:     d ? "linear-gradient(145deg, #110c1e, #080808)" : "linear-gradient(145deg, #ffffff, #f9fafb)",
+    border:     d ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.08)",
+    shadow:     d ? "0 4px 40px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.05)" : "0 1px 8px rgba(0,0,0,0.07)",
+    shadowHov:  d ? "0 0 0 1px rgba(139,92,246,0.2), 0 0 40px rgba(139,92,246,0.12), 0 8px 40px rgba(0,0,0,0.7)" : "0 0 0 1px rgba(139,92,246,0.2), 0 4px 20px rgba(0,0,0,0.1)",
+    text1:      d ? "#F9FAFB" : "#111827",
+    text2:      d ? "#9CA3AF" : "#4B5563",
+    text3:      d ? "#64748b" : "#64748b",
+    text4:      d ? "#4B5563" : "#9CA3AF",
+    text5:      d ? "#374151" : "#D1D5DB",
+    svgLine:    d ? "#1F2937" : "rgba(0,0,0,0.1)",
+    svgText:    d ? "#6B7280" : "#9CA3AF",
+    barTrack:   d ? "#1F2937" : "#E5E7EB",
+    panelBg:    d ? "linear-gradient(180deg, #0a0614, #050505)" : "linear-gradient(180deg, #f8f8fc, #f0f0f8)",
+    panelBorder:d ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.2)",
+    itemBg:     d ? "linear-gradient(145deg, #0f0f18, #090909)" : "linear-gradient(145deg, #f9fafb, #f3f4f6)",
+    noData:     d ? "#374151" : "#9CA3AF",
+    btnBorder:  d ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)",
+    btnText:    d ? "#9CA3AF" : "#6B7280",
+  };
+}
+
 function GlowCard({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) {
+  const T = useT();
   const [hovered, setHovered] = useState(false);
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        background: "linear-gradient(145deg, #110c1e, #080808)",
-        border: `1px solid ${hovered ? "rgba(139,92,246,0.45)" : "rgba(255,255,255,0.07)"}`,
+        background: T.bgCard,
+        border: `1px solid ${hovered ? "rgba(139,92,246,0.45)" : T.border}`,
         borderRadius: "16px",
-        boxShadow: hovered
-          ? "0 0 0 1px rgba(139,92,246,0.2), 0 0 40px rgba(139,92,246,0.12), 0 8px 40px rgba(0,0,0,0.7)"
-          : "0 4px 40px rgba(0,0,0,0.6), inset 0 1px 0 rgba(255,255,255,0.05)",
+        boxShadow: hovered ? T.shadowHov : T.shadow,
         transition: "border-color 0.25s, box-shadow 0.25s",
         position: "relative" as const,
         overflow: "hidden" as const,
@@ -73,16 +98,18 @@ function GlowCard({ children, style }: { children: React.ReactNode; style?: Reac
 }
 
 function SectionTitle({ children, color = "#8B5CF6" }: { children: React.ReactNode; color?: string }) {
+  const T = useT();
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "7px", marginBottom: "16px" }}>
       <div style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: color, flexShrink: 0 }} />
-      <p style={{ color: "#64748b", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
+      <p style={{ color: T.text3, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", margin: 0 }}>{children}</p>
     </div>
   );
 }
 
 function NoData({ text = "At least 1 trade with P&L needed" }: { text?: string }) {
-  return <div style={{ color: "#374151", fontSize: "13px", textAlign: "center", padding: "32px 0" }}>{text}</div>;
+  const T = useT();
+  return <div style={{ color: T.noData, fontSize: "13px", textAlign: "center", padding: "32px 0" }}>{text}</div>;
 }
 
 // ─── Widget: KPI Cards ────────────────────────────────────────────────────────
@@ -130,13 +157,14 @@ function WKpiCards({ entries }: { entries: Entry[] }) {
     ] : []),
   ];
 
+  const T = useT();
   return (
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
       {items.map(item => (
         <div key={item.label}>
-          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{item.label}</p>
+          <p style={{ color: T.text3, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{item.label}</p>
           <p style={{ color: item.color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{item.value}</p>
-          {"sub" in item && item.sub && <p style={{ color: "#64748b", fontSize: "11px", marginTop: "3px" }}>{item.sub}</p>}
+          {"sub" in item && item.sub && <p style={{ color: T.text3, fontSize: "11px", marginTop: "3px" }}>{item.sub}</p>}
         </div>
       ))}
     </div>
@@ -155,6 +183,7 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
 
   if (data.length < 2) return <NoData />;
 
+  const T = useT();
   const W = 900, H = 215, PL = 60, PR = 14, PT = 16, PB = 28;
   const cW = W - PL - PR, cH = H - PT - PB;
   const min = Math.min(0, ...data), max = Math.max(0, ...data), range = max - min || 1;
@@ -175,12 +204,12 @@ function WEquityCurve({ entries }: { entries: Entry[] }) {
           <stop offset="100%" stopColor={color} stopOpacity="0" />
         </linearGradient>
       </defs>
-      {yLabels.map((v, i) => <line key={i} x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke="#1F2937" strokeWidth="1" strokeDasharray="4,4" />)}
-      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="#374151" strokeWidth="1" />
+      {yLabels.map((v, i) => <line key={i} x1={PL} y1={sy(v)} x2={W - PR} y2={sy(v)} stroke={T.svgLine} strokeWidth="1" strokeDasharray="4,4" />)}
+      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke={T.text5} strokeWidth="1" />
       <path d={fill} fill={`url(#eq-g-${data.length})`} />
       <path d={line} fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
       <circle cx={sx(data.length - 1)} cy={sy(last)} r="4" fill={color} />
-      {yLabels.map((v, i) => <text key={i} x={PL - 6} y={sy(v) + 4} textAnchor="end" fill="#4B5563" fontSize="10">{v.toFixed(0)}</text>)}
+      {yLabels.map((v, i) => <text key={i} x={PL - 6} y={sy(v) + 4} textAnchor="end" fill={T.text4} fontSize="10">{v.toFixed(0)}</text>)}
     </svg>
   );
 }
@@ -194,6 +223,7 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   if (!total) return <NoData />;
+  const T = useT();
   const pct = wins / total;
   const R = 48, CX = 65, CY = 65, sw = 14, circ = 2 * Math.PI * R;
 
@@ -207,8 +237,8 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
             transform={`rotate(-90 ${CX} ${CY})`} />
         </svg>
         <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", pointerEvents: "none" }}>
-          <span style={{ fontSize: "24px", fontWeight: 800, color: "#f1f5f9", fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{Math.round(pct * 100)}%</span>
-          <span style={{ fontSize: "10px", color: "#64748b", marginTop: "2px" }}>Win Rate</span>
+          <span style={{ fontSize: "24px", fontWeight: 800, color: T.text1, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{Math.round(pct * 100)}%</span>
+          <span style={{ fontSize: "10px", color: T.text3, marginTop: "2px" }}>Win Rate</span>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -219,8 +249,8 @@ function WWinLoss({ entries }: { entries: Entry[] }) {
         ].map(x => (
           <div key={x.label} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
             <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: x.dot, flexShrink: 0 }} />
-            <span style={{ fontSize: "13px", color: "#94a3b8", flex: 1 }}>{x.label}</span>
-            <strong style={{ color: "#f1f5f9", fontWeight: 700, paddingLeft: "12px" }}>{x.count}</strong>
+            <span style={{ fontSize: "13px", color: T.text2, flex: 1 }}>{x.label}</span>
+            <strong style={{ color: T.text1, fontWeight: 700, paddingLeft: "12px" }}>{x.count}</strong>
           </div>
         ))}
       </div>
@@ -240,6 +270,7 @@ function WWeekday({ entries }: { entries: Entry[] }) {
     });
   }, [entries]);
 
+  const T = useT();
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.avg)));
   const W = 451, H = 170;
   const PT = 14, BAR = 116, PB = 40;
@@ -255,11 +286,11 @@ function WWeekday({ entries }: { entries: Entry[] }) {
         const color = b.avg >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.label}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke={T.svgLine} strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 13} textAnchor="middle" fill={color} fontSize="17" fontWeight="700">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="17">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill="#6B7280" fontSize="14">{b.count}x</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill={T.svgText} fontSize="17">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill={T.svgText} fontSize="14">{b.count}x</text>}
           </g>
         );
       })}
@@ -288,6 +319,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
     return result;
   }, [entries]);
 
+  const T = useT();
   const maxAbs = Math.max(1, ...bars.map(b => Math.abs(b.total)));
   const W = 451, H = 170;
   const PT = 14, BAR = 116, PB = 40;
@@ -303,11 +335,11 @@ function WMonthly({ entries }: { entries: Entry[] }) {
         const color = b.total >= 0 ? "#22c55e" : "#ef4444";
         return (
           <g key={b.key}>
-            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
+            {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke={T.svgLine} strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
             {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 13} textAnchor="middle" fill={color} fontSize="16" fontWeight="700">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="17">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill="#6B7280" fontSize="14">{b.count}tr</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill={T.svgText} fontSize="17">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill={T.svgText} fontSize="14">{b.count}tr</text>}
           </g>
         );
       })}
@@ -318,6 +350,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
 // ─── Widget: Trade Calendar ───────────────────────────────────────────────────
 
 function WCalendar({ entries }: { entries: Entry[] }) {
+  const T = useT();
   const today = new Date();
   // Last 2 months + current month
   const months = [-2, -1, 0].map(i => {
@@ -362,9 +395,9 @@ function WCalendar({ entries }: { entries: Entry[] }) {
           while (cells.length % 7 !== 0) cells.push(null);
           return (
             <div key={`${y}-${m}`} style={{ flex: "1 1 0", minWidth: 0 }}>
-              <p style={{ color: "#9CA3AF", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{MONTHS_SHORT[m]} {y}</p>
+              <p style={{ color: T.text2, fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{MONTHS_SHORT[m]} {y}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", marginBottom: "2px" }}>
-                {DAYS_SHORT.map(d => <div key={d} style={{ textAlign: "center", color: "#374151", fontSize: "9px" }}>{d}</div>)}
+                {DAYS_SHORT.map(d => <div key={d} style={{ textAlign: "center", color: T.text5, fontSize: "9px" }}>{d}</div>)}
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px" }}>
                 {cells.map((day, i) => {
@@ -405,7 +438,7 @@ function WCalendar({ entries }: { entries: Entry[] }) {
         ].map(x => (
           <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "5px" }}>
             <div style={{ width: "10px", height: "10px", borderRadius: "2px", backgroundColor: x.c, border: `1px solid ${"border" in x ? x.border : "#1F2937"}` }} />
-            <span style={{ color: "#4B5563", fontSize: "11px" }}>{x.l}</span>
+            <span style={{ color: T.text4, fontSize: "11px" }}>{x.l}</span>
           </div>
         ))}
       </div>
@@ -434,6 +467,7 @@ function WHistogram({ entries }: { entries: Entry[] }) {
 
   if (!bars.length || bars.every(b => b.count === 0)) return <NoData text="At least 1 trade with P&L needed" />;
 
+  const T = useT();
   const maxCount = Math.max(1, ...bars.map(b => b.count));
   const H = 100, bW = 36, gap = 8, tW = bars.length * (bW + gap) - gap + 20;
 
@@ -452,12 +486,12 @@ function WHistogram({ entries }: { entries: Entry[] }) {
               </>
             )}
             {b.label.split("\n").map((line, li) => (
-              <text key={li} x={x + bW / 2} y={H + 13 + li * 11} textAnchor="middle" fill="#6B7280" fontSize="8">{line}</text>
+              <text key={li} x={x + bW / 2} y={H + 13 + li * 11} textAnchor="middle" fill={T.svgText} fontSize="8">{line}</text>
             ))}
           </g>
         );
       })}
-      <line x1={0} y1={H} x2={tW} y2={H} stroke="#1F2937" strokeWidth="1" />
+      <line x1={0} y1={H} x2={tW} y2={H} stroke={T.svgLine} strokeWidth="1" />
     </svg>
   );
 }
@@ -476,6 +510,7 @@ function WInstrument({ entries }: { entries: Entry[] }) {
 
   if (!bars.length) return <NoData text="No 'Instrument' field found" />;
 
+  const T = useT();
   const maxVal = bars[0][1];
   const colors = ["#8B5CF6", "#6366f1", "#3B82F6", "#22c55e", "#F59E0B", "#ef4444"];
 
@@ -484,10 +519,10 @@ function WInstrument({ entries }: { entries: Entry[] }) {
       {bars.map(([name, count], i) => (
         <div key={name}>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-            <span style={{ color: "#9CA3AF", fontSize: "12px" }}>{name}</span>
-            <span style={{ color: "#6B7280", fontSize: "12px" }}>{count}x</span>
+            <span style={{ color: T.text2, fontSize: "12px" }}>{name}</span>
+            <span style={{ color: T.text3, fontSize: "12px" }}>{count}x</span>
           </div>
-          <div style={{ height: "6px", backgroundColor: "#1F2937", borderRadius: "3px", overflow: "hidden" }}>
+          <div style={{ height: "6px", backgroundColor: T.barTrack, borderRadius: "3px", overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${(count / maxVal) * 100}%`, backgroundColor: colors[i % colors.length], borderRadius: "3px", transition: "width 0.3s" }} />
           </div>
         </div>
@@ -513,6 +548,7 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
 
   if (m.pf === null) return <NoData />;
 
+  const T = useT();
   const metrics = [
     { label: "Profit Factor", value: m.pf.toFixed(2), color: m.pf >= 1.5 ? "#22c55e" : m.pf >= 1 ? "#F59E0B" : "#ef4444" },
     { label: "Gross Profit", value: fmt(m.grossWin), color: "#22c55e" },
@@ -524,7 +560,7 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "12px" }}>
       {metrics.map(x => (
         <div key={x.label}>
-          <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{x.label}</p>
+          <p style={{ color: T.text3, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{x.label}</p>
           <p style={{ color: x.color, fontWeight: 800, fontSize: "18px", lineHeight: 1, fontVariantNumeric: "tabular-nums", letterSpacing: "-0.02em" }}>{x.value}</p>
         </div>
       ))}
@@ -553,6 +589,7 @@ function WFrequency({ entries }: { entries: Entry[] }) {
   }, [entries]);
 
   const totalTrades = bars.reduce((s, b) => s + b.count, 0);
+  const T = useT();
   const maxCount = Math.max(1, ...bars.map(b => b.count));
   const W = 451, H = 100, PB = 30;
   const bSlot = (W - 20) / bars.length;
@@ -562,7 +599,7 @@ function WFrequency({ entries }: { entries: Entry[] }) {
     <>
       <div style={{ textAlign: "right", marginBottom: "8px" }}>
         <span style={{ fontSize: "28px", fontWeight: 800, background: "linear-gradient(135deg,#c4b5fd,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontVariantNumeric: "tabular-nums" }}>{totalTrades}</span>
-        <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "4px" }}>total</span>
+        <span style={{ fontSize: "12px", color: T.text3, marginLeft: "4px" }}>total</span>
       </div>
       <svg viewBox={`0 0 ${W} ${H + PB}`} preserveAspectRatio="none" width="100%" height="128" style={{ display: "block" }}>
         {bars.map((b, i) => {
@@ -576,11 +613,11 @@ function WFrequency({ entries }: { entries: Entry[] }) {
                   <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="16" fontWeight="700">{b.count}</text>
                 </>
               )}
-              <text x={x + bW / 2} y={H + 18} textAnchor="middle" fill="#6B7280" fontSize="14">{b.label}</text>
+              <text x={x + bW / 2} y={H + 18} textAnchor="middle" fill={T.svgText} fontSize="14">{b.label}</text>
             </g>
           );
         })}
-        <line x1={0} y1={H} x2={W} y2={H} stroke="#1F2937" strokeWidth="1" />
+        <line x1={0} y1={H} x2={W} y2={H} stroke={T.svgLine} strokeWidth="1" />
       </svg>
     </>
   );
@@ -721,18 +758,31 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 
 // ─── Main WidgetGrid ──────────────────────────────────────────────────────────
 
+const THEME_KEY = "tj-dashboard-theme";
+
 export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
+  const [darkMode, setDarkMode] = useState(true);
 
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
+      const theme = localStorage.getItem(THEME_KEY);
+      if (theme !== null) setDarkMode(theme === "dark");
     } catch { /* ignore */ }
     setLoaded(true);
   }, []);
+
+  const toggleTheme = () => {
+    setDarkMode(d => {
+      const next = !d;
+      localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+      return next;
+    });
+  };
 
   const toggle = (id: string) => {
     setActive(prev => {
@@ -759,13 +809,20 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
   };
 
   return (
+    <ThemeCtx.Provider value={darkMode}>
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+        <button
+          onClick={toggleTheme}
+          title={darkMode ? "Switch to light mode" : "Switch to dark mode"}
+          style={{ display: "flex", alignItems: "center", gap: "6px", padding: "7px 14px", borderRadius: "10px", border: `1px solid ${darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)"}`, backgroundColor: "transparent", color: darkMode ? "#9CA3AF" : "#6B7280", cursor: "pointer", fontSize: "13px" }}>
+          {darkMode ? "☀️ Light" : "🌙 Dark"}
+        </button>
         <button
           onClick={() => setEditOpen(true)}
-          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 14px", borderRadius: "10px", border: "1px solid rgba(255,255,255,0.06)", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}>
+          style={{ display: "flex", alignItems: "center", gap: "8px", padding: "7px 14px", borderRadius: "10px", border: `1px solid ${darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.1)"}`, backgroundColor: "transparent", color: darkMode ? "#9CA3AF" : "#6B7280", cursor: "pointer", fontSize: "13px" }}>
           ⊞ Edit Widgets
         </button>
       </div>
@@ -774,7 +831,7 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         <GlowCard style={{ textAlign: "center", padding: "48px 24px" }}>
           <p style={{ fontSize: "32px", marginBottom: "12px" }}>📊</p>
           <p style={{ color: "#6B7280", fontSize: "14px", fontWeight: 500 }}>No trades yet</p>
-          <p style={{ color: "#374151", fontSize: "13px", marginTop: "4px" }}>Statistics will appear once you add trades.</p>
+          <p style={{ color: darkMode ? "#374151" : "#D1D5DB", fontSize: "13px", marginTop: "4px" }}>Statistics will appear once you add trades.</p>
         </GlowCard>
       )}
 
@@ -820,13 +877,13 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           <div style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }} />
           {/* Panel */}
           <div
-            style={{ width: "360px", maxWidth: "95vw", background: "linear-gradient(180deg, #0a0614, #050505)", borderLeft: "1px solid rgba(139,92,246,0.15)", display: "flex", flexDirection: "column", height: "100%" }}
+            style={{ width: "360px", maxWidth: "95vw", background: darkMode ? "linear-gradient(180deg, #0a0614, #050505)" : "linear-gradient(180deg, #f8f8fc, #f0f0f8)", borderLeft: `1px solid ${darkMode ? "rgba(139,92,246,0.15)" : "rgba(139,92,246,0.2)"}`, display: "flex", flexDirection: "column", height: "100%" }}
             onClick={e => e.stopPropagation()}>
 
             {/* Panel Header */}
-            <div style={{ padding: "24px", borderBottom: "1px solid #1F2937", display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
+            <div style={{ padding: "24px", borderBottom: `1px solid ${darkMode ? "#1F2937" : "#E5E7EB"}`, display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
               <div>
-                <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Statistics</h3>
+                <h3 style={{ color: darkMode ? "#F9FAFB" : "#111827", fontWeight: 700, fontSize: "16px", margin: 0 }}>Edit Statistics</h3>
                 <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "4px" }}>{active.length} active</p>
               </div>
               <button
@@ -845,11 +902,11 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginBottom: "20px" }}>
                 {WIDGETS.filter(w => active.includes(w.id)).map(w => (
-                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)" }}>
+                  <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: darkMode ? "linear-gradient(145deg, #0f0f18, #090909)" : "linear-gradient(145deg, #f9fafb, #f3f4f6)", borderRadius: "12px", border: `1px solid ${darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}` }}>
                     <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <p style={{ color: "#F9FAFB", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
-                      <p style={{ color: "#4B5563", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
+                      <p style={{ color: darkMode ? "#F9FAFB" : "#111827", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
+                      <p style={{ color: darkMode ? "#4B5563" : "#9CA3AF", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
                     </div>
                     <Toggle on={true} onChange={() => toggle(w.id)} />
                   </div>
@@ -864,11 +921,11 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
                   </p>
                   <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                     {WIDGETS.filter(w => !active.includes(w.id)).map(w => (
-                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: "linear-gradient(145deg, #0f0f18, #090909)", borderRadius: "12px", border: "1px solid rgba(255,255,255,0.06)", opacity: 0.7 }}>
+                      <div key={w.id} style={{ display: "flex", alignItems: "center", gap: "12px", padding: "12px 14px", background: darkMode ? "linear-gradient(145deg, #0f0f18, #090909)" : "linear-gradient(145deg, #f9fafb, #f3f4f6)", borderRadius: "12px", border: `1px solid ${darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.08)"}`, opacity: 0.7 }}>
                         <span style={{ fontSize: "20px", flexShrink: 0 }}>{w.icon}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: "#9CA3AF", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
-                          <p style={{ color: "#374151", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
+                          <p style={{ color: darkMode ? "#9CA3AF" : "#4B5563", fontSize: "13px", fontWeight: 600 }}>{w.name}</p>
+                          <p style={{ color: darkMode ? "#374151" : "#D1D5DB", fontSize: "11px", marginTop: "1px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{w.desc}</p>
                         </div>
                         <Toggle on={false} onChange={() => toggle(w.id)} />
                       </div>
@@ -881,5 +938,6 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         </div>
       )}
     </div>
+    </ThemeCtx.Provider>
   );
 }
