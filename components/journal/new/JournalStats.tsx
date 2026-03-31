@@ -1147,7 +1147,7 @@ function JournalStatsInner({ entries, journal }: Props) {
 
       {/* Empty State */}
       {filtered.length === 0 && (
-        <div style={{ ...card, textAlign: "center", padding: "60px" }}>
+        <div style={{ background: T.bgCard, border: `1px solid ${T.border}`, borderRadius: "16px", boxShadow: T.shadow, textAlign: "center", padding: "60px" }}>
           <p style={{ fontSize: "36px", marginBottom: "12px" }}>📊</p>
           <p style={{ color: "#4B5563", fontSize: "14px" }}>No trades in this period — try a wider range or log some trades first.</p>
         </div>
