@@ -141,7 +141,7 @@ function SmallDonut({ pct, color, label, value }: { pct: number; color: string; 
           <span style={{ fontSize: "13px", fontWeight: 800, color: T.text1, lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{value}</span>
         </div>
       </div>
-      <div style={{ fontSize: "10px", fontWeight: 600, color: T.text3, textAlign: "center", lineHeight: 1.3 }}>
+      <div style={{ fontSize: "10px", fontWeight: 600, color: T.text3, textAlign: "center", lineHeight: 1.3, width: "96px", overflowWrap: "break-word" }}>
         {label.split("\n").map((ln, i) => <React.Fragment key={i}>{i > 0 && <br />}{ln}</React.Fragment>)}
       </div>
     </div>
