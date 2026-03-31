@@ -61,11 +61,8 @@ body {
 }
 
 @keyframes rotate3d {
-  0%   { transform: scaleX(1); }
-  25%  { transform: scaleX(0); }
-  50%  { transform: scaleX(-1); }
-  75%  { transform: scaleX(0); }
-  100% { transform: scaleX(1); }
+  from { transform: rotateY(0deg); }
+  to   { transform: rotateY(360deg); }
 }
 
 .logo-rotate {
