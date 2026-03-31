@@ -707,10 +707,7 @@ const WIDGETS: WidgetDef[] = [
 const STORAGE_KEY = "tj-widget-prefs-v3";
 
 // ─── Layout System ────────────────────────────────────────────────────────────
-// 4 modes – all use content-first fr-sizing + row-packing with a maxPerRow cap.
-// Shared LAYOUT_KEY keeps both WidgetGrid and StatsView in sync.
 type Layout = "auto" | "wide" | "compact" | "full";
-const LAYOUT_KEY = "tj-layout-v2";
 // ─── Toggle Switch ────────────────────────────────────────────────────────────
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {

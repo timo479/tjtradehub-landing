@@ -189,8 +189,9 @@ function WKpi({ entries }: { entries: Trade[] }) {
     const avg = pnls.length ? total / pnls.length : 0;
     let peak = 0, cum = 0, dd = 0;
     for (const p of [...entries]
+      .filter(e => pnlNum(e) !== null)
       .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())
-      .map(e => pnlNum(e) ?? 0)) {
+      .map(e => pnlNum(e)!)) {
       cum += p; if (cum > peak) peak = cum; if (peak - cum > dd) dd = peak - cum;
     }
     let streak = 0; let sType: "win" | "loss" | null = null;
