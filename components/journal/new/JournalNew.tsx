@@ -106,6 +106,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   const [syncing, setSyncing] = useState(false);
   const [syncMsg, setSyncMsg] = useState<string | null>(null);
   const [metaConnected, setMetaConnected] = useState<boolean>(false);
+  const [metaAccountBalance, setMetaAccountBalance] = useState<number | null>(null);
   const [showInbox, setShowInbox] = useState(false);
   const [bulkJournalId, setBulkJournalId] = useState("");
   const [bulkMoving, setBulkMoving] = useState(false);
@@ -138,7 +139,16 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   useEffect(() => {
     fetch("/api/meta/settings")
       .then(r => r.ok ? r.json() : null)
-      .then(d => setMetaConnected(!!(d?.connected && d?.state === "DEPLOYED" && d?.connectionStatus === "CONNECTED")))
+      .then(d => {
+        const connected = !!(d?.connected && d?.state === "DEPLOYED" && d?.connectionStatus === "CONNECTED");
+        setMetaConnected(connected);
+        if (connected) {
+          fetch("/api/meta/account")
+            .then(r => r.ok ? r.json() : null)
+            .then(info => { if (info?.balance != null) setMetaAccountBalance(info.balance); })
+            .catch(() => {});
+        }
+      })
       .catch(() => setMetaConnected(false));
   }, []);
 
@@ -533,7 +543,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Statistics View */}
       {view === "stats" && activeJournal && (
-        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} />
+        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} metaAccountBalance={metaAccountBalance} />
       )}
 
       {/* Trades View */}

@@ -21,7 +21,7 @@ interface Trade {
 }
 interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; time_from: string; time_to: string; }
 
-interface Props { entries: Trade[]; journal: Journal; isDark?: boolean; }
+interface Props { entries: Trade[]; journal: Journal; isDark?: boolean; metaAccountBalance?: number | null; }
 
 type Period = "today" | "week" | "month" | "year" | "all" | "custom";
 
@@ -1003,7 +1003,7 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-function JournalStatsInner({ entries, journal }: Props) {
+function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
   const T = useT();
   const [period, setPeriod] = useState<Period>("all");
   const [customFrom, setCustomFrom] = useState("");
@@ -1082,9 +1082,15 @@ function JournalStatsInner({ entries, journal }: Props) {
     if (!hasPnl) return null;
     const totalPnl = entries.reduce((sum, t) => sum + (pnlNum(t) ?? 0), 0);
     const starting = journal.starting_balance ?? null;
-    const current = starting !== null ? starting + totalPnl : null;
-    return { starting, totalPnl, current };
-  }, [entries, journal.starting_balance]);
+    if (starting !== null) {
+      return { starting, totalPnl, current: starting + totalPnl };
+    }
+    // MT5-Journal: use live broker balance as current, derive starting
+    if (metaAccountBalance != null) {
+      return { starting: metaAccountBalance - totalPnl, totalPnl, current: metaAccountBalance };
+    }
+    return { starting: null, totalPnl, current: null };
+  }, [entries, journal.starting_balance, metaAccountBalance]);
 
   const disciplineScore = useMemo(() => {
     if (!filtered.length) return null;
@@ -1308,10 +1314,10 @@ function JournalStatsInner({ entries, journal }: Props) {
   );
 }
 
-export default function JournalStats({ entries, journal, isDark = true }: Props) {
+export default function JournalStats({ entries, journal, isDark = true, metaAccountBalance }: Props) {
   return (
     <ThemeCtx.Provider value={isDark}>
-      <JournalStatsInner entries={entries} journal={journal} />
+      <JournalStatsInner entries={entries} journal={journal} metaAccountBalance={metaAccountBalance} />
     </ThemeCtx.Provider>
   );
 }
