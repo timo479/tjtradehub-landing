@@ -1078,11 +1078,12 @@ function JournalStatsInner({ entries, journal }: Props) {
   const activeWidgets = useMemo(() => WIDGETS.filter(w => active.includes(w.id)), [active]);
 
   const balanceInfo = useMemo(() => {
-    if (journal.starting_balance == null) return null;
-    const sorted = [...entries].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
-    const totalPnl = sorted.reduce((sum, t) => sum + (pnlNum(t) ?? 0), 0);
-    const current = journal.starting_balance + totalPnl;
-    return { starting: journal.starting_balance, totalPnl, current };
+    const hasPnl = entries.some(e => pnlNum(e) !== null);
+    if (!hasPnl) return null;
+    const totalPnl = entries.reduce((sum, t) => sum + (pnlNum(t) ?? 0), 0);
+    const starting = journal.starting_balance ?? null;
+    const current = starting !== null ? starting + totalPnl : null;
+    return { starting, totalPnl, current };
   }, [entries, journal.starting_balance]);
 
   const disciplineScore = useMemo(() => {
@@ -1163,18 +1164,22 @@ function JournalStatsInner({ entries, journal }: Props) {
             {/* Right: balance metrics */}
             {balanceInfo && (
               <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Starting</div>
-                  <div style={{ color: "#9CA3AF", fontSize: "16px", fontWeight: 600 }}>${balanceInfo.starting.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                </div>
+                {balanceInfo.starting !== null && (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Starting</div>
+                    <div style={{ color: "#9CA3AF", fontSize: "16px", fontWeight: 600 }}>${balanceInfo.starting.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                )}
                 <div style={{ textAlign: "center" }}>
                   <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Total P&L</div>
                   <div style={{ color: balanceInfo.totalPnl >= 0 ? "#22c55e" : "#ef4444", fontSize: "16px", fontWeight: 600 }}>{fmt(balanceInfo.totalPnl)}</div>
                 </div>
-                <div style={{ textAlign: "center" }}>
-                  <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Current Balance</div>
-                  <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg, #fff, #e2d9fb, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>${balanceInfo.current.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-                </div>
+                {balanceInfo.current !== null && (
+                  <div style={{ textAlign: "center" }}>
+                    <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Current Balance</div>
+                    <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg, #fff, #e2d9fb, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>${balanceInfo.current.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                  </div>
+                )}
               </div>
             )}
 
