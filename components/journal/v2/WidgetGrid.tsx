@@ -248,7 +248,7 @@ function WWeekday({ entries }: { entries: Entry[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = 8 + i * bSlot + (bSlot - bW) / 2;
         const h = b.avg >= 0 ? (Math.abs(b.avg) / maxAbs) * maxPos : (Math.abs(b.avg) / maxAbs) * maxNeg;
@@ -257,9 +257,9 @@ function WWeekday({ entries }: { entries: Entry[] }) {
           <g key={b.label}>
             {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.avg >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="3" fill={color} opacity="0.8" />}
-            {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="13" fontWeight="600">{b.avg.toFixed(1)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="13">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="11">{b.count}x</text>}
+            {b.count > 0 && <text x={x + bW / 2} y={b.avg >= 0 ? mid - h - 3 : mid + h + 13} textAnchor="middle" fill={color} fontSize="17" fontWeight="700">{b.avg.toFixed(1)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="17">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill="#6B7280" fontSize="14">{b.count}x</text>}
           </g>
         );
       })}
@@ -296,7 +296,7 @@ function WMonthly({ entries }: { entries: Entry[] }) {
   const mid = PT + BAR * 0.72, maxPos = BAR * 0.72 - 2, maxNeg = BAR * 0.28 - 2;
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} width="100%" style={{ display: "block" }}>
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height="170" style={{ display: "block" }}>
       {bars.map((b, i) => {
         const x = 14 + i * bSlot;
         const h = b.total >= 0 ? (Math.abs(b.total) / maxAbs) * maxPos : (Math.abs(b.total) / maxAbs) * maxNeg;
@@ -305,9 +305,9 @@ function WMonthly({ entries }: { entries: Entry[] }) {
           <g key={b.key}>
             {i === 0 && <line x1={0} y1={mid} x2={W} y2={mid} stroke="#1F2937" strokeWidth="1" />}
             {b.count > 0 && <rect x={x} y={b.total >= 0 ? mid - h : mid} width={bW} height={Math.max(h, 2)} rx="4" fill={color} opacity="0.75" />}
-            {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 11} textAnchor="middle" fill={color} fontSize="12" fontWeight="600">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
-            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="13">{b.label}</text>
-            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 30} textAnchor="middle" fill="#374151" fontSize="11">{b.count}tr</text>}
+            {b.count > 0 && <text x={x + bW / 2} y={b.total >= 0 ? mid - h - 3 : mid + h + 13} textAnchor="middle" fill={color} fontSize="16" fontWeight="700">{b.total >= 0 ? "+" : ""}{b.total.toFixed(0)}</text>}
+            <text x={x + bW / 2} y={PT + BAR + 16} textAnchor="middle" fill="#6B7280" fontSize="17">{b.label}</text>
+            {b.count > 0 && <text x={x + bW / 2} y={PT + BAR + 32} textAnchor="middle" fill="#6B7280" fontSize="14">{b.count}tr</text>}
           </g>
         );
       })}
@@ -564,7 +564,7 @@ function WFrequency({ entries }: { entries: Entry[] }) {
         <span style={{ fontSize: "28px", fontWeight: 800, background: "linear-gradient(135deg,#c4b5fd,#8B5CF6)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text", fontVariantNumeric: "tabular-nums" }}>{totalTrades}</span>
         <span style={{ fontSize: "12px", color: "#64748b", marginLeft: "4px" }}>total</span>
       </div>
-      <svg viewBox={`0 0 ${W} ${H + PB}`} width="100%" style={{ display: "block" }}>
+      <svg viewBox={`0 0 ${W} ${H + PB}`} preserveAspectRatio="none" width="100%" height="128" style={{ display: "block" }}>
         {bars.map((b, i) => {
           const x = 10 + i * bSlot;
           const h = (b.count / maxCount) * (H - 12);
@@ -573,10 +573,10 @@ function WFrequency({ entries }: { entries: Entry[] }) {
               {b.count > 0 && (
                 <>
                   <rect x={x} y={H - h} width={bW} height={h} rx="4" fill="#8B5CF6" opacity="0.7" />
-                  <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="13" fontWeight="600">{b.count}</text>
+                  <text x={x + bW / 2} y={H - h - 4} textAnchor="middle" fill="#8B5CF6" fontSize="16" fontWeight="700">{b.count}</text>
                 </>
               )}
-              <text x={x + bW / 2} y={H + 16} textAnchor="middle" fill="#6B7280" fontSize="11">{b.label}</text>
+              <text x={x + bW / 2} y={H + 18} textAnchor="middle" fill="#6B7280" fontSize="14">{b.label}</text>
             </g>
           );
         })}
