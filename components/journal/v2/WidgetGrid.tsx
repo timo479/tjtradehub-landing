@@ -353,7 +353,7 @@ function WCalendar({ entries }: { entries: Entry[] }) {
 
   return (
     <div>
-      <div style={{ display: "flex", gap: "20px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "20px", flexWrap: "nowrap" }}>
         {months.map(({ y, m }) => {
           const first = new Date(y, m, 1);
           const days = new Date(y, m + 1, 0).getDate();
@@ -361,7 +361,7 @@ function WCalendar({ entries }: { entries: Entry[] }) {
           const cells = [...Array(off).fill(null), ...Array.from({ length: days }, (_, i) => i + 1)];
           while (cells.length % 7 !== 0) cells.push(null);
           return (
-            <div key={`${y}-${m}`} style={{ flex: "1 1 200px", minWidth: "180px" }}>
+            <div key={`${y}-${m}`} style={{ flex: "1 1 0", minWidth: 0 }}>
               <p style={{ color: "#9CA3AF", fontSize: "12px", fontWeight: 600, marginBottom: "8px" }}>{MONTHS_SHORT[m]} {y}</p>
               <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: "2px", marginBottom: "2px" }}>
                 {DAYS_SHORT.map(d => <div key={d} style={{ textAlign: "center", color: "#374151", fontSize: "9px" }}>{d}</div>)}
@@ -521,7 +521,7 @@ function WProfitFactor({ entries }: { entries: Entry[] }) {
   ];
 
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "12px" }}>
       {metrics.map(x => (
         <div key={x.label}>
           <p style={{ color: "#64748b", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "4px" }}>{x.label}</p>
