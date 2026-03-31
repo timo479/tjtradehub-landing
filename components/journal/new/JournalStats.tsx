@@ -753,6 +753,7 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
     pct !== null && pct >= 70 ? "#22c55e" : pct !== null && pct >= 40 ? "#F59E0B" : "#ef4444";
 
   const toLabel = (text: string): string => {
+    if (text.includes("\n")) return text;
     if (text.length <= 12) return text;
     const mid = text.lastIndexOf(" ", 11);
     if (mid > 3) return `${text.slice(0, mid)}\n${text.slice(mid + 1, mid + 13)}${text.length > mid + 14 ? "…" : ""}`;
