@@ -965,14 +965,21 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         </GlowCard>
       )}
 
-      {/* Row 1: KPI (1fr) | Equity Curve (2fr) | Win/Loss (1fr) */}
+      {/* Row 1: Discipline Score (full width) */}
+      {entries.length > 0 && active.includes("discipline-score") && (
+        <GlowCard style={{ padding: W_PAD }}>
+          {(() => { const w = WIDGETS.find(x => x.id === "discipline-score")!; return <><SectionTitle color={w.dotColor}>{w.name}</SectionTitle><WDisciplineScore entries={entries} /></>; })()}
+        </GlowCard>
+      )}
+
+      {/* Row 2: KPI (1fr) | Equity Curve (2fr) | Win/Loss (1fr) */}
       {entries.length > 0 && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
           {cell("kpi-cards")}{cell("equity-curve")}{cell("winloss")}
         </div>
       )}
 
-      {/* Row 2: Weekday | Monthly P&L | Frequency */}
+      {/* Row 3: Weekday | Monthly P&L | Frequency */}
       {entries.length > 0 && (
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
           {cell("weekday")}{cell("monthly-pnl")}{cell("frequency")}
@@ -992,13 +999,6 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           </div>
         );
       })()}
-
-      {/* Row 4: Discipline Score (full width) */}
-      {entries.length > 0 && active.includes("discipline-score") && (
-        <GlowCard style={{ padding: W_PAD }}>
-          {(() => { const w = WIDGETS.find(x => x.id === "discipline-score")!; return <><SectionTitle color={w.dotColor}>{w.name}</SectionTitle><WDisciplineScore entries={entries} /></>; })()}
-        </GlowCard>
-      )}
 
       {/* Row 5: Histogram (full width, only if active) */}
       {entries.length > 0 && active.includes("histogram") && (
