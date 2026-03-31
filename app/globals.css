@@ -107,6 +107,43 @@ html.journal-light body::before {
   display: none;
 }
 
+/* ── Dashboard Light Mode ──────────────────────────────── */
+html.dashboard-light body::before {
+  display: none;
+}
+html.dashboard-light body {
+  background: #f3f4f6 !important;
+}
+/* Page background */
+html.dashboard-light .min-h-screen {
+  background: #f3f4f6 !important;
+}
+/* Header */
+html.dashboard-light header {
+  background-color: rgba(255,255,255,0.9) !important;
+  border-bottom-color: rgba(0,0,0,0.08) !important;
+}
+html.dashboard-light header a[href="/"] span {
+  color: #111827 !important;
+}
+html.dashboard-light header nav a {
+  color: #6B7280 !important;
+}
+html.dashboard-light header nav a[href="/dashboard"] {
+  color: #8B5CF6 !important;
+}
+/* Welcome text */
+html.dashboard-light h2 {
+  color: #111827 !important;
+}
+html.dashboard-light main > div > p {
+  color: #6B7280 !important;
+}
+/* Trial banner */
+html.dashboard-light .trial-banner {
+  background-color: rgba(139,92,246,0.08) !important;
+}
+
 /* ── React Grid Layout ─────────────────────────────────── */
 .react-grid-item.react-grid-placeholder {
   background: rgba(139,92,246,0.12) !important;

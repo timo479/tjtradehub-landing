@@ -771,15 +771,24 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) setActive(JSON.parse(saved));
       const theme = localStorage.getItem(THEME_KEY);
-      if (theme !== null) setDarkMode(theme === "dark");
+      if (theme === "light") {
+        setDarkMode(false);
+        document.documentElement.classList.add("dashboard-light");
+      }
     } catch { /* ignore */ }
     setLoaded(true);
+    return () => { document.documentElement.classList.remove("dashboard-light"); };
   }, []);
 
   const toggleTheme = () => {
     setDarkMode(d => {
       const next = !d;
       localStorage.setItem(THEME_KEY, next ? "dark" : "light");
+      if (next) {
+        document.documentElement.classList.remove("dashboard-light");
+      } else {
+        document.documentElement.classList.add("dashboard-light");
+      }
       return next;
     });
   };
