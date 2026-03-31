@@ -68,6 +68,7 @@ body {
 .logo-rotate {
   animation: rotate3d 10s linear infinite;
   will-change: transform;
+  transform-style: preserve-3d;
 }
 
 .logo-layer {
