@@ -822,122 +822,6 @@ function WEmotionsBreaks({ entries }: { entries: Trade[] }) {
   );
 }
 
-// ─── NEW Widget: Discipline Score ─────────────────────────────────────────────
-function WDisciplineScore({ entries, journal }: { entries: Trade[]; journal: Journal }) {
-  const T = useT();
-
-  const score = useMemo(() => {
-    if (!entries.length) return null;
-
-    // Factor 1: Rules (40%)
-    let rulesScore: number | null = null;
-    {
-      let tot = 0, followed = 0;
-      entries.forEach(e => {
-        getRulesArr(e).forEach(r => { tot++; if (r.compliant) followed++; });
-      });
-      if (tot > 0) rulesScore = (followed / tot) * 100;
-    }
-
-    // Factor 2: Trading Hours (20%)
-    let hoursScore: number | null = null;
-    if (journal.time_from && journal.time_to) {
-      let tot = 0, inSession = 0;
-      entries.forEach(e => {
-        const d = new Date(e.trade_date);
-        const hhmm = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
-        tot++;
-        if (hhmm >= journal.time_from && hhmm <= journal.time_to) inSession++;
-      });
-      if (tot > 0) hoursScore = (inSession / tot) * 100;
-    }
-
-    // Factor 3: Emotional Control (20%)
-    const NEG = new Set(["FOMO", "Greedy", "Fearful", "Nervous", "Frustrated"]);
-    let emoScore: number | null = null;
-    {
-      let tot = 0, controlled = 0;
-      entries.forEach(e => {
-        const emos = getEmotions(e);
-        if (emos.length > 0) { tot++; if (!emos.some(em => NEG.has(em))) controlled++; }
-      });
-      if (tot > 0) emoScore = (controlled / tot) * 100;
-    }
-
-    // Factor 4: Risk Discipline (20%)
-    let riskScore: number | null = null;
-    if (journal.risk_per_trade) {
-      let tot = 0, disciplined = 0;
-      let balance = journal.starting_balance ?? 0;
-      for (const e of [...entries].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())) {
-        const riskAmt = getField(e, "Risk Amount");
-        const p = pnlNum(e);
-        if (riskAmt && balance > 0) {
-          const riskNum = parseFloat(riskAmt);
-          if (!isNaN(riskNum) && riskNum > 0) {
-            tot++;
-            if ((riskNum / balance) * 100 <= journal.risk_per_trade + 0.5) disciplined++;
-          }
-        }
-        if (p !== null) balance += p;
-      }
-      if (tot > 0) riskScore = (disciplined / tot) * 100;
-    }
-
-    // Weighted average of available factors only
-    const factors = [
-      { s: rulesScore, w: 40 }, { s: hoursScore, w: 20 },
-      { s: emoScore,   w: 20 }, { s: riskScore,  w: 20 },
-    ];
-    const avail = factors.filter(f => f.s !== null);
-    if (!avail.length) return null;
-    const totalW = avail.reduce((acc, f) => acc + f.w, 0);
-    const total = Math.round(avail.reduce((acc, f) => acc + f.s! * f.w, 0) / totalW);
-    return { total, rulesScore, hoursScore, emoScore, riskScore };
-  }, [entries, journal]);
-
-  if (!score) return <NoData text="Log trades with rules, emotions or risk to see your discipline score." />;
-
-  const { total, rulesScore, hoursScore, emoScore, riskScore } = score;
-  const scoreColor = total >= 75 ? "#22c55e" : total >= 50 ? "#F59E0B" : "#ef4444";
-  const scoreLabel = total >= 75 ? "Good" : total >= 50 ? "Fair" : "Poor";
-
-  const R = 50, CX = 65, CY = 65, sw = 14, size = 130;
-  const circ = 2 * Math.PI * R;
-
-  const factorColor = (s: number | null) =>
-    s === null ? T.empty : s >= 75 ? "#22c55e" : s >= 50 ? "#F59E0B" : "#ef4444";
-
-  return (
-    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
-      <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-        <div style={{ position: "relative", width: size, height: size, flexShrink: 0 }}>
-          <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-            <circle cx={CX} cy={CY} r={R} fill="none" stroke={T.svgDonut} strokeWidth={sw} />
-            <circle cx={CX} cy={CY} r={R} fill="none" stroke={scoreColor} strokeWidth={sw}
-              strokeDasharray={`${(circ * total / 100).toFixed(2)} ${(circ * (1 - total / 100)).toFixed(2)}`}
-              transform={`rotate(-90 ${CX} ${CY})`} strokeLinecap="round" />
-          </svg>
-          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ color: scoreColor, fontWeight: 800, fontSize: "26px", lineHeight: 1 }}>{total}</span>
-            <span style={{ color: T.text3, fontSize: "10px", marginTop: "2px" }}>/100</span>
-          </div>
-        </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-          <span style={{ color: scoreColor, fontWeight: 700, fontSize: "20px", lineHeight: 1 }}>{scoreLabel}</span>
-          <span style={{ color: T.text3, fontSize: "12px" }}>Overall Discipline</span>
-        </div>
-      </div>
-      <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
-        <SmallDonut pct={rulesScore ?? 0} color={factorColor(rulesScore)} label="Rules" value={rulesScore !== null ? `${Math.round(rulesScore)}%` : "—"} />
-        <SmallDonut pct={hoursScore ?? 0} color={factorColor(hoursScore)} label="Hours" value={hoursScore !== null ? `${Math.round(hoursScore)}%` : "—"} />
-        <SmallDonut pct={emoScore ?? 0} color={factorColor(emoScore)} label="Emotions" value={emoScore !== null ? `${Math.round(emoScore)}%` : "—"} />
-        <SmallDonut pct={riskScore ?? 0} color={factorColor(riskScore)} label="Risk" value={riskScore !== null ? `${Math.round(riskScore)}%` : "—"} />
-      </div>
-    </div>
-  );
-}
-
 // ─── NEW Widget: Trade Analysis Table ─────────────────────────────────────────
 function WTradeAnalysis({ entries, journal }: { entries: Trade[]; journal: Journal }) {
   const T = useT();
@@ -1082,9 +966,8 @@ const WIDGETS: WidgetDef[] = [
   { id: "setup-perf",      name: "Setup Performance",      desc: "Win Rate and P&L broken down by setup type",          icon: "🔬", dotColor: "#60a5fa", size: "full", defaultOn: true,  component: ({ entries }) => <WSetupPerf entries={entries} /> },
   { id: "risk-discipline", name: "Risk Discipline",        desc: "How consistently you stick to your risk % rule",      icon: "🎯", dotColor: "#f59e0b", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRiskDiscipline entries={entries} journal={journal} /> },
   { id: "rule-compliance", name: "Rule Compliance",        desc: "How often each journal rule was followed",            icon: "✅", dotColor: "#22c55e", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WRuleCompliance entries={entries} journal={journal} /> },
-  { id: "emotions-breaks",   name: "Emotions at Rule Breaks", desc: "Emotions that appear most when you break rules",                       icon: "🧠", dotColor: "#ef4444", size: "half", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
-  { id: "discipline-score", name: "Discipline Score",        desc: "Overall discipline across rules, hours, emotions & risk (0–100)",  icon: "🏆", dotColor: "#A78BFA", size: "half", defaultOn: true,  component: ({ entries, journal }) => <WDisciplineScore entries={entries} journal={journal} /> },
-  { id: "profit-factor",    name: "Profit Factor",           desc: "Profit Factor, Gross Profit/Loss, Expectancy",                      icon: "⚡", dotColor: "#8B5CF6", size: "half", defaultOn: true,  component: ({ entries }) => <WProfitFactor entries={entries} /> },
+  { id: "emotions-breaks", name: "Emotions at Rule Breaks",desc: "Emotions that appear most when you break rules",      icon: "🧠", dotColor: "#ef4444", size: "half", defaultOn: true,  component: ({ entries }) => <WEmotionsBreaks entries={entries} /> },
+  { id: "profit-factor",   name: "Profit Factor",          desc: "Profit Factor, Gross Profit/Loss, Expectancy",        icon: "⚡", dotColor: "#8B5CF6", size: "half", defaultOn: true,  component: ({ entries }) => <WProfitFactor entries={entries} /> },
   { id: "trade-analysis",  name: "Trade Analysis",         desc: "Full trade list with setup, emotions, rule status",   icon: "📋", dotColor: "#94a3b8", size: "full", defaultOn: true,  component: ({ entries, journal }) => <WTradeAnalysis entries={entries} journal={journal} /> },
   { id: "histogram",       name: "P&L Distribution",       desc: "Frequency distribution of trade results by bucket",   icon: "📉", dotColor: "#ef4444", size: "half", defaultOn: false, component: ({ entries }) => <WHistogram entries={entries} /> },
 ];
@@ -1104,10 +987,9 @@ const DEFAULT_LAYOUT: Layout[] = [
   { i: "risk-discipline", x: 9,  y: 11, w: 3,  h: 6,  minW: 1, minH: 2 },
   { i: "rule-compliance", x: 0,  y: 17, w: 6,  h: 6,  minW: 2, minH: 2 },
   { i: "emotions-breaks", x: 6,  y: 17, w: 6,  h: 5,  minW: 2, minH: 2 },
-  { i: "discipline-score", x: 0,  y: 23, w: 4,  h: 8,  minW: 2, minH: 4 },
-  { i: "profit-factor",   x: 4,  y: 23, w: 4,  h: 5,  minW: 1, minH: 2 },
-  { i: "histogram",       x: 8,  y: 23, w: 4,  h: 5,  minW: 2, minH: 2 },
-  { i: "trade-analysis",  x: 0,  y: 31, w: 12, h: 9,  minW: 2, minH: 2 },
+  { i: "profit-factor",   x: 0,  y: 23, w: 4,  h: 5,  minW: 1, minH: 2 },
+  { i: "histogram",       x: 4,  y: 23, w: 8,  h: 5,  minW: 2, minH: 2 },
+  { i: "trade-analysis",  x: 0,  y: 28, w: 12, h: 9,  minW: 2, minH: 2 },
 ];
 
 function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
@@ -1202,6 +1084,24 @@ function JournalStatsInner({ entries, journal }: Props) {
     return { starting: journal.starting_balance, totalPnl, current };
   }, [entries, journal.starting_balance]);
 
+  const disciplineScore = useMemo(() => {
+    if (!filtered.length) return null;
+    let rulesScore: number | null = null;
+    { let tot = 0, fol = 0; filtered.forEach(e => { getRulesArr(e).forEach(r => { tot++; if (r.compliant) fol++; }); }); if (tot > 0) rulesScore = (fol / tot) * 100; }
+    let hoursScore: number | null = null;
+    if (journal.time_from && journal.time_to) { let tot = 0, ins = 0; filtered.forEach(e => { const d = new Date(e.trade_date); const hh = `${String(d.getUTCHours()).padStart(2,"0")}:${String(d.getUTCMinutes()).padStart(2,"0")}`; tot++; if (hh >= journal.time_from && hh <= journal.time_to) ins++; }); if (tot > 0) hoursScore = (ins / tot) * 100; }
+    const NEG = new Set(["FOMO","Greedy","Fearful","Nervous","Frustrated"]);
+    let emoScore: number | null = null;
+    { let tot = 0, ctrl = 0; filtered.forEach(e => { const em = getEmotions(e); if (em.length > 0) { tot++; if (!em.some(x => NEG.has(x))) ctrl++; } }); if (tot > 0) emoScore = (ctrl / tot) * 100; }
+    let riskScore: number | null = null;
+    if (journal.risk_per_trade) { let tot = 0, ok = 0, bal = journal.starting_balance ?? 0; for (const e of [...filtered].sort((a,b)=>new Date(a.trade_date).getTime()-new Date(b.trade_date).getTime())) { const ra = getField(e,"Risk Amount"); const p = pnlNum(e); if (ra && bal > 0) { const n = parseFloat(ra); if (!isNaN(n) && n > 0) { tot++; if ((n/bal)*100 <= journal.risk_per_trade+0.5) ok++; } } if (p !== null) bal += p; } if (tot > 0) riskScore = (ok / tot) * 100; }
+    const factors = [{ s: rulesScore, w: 40 }, { s: hoursScore, w: 20 }, { s: emoScore, w: 20 }, { s: riskScore, w: 20 }];
+    const avail = factors.filter(f => f.s !== null);
+    if (!avail.length) return null;
+    const tw = avail.reduce((a, f) => a + f.w, 0);
+    return Math.round(avail.reduce((a, f) => a + f.s! * f.w, 0) / tw);
+  }, [filtered, journal]);
+
   const activeLayout = useMemo(() => layout.filter(item => active.includes(item.i)), [layout, active]);
 
   if (!loaded) return null;
@@ -1211,29 +1111,75 @@ function JournalStatsInner({ entries, journal }: Props) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-      {/* Account Balance Card */}
-      {balanceInfo && (
-        <div style={{ background: "linear-gradient(145deg, #0d0818, #060606)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "16px", boxShadow: "0 1px 0 rgba(139,92,246,0.08), inset 0 -1px 0 rgba(139,92,246,0.05)", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <span style={{ fontSize: "18px" }}>💰</span>
-            <span style={{ color: "#6B7280", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Account Balance</span>
+      {/* Account Balance + Discipline Score Card */}
+      {(balanceInfo || disciplineScore !== null) && (() => {
+        const sz = 96, R = 34, cx = 48, cy = 48, sw = 9;
+        const circ = 2 * Math.PI * R;
+        const track = circ * 0.75;
+        const filled = disciplineScore !== null ? track * (disciplineScore / 100) : 0;
+        const dsLabel = disciplineScore !== null ? (disciplineScore >= 75 ? "Good" : disciplineScore >= 50 ? "Fair" : "Poor") : null;
+        return (
+          <div style={{ background: "linear-gradient(145deg, #0d0818, #060606)", border: "1px solid rgba(139,92,246,0.2)", borderRadius: "16px", boxShadow: "0 1px 0 rgba(139,92,246,0.08), inset 0 -1px 0 rgba(139,92,246,0.05)", padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
+
+            {/* Left: label */}
+            {balanceInfo && (
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "18px" }}>💰</span>
+                <span style={{ color: "#6B7280", fontSize: "13px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Account Balance</span>
+              </div>
+            )}
+
+            {/* Center: Discipline Score Arc */}
+            {disciplineScore !== null && (
+              <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "4px", flex: balanceInfo ? "0 0 auto" : "1" }}>
+                <div style={{ position: "relative", width: sz, height: sz }}>
+                  <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+                    <defs>
+                      <linearGradient id="ds-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#8B5CF6" />
+                        <stop offset="100%" stopColor="#06b6d4" />
+                      </linearGradient>
+                    </defs>
+                    <circle cx={cx} cy={cy} r={R} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={sw}
+                      strokeDasharray={`${track.toFixed(2)} ${(circ - track).toFixed(2)}`}
+                      transform={`rotate(135 ${cx} ${cy})`} strokeLinecap="round" />
+                    <circle cx={cx} cy={cy} r={R} fill="none" stroke="url(#ds-grad)" strokeWidth={sw}
+                      strokeDasharray={`${filled.toFixed(2)} ${(circ - filled).toFixed(2)}`}
+                      transform={`rotate(135 ${cx} ${cy})`} strokeLinecap="round" />
+                  </svg>
+                  <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontWeight: 800, fontSize: "24px", lineHeight: 1, background: "linear-gradient(135deg, #c4b5fd, #06b6d4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{disciplineScore}</span>
+                    <span style={{ color: "#4B5563", fontSize: "9px", marginTop: "1px" }}>/100</span>
+                  </div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ color: "#6B7280", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>Discipline Score</div>
+                  {dsLabel && <div style={{ color: disciplineScore >= 75 ? "#22c55e" : disciplineScore >= 50 ? "#F59E0B" : "#ef4444", fontSize: "11px", fontWeight: 600, marginTop: "2px" }}>{dsLabel}</div>}
+                </div>
+              </div>
+            )}
+
+            {/* Right: balance metrics */}
+            {balanceInfo && (
+              <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Starting</div>
+                  <div style={{ color: "#9CA3AF", fontSize: "16px", fontWeight: 600 }}>${balanceInfo.starting.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Total P&L</div>
+                  <div style={{ color: balanceInfo.totalPnl >= 0 ? "#22c55e" : "#ef4444", fontSize: "16px", fontWeight: 600 }}>{fmt(balanceInfo.totalPnl)}</div>
+                </div>
+                <div style={{ textAlign: "center" }}>
+                  <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Current Balance</div>
+                  <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg, #fff, #e2d9fb, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>${balanceInfo.current.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
+                </div>
+              </div>
+            )}
+
           </div>
-          <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Starting</div>
-              <div style={{ color: "#9CA3AF", fontSize: "16px", fontWeight: 600 }}>${balanceInfo.starting.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Total P&L</div>
-              <div style={{ color: balanceInfo.totalPnl >= 0 ? "#22c55e" : "#ef4444", fontSize: "16px", fontWeight: 600 }}>{fmt(balanceInfo.totalPnl)}</div>
-            </div>
-            <div style={{ textAlign: "center" }}>
-              <div style={{ color: "#6B7280", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "4px" }}>Current Balance</div>
-              <div style={{ fontSize: "22px", fontWeight: 800, letterSpacing: "-0.02em", background: "linear-gradient(135deg, #fff, #e2d9fb, #a78bfa)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>${balanceInfo.current.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</div>
-            </div>
-          </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Period Filter Bar */}
       <div style={{ background: T.bgCard2, border: `1px solid ${T.border2}`, borderRadius: "12px", boxShadow: T.shadow, padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap" }}>
