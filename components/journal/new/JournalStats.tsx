@@ -722,7 +722,6 @@ function WRiskDiscipline({ entries, journal }: { entries: Trade[]; journal: Jour
 
 // ─── NEW Widget: Rule Compliance ──────────────────────────────────────────────
 function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Journal }) {
-  const T = useT();
   const bars = useMemo(() => {
     return journal.rules.map(rule => {
       let followed = 0, total = 0;
@@ -745,43 +744,34 @@ function WRuleCompliance({ entries, journal }: { entries: Trade[]; journal: Jour
       total++;
       if (hhmm >= journal.time_from && hhmm <= journal.time_to) followed++;
     });
-    return { text: `⏰ Trading Hours (${journal.time_from}–${journal.time_to})`, followed, total, pct: total ? Math.round((followed / total) * 100) : null };
+    return { text: `Trading\nHours`, followed, total, pct: total ? Math.round((followed / total) * 100) : null };
   }, [entries, journal]);
 
   if (!bars.length && !timeBar) return <NoData text="No rule compliance data yet. Log trades with rules to see this." />;
 
-  const renderBar = (b: { text: string; followed: number; total: number; pct: number | null }) => (
-    <div key={b.text}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-        <span style={{ color: "#D1D5DB", fontSize: "13px", flex: 1, paddingRight: "16px" }}>{b.text}</span>
-        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
-          <span style={{ color: T.text3, fontSize: "11px" }}>{b.followed}/{b.total}</span>
-          <span style={{ color: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444", fontWeight: 700, fontSize: "13px", minWidth: "38px", textAlign: "right" }}>
-            {b.pct !== null ? `${b.pct}%` : "—"}
-          </span>
-        </div>
-      </div>
-      <div style={{ height: "6px", backgroundColor: T.prgTrack, borderRadius: "3px", overflow: "hidden" }}>
-        <div style={{ height: "100%", width: `${b.pct ?? 0}%`, borderRadius: "3px", transition: "width 0.4s ease", backgroundColor: b.pct !== null && b.pct >= 70 ? "#22c55e" : b.pct !== null && b.pct >= 40 ? "#F59E0B" : "#ef4444" }} />
-      </div>
-    </div>
-  );
+  const dotColor = (pct: number | null) =>
+    pct !== null && pct >= 70 ? "#22c55e" : pct !== null && pct >= 40 ? "#F59E0B" : "#ef4444";
+
+  const toLabel = (text: string): string => {
+    if (text.length <= 12) return text;
+    const mid = text.lastIndexOf(" ", 11);
+    if (mid > 3) return `${text.slice(0, mid)}\n${text.slice(mid + 1, mid + 13)}${text.length > mid + 14 ? "…" : ""}`;
+    return text.slice(0, 11) + "…";
+  };
+
+  const allBars = [...(timeBar ? [timeBar] : []), ...bars];
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-      {timeBar && (
-        <>
-          <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>Session Rule</p>
-          {renderBar(timeBar)}
-          {bars.length > 0 && <div style={{ borderTop: `1px solid ${T.border2}`, paddingTop: "4px" }} />}
-        </>
-      )}
-      {bars.length > 0 && (
-        <>
-          {timeBar && <p style={{ color: "#4B5563", fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", margin: 0 }}>My Rules</p>}
-          {bars.map(b => renderBar(b))}
-        </>
-      )}
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "20px", justifyContent: "center", alignItems: "flex-start", padding: "8px 0" }}>
+      {allBars.map(b => (
+        <SmallDonut
+          key={b.text}
+          pct={b.pct ?? 0}
+          color={dotColor(b.pct)}
+          label={toLabel(b.text)}
+          value={b.pct !== null ? `${b.pct}%` : "—"}
+        />
+      ))}
     </div>
   );
 }
