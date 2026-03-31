@@ -623,6 +623,125 @@ function WFrequency({ entries }: { entries: Entry[] }) {
   );
 }
 
+// ─── Widget: Discipline Score ─────────────────────────────────────────────────
+
+function WDisciplineScore({ entries }: { entries: Entry[] }) {
+  const T = useT();
+
+  const score = useMemo(() => {
+    if (!entries.length) return null;
+
+    // Rules compliance
+    let rulesScore: number | null = null;
+    { let tot = 0, fol = 0;
+      entries.forEach(e => {
+        const raw = getField(e, "rules followed", "rules");
+        if (!raw) return;
+        try {
+          const arr: { compliant: boolean }[] = JSON.parse(raw);
+          arr.forEach(r => { tot++; if (r.compliant) fol++; });
+        } catch { /* skip */ }
+      });
+      if (tot > 0) rulesScore = (fol / tot) * 100;
+    }
+
+    // Emotion control
+    const NEG = new Set(["FOMO", "Greedy", "Fearful", "Nervous", "Frustrated"]);
+    let emoScore: number | null = null;
+    { let tot = 0, ctrl = 0;
+      entries.forEach(e => {
+        const raw = getField(e, "emotions");
+        if (!raw) return;
+        try {
+          const arr: string[] = JSON.parse(raw);
+          if (arr.length > 0) { tot++; if (!arr.some(x => NEG.has(x))) ctrl++; }
+        } catch { /* skip */ }
+      });
+      if (tot > 0) emoScore = (ctrl / tot) * 100;
+    }
+
+    const factors = [{ s: rulesScore, w: 60 }, { s: emoScore, w: 40 }];
+    const avail = factors.filter(f => f.s !== null);
+    if (!avail.length) return null;
+    const tw = avail.reduce((a, f) => a + f.w, 0);
+    return Math.round(avail.reduce((a, f) => a + f.s! * f.w, 0) / tw);
+  }, [entries]);
+
+  if (score === null) return <NoData text="Log trades with Rules or Emotions to see Discipline Score" />;
+
+  const sz = 120, R = 42, cx = 60, cy = 60, sw = 10;
+  const circ = 2 * Math.PI * R;
+  const track = circ * 0.75;
+  const filled = track * (score / 100);
+  const label = score >= 75 ? "Good" : score >= 50 ? "Fair" : "Poor";
+  const labelColor = score >= 75 ? "#22c55e" : score >= 50 ? "#F59E0B" : "#ef4444";
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "32px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+        <div style={{ position: "relative", width: sz, height: sz }}>
+          <svg width={sz} height={sz} viewBox={`0 0 ${sz} ${sz}`}>
+            <defs>
+              <linearGradient id="ds-grad-db" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#8B5CF6" />
+                <stop offset="100%" stopColor="#06b6d4" />
+              </linearGradient>
+            </defs>
+            <circle cx={cx} cy={cy} r={R} fill="none" stroke={T.border} strokeWidth={sw}
+              strokeDasharray={`${track.toFixed(2)} ${(circ - track).toFixed(2)}`}
+              transform={`rotate(135 ${cx} ${cy})`} strokeLinecap="round" />
+            <circle cx={cx} cy={cy} r={R} fill="none" stroke="url(#ds-grad-db)" strokeWidth={sw}
+              strokeDasharray={`${filled.toFixed(2)} ${(circ - filled).toFixed(2)}`}
+              transform={`rotate(135 ${cx} ${cy})`} strokeLinecap="round" />
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontWeight: 800, fontSize: "28px", lineHeight: 1, background: "linear-gradient(135deg, #c4b5fd, #06b6d4)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>{score}</span>
+            <span style={{ color: T.text4, fontSize: "10px", marginTop: "1px" }}>/100</span>
+          </div>
+        </div>
+        <div style={{ textAlign: "center" }}>
+          <div style={{ color: T.text3, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em" }}>Discipline Score</div>
+          <div style={{ color: labelColor, fontSize: "12px", fontWeight: 600, marginTop: "2px" }}>{label}</div>
+        </div>
+      </div>
+
+      <div style={{ display: "flex", flexDirection: "column", gap: "12px", flex: 1 }}>
+        {(() => {
+          const raw_rules = entries.reduce((acc, e) => {
+            const raw = getField(e, "rules followed", "rules");
+            if (!raw) return acc;
+            try { const arr: { compliant: boolean }[] = JSON.parse(raw); arr.forEach(r => { acc.tot++; if (r.compliant) acc.fol++; }); } catch { /* skip */ }
+            return acc;
+          }, { tot: 0, fol: 0 });
+          const raw_emo = entries.reduce((acc, e) => {
+            const raw = getField(e, "emotions");
+            if (!raw) return acc;
+            try { const arr: string[] = JSON.parse(raw); if (arr.length > 0) { acc.tot++; if (!arr.some(x => ["FOMO","Greedy","Fearful","Nervous","Frustrated"].includes(x))) acc.ctrl++; } } catch { /* skip */ }
+            return acc;
+          }, { tot: 0, ctrl: 0 });
+
+          const bars = [
+            { label: "Rules Followed", pct: raw_rules.tot > 0 ? Math.round((raw_rules.fol / raw_rules.tot) * 100) : null, color: "#22c55e" },
+            { label: "Emotion Control", pct: raw_emo.tot > 0 ? Math.round((raw_emo.ctrl / raw_emo.tot) * 100) : null, color: "#8B5CF6" },
+          ];
+
+          return bars.map(b => (
+            <div key={b.label}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "5px" }}>
+                <span style={{ color: T.text2, fontSize: "12px" }}>{b.label}</span>
+                <span style={{ color: b.pct !== null ? b.color : T.text4, fontSize: "12px", fontWeight: 600 }}>{b.pct !== null ? `${b.pct}%` : "—"}</span>
+              </div>
+              <div style={{ height: "6px", backgroundColor: T.barTrack, borderRadius: "3px", overflow: "hidden" }}>
+                {b.pct !== null && <div style={{ height: "100%", width: `${b.pct}%`, backgroundColor: b.color, borderRadius: "3px", opacity: 0.8 }} />}
+              </div>
+            </div>
+          ));
+        })()}
+      </div>
+    </div>
+  );
+}
+
 // kept for reference but no longer used in fixed-row layout
 /* eslint-disable @typescript-eslint/no-unused-vars */
 type ColSpan = 4 | 6 | 8 | 12;
@@ -710,9 +829,10 @@ const hasContent = (id: string, entries: Entry[]): boolean => {
     case "calendar":      return true;
     case "instrument":    return entries.some(e => getField(e, "instrument", "markt", "market", "asset class") !== null);
     case "profit-factor": return pnls.some(v => v > 0) && pnls.some(v => v < 0);
-    case "histogram":     return pnls.length >= 3;
-    case "frequency":     return true;
-    default:              return true;
+    case "histogram":         return pnls.length >= 3;
+    case "frequency":         return true;
+    case "discipline-score":  return entries.length >= 1;
+    default:                  return true;
   }
 };
 
@@ -738,6 +858,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", dotColor: "#f59e0b",  defaultOn: true,  component: WCalendar },
   { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", dotColor: "#60a5fa",  defaultOn: true,  component: WInstrument },
   { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", dotColor: "#8B5CF6",  defaultOn: true,  component: WProfitFactor },
+  { id: "discipline-score", name: "Discipline Score",   desc: "Rules compliance and emotion control score",         icon: "🎯", dotColor: "#06b6d4",  defaultOn: true,  component: WDisciplineScore },
   { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", dotColor: "#ef4444",  defaultOn: false, component: WHistogram },
 ];
 
@@ -872,7 +993,14 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
         );
       })()}
 
-      {/* Row 4: Histogram (full width, only if active) */}
+      {/* Row 4: Discipline Score (full width) */}
+      {entries.length > 0 && active.includes("discipline-score") && (
+        <GlowCard style={{ padding: W_PAD }}>
+          {(() => { const w = WIDGETS.find(x => x.id === "discipline-score")!; return <><SectionTitle color={w.dotColor}>{w.name}</SectionTitle><WDisciplineScore entries={entries} /></>; })()}
+        </GlowCard>
+      )}
+
+      {/* Row 5: Histogram (full width, only if active) */}
       {entries.length > 0 && active.includes("histogram") && (
         <GlowCard style={{ padding: W_PAD }}>
           {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle color={w.dotColor}>{w.name}</SectionTitle><WHistogram entries={entries} /></>; })()}
