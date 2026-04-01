@@ -226,6 +226,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     setShowForm(false);
     setPassword("");
     setConn({ connected: true, state: "DEPLOYING", login, server, platform });
+    startPolling();
   };
 
   const redeploy = async () => {
@@ -241,6 +242,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     }
     setConn(prev => prev ? { ...prev, state: "DEPLOYING" } : prev);
     setDeploying(false);
+    startPolling();
   };
 
   const disconnect = async () => {
