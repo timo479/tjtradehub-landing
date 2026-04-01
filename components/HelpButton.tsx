@@ -129,7 +129,7 @@ export default function HelpButton() {
             style={{
               width: "420px", maxWidth: "95vw", backgroundColor: "#111827",
               borderLeft: "1px solid #1F2937", display: "flex", flexDirection: "column",
-              height: "100%", boxShadow: "-8px 0 32px rgba(0,0,0,0.6)",
+              height: "100vh", boxShadow: "-8px 0 32px rgba(0,0,0,0.6)",
             }}
             onClick={e => e.stopPropagation()}
           >
@@ -148,7 +148,7 @@ export default function HelpButton() {
             </div>
 
             {/* FAQ List */}
-            <div style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}>
+            <div style={{ flex: 1, overflowY: "auto", minHeight: 0, padding: "16px 20px" }}>
               {FAQS.map(cat => (
                 <div key={cat.cat} style={{ marginBottom: "24px" }}>
                   {/* Category Label */}
