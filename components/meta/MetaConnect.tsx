@@ -176,13 +176,11 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
       const res = await fetch("/api/meta/settings");
       if (!res.ok) return;
       const data: ConnectionInfo = await res.json();
-      setConn(data);
       if (data.state === "DEPLOYED" && data.connectionStatus === "CONNECTED") {
         clearInterval(pollTimer.current!);
         pollTimer.current = null;
-        await loadAccount();
-        await doSync(true);
       }
+      setConn(data);
     }, POLL_MS);
   }, [doSync, loadAccount]);
 
@@ -228,7 +226,6 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     setShowForm(false);
     setPassword("");
     setConn({ connected: true, state: "DEPLOYING", login, server, platform });
-    startPolling();
   };
 
   const redeploy = async () => {
@@ -244,7 +241,6 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     }
     setConn(prev => prev ? { ...prev, state: "DEPLOYING" } : prev);
     setDeploying(false);
-    startPolling();
   };
 
   const disconnect = async () => {
