@@ -162,14 +162,14 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
   // Poll until DEPLOYED + CONNECTED (broker handshake complete)
   const startPolling = useCallback(() => {
     let attempts = 0;
-    const MAX_POLL_ATTEMPTS = 24; // 24 × 5s = 2 minutes
+    const MAX_POLL_ATTEMPTS = 60; // 60 × 5s = 5 minutes
     if (pollTimer.current) clearInterval(pollTimer.current);
     pollTimer.current = setInterval(async () => {
       attempts++;
       if (attempts > MAX_POLL_ATTEMPTS) {
         clearInterval(pollTimer.current!);
         pollTimer.current = null;
-        setError("Connection timed out after 2 minutes. Please try again.");
+        setError("Connection timed out after 5 minutes. Please try again.");
         setDeploying(false);
         return;
       }
@@ -366,7 +366,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
             <div style={{ width: "14px", height: "14px", border: "2px solid #8B5CF6", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
             <p style={{ color: "#A78BFA", fontSize: "12px" }}>
               {conn.state === "DEPLOYING"
-                ? "Establishing connection – this takes about 1–2 minutes..."
+                ? "Establishing connection – this takes about 2–5 minutes..."
                 : "Connected to server – waiting for broker handshake..."}
             </p>
           </div>
