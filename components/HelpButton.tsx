@@ -51,6 +51,10 @@ const FAQS = [
         q: "Why does my MT5 connection show as offline?",
         a: "MT5 accounts are automatically put to sleep after 60 minutes of inactivity to save costs. They reconnect automatically when you visit the journal page. If it stays offline, try clicking 'Reconnect' in the MetaConnect widget.",
       },
+      {
+        q: "Why does the MT5 connection sometimes take several minutes?",
+        a: "When connecting for the first time, our cloud infrastructure needs to provision a dedicated MetaTrader terminal for your broker, download the broker's server configuration, and establish a stable connection. This can take 2–5 minutes depending on your broker. Reconnecting an existing account is much faster (usually under 60 seconds) since the terminal is already configured. If the connection times out, simply try again — the setup continues in the background.",
+      },
     ],
   },
   {
