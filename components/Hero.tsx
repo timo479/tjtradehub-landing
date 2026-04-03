@@ -30,23 +30,22 @@ export default function Hero() {
                 className="w-1.5 h-1.5 rounded-full"
                 style={{ backgroundColor: "#8B5CF6" }}
               />
-              Advanced Trading Journal
+              Trading Journal
             </div>
 
             <h1
               className="text-4xl md:text-5xl lg:text-[56px] font-bold leading-tight tracking-tight"
               style={{ color: "#F9FAFB" }}
             >
-              Structured Trading Requires{" "}
-              <span style={{ color: "#8B5CF6" }}>Structured Tracking.</span>
+              You Know The Rules.{" "}
+              <span style={{ color: "#8B5CF6" }}>You Break Them Anyway.</span>
             </h1>
 
             <p
               className="text-lg leading-relaxed"
               style={{ color: "#9CA3AF", maxWidth: "480px" }}
             >
-              TJ TradeHub is the trading journal built around your rules — not just
-              your P&L. Track discipline. Measure execution. Know why you win or lose.
+              TJ TradeHub shows you exactly when you broke your rules, why your losses happened, and what your execution actually looks like — trade by trade.
             </p>
 
             {/* Custom Journal Highlight */}
@@ -61,11 +60,10 @@ export default function Hero() {
               <span style={{ fontSize: "20px", lineHeight: 1, marginTop: "2px" }}>✦</span>
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#E2D9FF" }}>
-                  Your Journal. Your Rules.
+                  It&apos;s not your strategy. It&apos;s your execution.
                 </p>
                 <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
-                  Start with a ready-made template or build your own from scratch — custom fields,
-                  custom sections, custom metrics. Designed around your system, not someone else&apos;s.
+                  Most losing trades aren&apos;t random. They follow a pattern. You just can&apos;t see it without the data. TJ TradeHub tracks your rules, your emotions, your setups — trade by trade.
                 </p>
               </div>
             </div>
@@ -80,7 +78,7 @@ export default function Hero() {
                   borderRadius: "14px",
                 }}
               >
-                Start Free Trial – 7 Days
+              Start Free – 7 Days
               </a>
               <a
                 href="#features"
@@ -91,7 +89,7 @@ export default function Hero() {
                   borderRadius: "14px",
                 }}
               >
-                See How It Works
+              See How It Works
               </a>
             </div>
 

@@ -1,7 +1,7 @@
 const features = [
   {
-    title: "Strategy Rule Tracking",
-    desc: "Build your trading strategies with custom rules. Check off which rules you followed on every trade and track your adherence over time — automatically.",
+    title: "Rule Tracking",
+    desc: "Define your rules once. Check them off on every trade. Over time, you'll see exactly which rules you break — and when. Most traders are shocked by what the data shows.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -16,7 +16,7 @@ const features = [
   },
   {
     title: "Setup Tagging",
-    desc: "Log the setup type for every trade to build a structured trade history. Identify which setups appear most in your journal and spot patterns across your entries.",
+    desc: "Tag every trade with the setup type. See which setups actually work, which ones you overtrade, and where you're taking trades you shouldn't.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -31,7 +31,7 @@ const features = [
   },
   {
     title: "Discipline Score",
-    desc: "Get a quantified score for how consistently you follow your rules. Track your discipline over time and see how it relates to your trading results.",
+    desc: "A single number that tells you how consistently you're executing your system. It goes up when you follow your rules. It drops when you don't. No hiding from it.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -46,7 +46,7 @@ const features = [
   },
   {
     title: "Execution Analytics",
-    desc: "Deep-dive into entry timing, position sizing consistency, stop placement, and target management. Know exactly where your execution breaks down.",
+    desc: "Entry timing, position sizing, stop placement — broken down trade by trade. See exactly where your execution falls apart and what it's costing you.",
     comingSoon: true,
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
@@ -79,22 +79,22 @@ export default function DifferentiatorSection() {
             className="text-sm font-semibold uppercase tracking-widest mb-4"
             style={{ color: "#8B5CF6" }}
           >
-            Why TJ TradeHub
+            How It Works
           </p>
           <h2
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Your Strategy Is Yours.{" "}
+            Stop Guessing.{" "}
             <span style={{ color: "#8B5CF6" }}>
-              Your Rules Should Be Measurable.
+              Start Measuring.
             </span>
           </h2>
           <p
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            Core tools built for what system-based traders actually need.
+            The tools that actually change how you trade.
           </p>
         </div>
 

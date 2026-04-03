@@ -11,8 +11,8 @@ const problems = [
         />
       </svg>
     ),
-    title: "Rule Deviations Go Unnoticed",
-    desc: "You break your own rules but standard journals don't flag it. Patterns of deviation compound silently over time.",
+    title: "You Break Rules. Nothing Flags It.",
+    desc: "You took the trade. You knew it wasn't a clean setup. Your journal recorded it like any other entry. No warning. No pattern. No accountability.",
   },
   {
     icon: (
@@ -26,8 +26,8 @@ const problems = [
         />
       </svg>
     ),
-    title: "Emotional Overrides",
-    desc: "Fear and greed decisions look identical to disciplined trades in basic journals. You can't fix what you can't see.",
+    title: "Emotions Look Like Decisions.",
+    desc: "FOMO, frustration, boredom — they all look like regular trades in a basic journal. You can't fix what you can't see.",
   },
   {
     icon: (
@@ -41,8 +41,8 @@ const problems = [
         />
       </svg>
     ),
-    title: "Risk Inconsistency",
-    desc: "Position sizing drifts. Stop distances vary. Without tracking, you can't see whether your risk is actually consistent.",
+    title: "The Same Mistake. Every Week.",
+    desc: "You overtrade on slow days. You move your stop. You know it. But without data, you can't see how often — or how much it's actually costing you.",
   },
   {
     icon: (
@@ -56,8 +56,8 @@ const problems = [
         />
       </svg>
     ),
-    title: "Execution Errors",
-    desc: "Wrong entries, missed exits, bad timing — these show up in your P&L but traditional journals can't tell you why they happen.",
+    title: "You Don't Know Why You Really Lost.",
+    desc: "Was it the setup? The entry? The size? Or did you just break your own rules again? Most journals can't tell you. This one can.",
   },
 ];
 
@@ -77,23 +77,22 @@ export default function ProblemSection() {
             className="text-sm font-semibold uppercase tracking-widest mb-4"
             style={{ color: "#8B5CF6" }}
           >
-            The Problem
+            The Real Problem
           </p>
           <h2
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Most Journals Track Profit.{" "}
+            Your P&amp;L Lies To You.{" "}
             <span style={{ color: "#8B5CF6" }}>
-              They Don&apos;t Track Execution.
+              It Hides The Real Issue.
             </span>
           </h2>
           <p
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            Your P&amp;L tells you what happened. TJ TradeHub tells you why —
-            and how to trade better next time.
+            The numbers show you what happened. Not that you knew it was a bad trade before you took it.
           </p>
         </div>
 
