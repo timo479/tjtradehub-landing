@@ -1,20 +1,20 @@
 export default function MT5Section() {
   const bullets = [
     {
-      title: "Zero Manual Entry",
-      desc: "Every trade from your MT4 or MT5 account syncs automatically — no copy-paste, no CSV imports.",
+      title: "No Manual Entry",
+      desc: "Trades sync the moment you close a position. No copy-paste, no CSV, no forgetting to log something.",
     },
     {
-      title: "Automatic Sync",
-      desc: "Trades sync automatically to your journal — no manual entry, no CSV, no copy-paste.",
+      title: "Review, Don't Re-enter",
+      desc: "Each imported trade lands in your inbox. Add your setup, emotions, and rule checks in seconds — then it's done.",
     },
     {
-      title: "Full Trade History",
-      desc: "Import your existing trade history and keep every future trade enriched with execution metadata.",
+      title: "Full History, Zero Gaps",
+      desc: "Import your entire trade history on day one. Start with real data, not an empty journal.",
     },
     {
-      title: "Always Up to Date",
-      desc: "Your journal stays current without any effort from your side — just trade, we handle the rest.",
+      title: "Always Current",
+      desc: "Your journal reflects your actual account. No lag, no missing trades, no excuses to skip reviewing.",
     },
   ];
 
@@ -42,15 +42,14 @@ export default function MT5Section() {
                 className="text-3xl md:text-4xl font-bold leading-tight"
                 style={{ color: "#F9FAFB" }}
               >
-                Fully Automated MT4 & MT5 Trade Sync.
+                Connect Once.{" "}
+                <span style={{ color: "#8B5CF6" }}>Never Enter a Trade Manually Again.</span>
               </h2>
               <p
                 className="mt-4 text-lg leading-relaxed"
                 style={{ color: "#9CA3AF" }}
               >
-                Connect your MetaTrader 4 or 5 account once. TJ TradeHub handles
-                the rest — automatically pulling every trade into your journal
-                with full execution detail.
+                Link your MT4 or MT5 account and every trade lands in your journal automatically. All you do is review it — and decide if you followed your rules.
               </p>
             </div>
 

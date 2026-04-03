@@ -33,21 +33,20 @@ export default function FinalCTA() {
           className="text-sm font-semibold uppercase tracking-widest mb-6"
           style={{ color: "#8B5CF6" }}
         >
-          Get Started Today
+          Start Today
         </p>
         <h2
           className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-6"
           style={{ color: "#F9FAFB" }}
         >
-          Stop Tracking Outcomes.{" "}
-          <span style={{ color: "#8B5CF6" }}>Start Tracking Discipline.</span>
+          The Pattern Is Already There.{" "}
+          <span style={{ color: "#8B5CF6" }}>You Just Can&apos;t See It Yet.</span>
         </h2>
         <p
           className="text-lg leading-relaxed mb-10"
           style={{ color: "#9CA3AF", maxWidth: "560px", margin: "0 auto 40px" }}
         >
-          Join traders who are serious about execution. 7 days free.
-          No credit card required. Cancel anytime.
+          7 days free. No credit card. See exactly where your discipline breaks — before it costs you another week of losses.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">

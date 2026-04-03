@@ -41,7 +41,8 @@ export default function TestimonialsSection() {
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Built for Traders Who Take Execution Seriously.
+            Real Traders.{" "}
+            <span style={{ color: "#8B5CF6" }}>Real Accountability.</span>
           </h2>
         </div>
 

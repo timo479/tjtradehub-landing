@@ -1,9 +1,9 @@
 export default function BuiltForSection() {
   const traits = [
-    "You trade a defined system with specific entry and exit rules",
-    "You want to know if your losses come from bad setups or bad execution",
-    "You're serious about separating discipline from randomness in your results",
-    "You've outgrown basic journals that only track P&L",
+    "You have a defined system with entry rules, exit rules, and risk limits",
+    "You want to know if your losses come from bad setups — or bad execution",
+    "You're tired of guessing why you underperform and ready to see the actual data",
+    "You've outgrown basic P&L journals and need real accountability",
   ];
 
   return (
@@ -25,15 +25,14 @@ export default function BuiltForSection() {
           className="text-3xl md:text-4xl font-bold leading-tight mb-6"
           style={{ color: "#F9FAFB" }}
         >
-          Designed for Advanced &amp;{" "}
-          <span style={{ color: "#8B5CF6" }}>System-Based Traders.</span>
+          Not for Casual Traders.{" "}
+          <span style={{ color: "#8B5CF6" }}>Built for Traders Who Have a System — and Keep Breaking It.</span>
         </h2>
         <p
           className="text-lg leading-relaxed mb-12"
           style={{ color: "#9CA3AF" }}
         >
-          TJ TradeHub is not for casual traders. It&apos;s built for traders who
-          have a system — and want to measure whether they execute it consistently.
+          If you have rules but don&apos;t track whether you follow them, your journal is just a diary. TJ TradeHub turns it into a mirror.
         </p>
 
         {/* Traits List */}
@@ -69,11 +68,10 @@ export default function BuiltForSection() {
           }}
         >
           <p className="font-semibold text-base mb-2" style={{ color: "#F9FAFB" }}>
-            If you have rules, you should be able to measure them.
+            Most traders don&apos;t have a strategy problem. They have a discipline problem.
           </p>
           <p className="text-sm" style={{ color: "#9CA3AF" }}>
-            Many traders underperform not because their strategy is flawed — but
-            because inconsistent execution hides what&apos;s actually working. TJ TradeHub helps you see the difference.
+            TJ TradeHub shows you exactly where your execution breaks down — and how much it&apos;s costing you.
           </p>
         </div>
       </div>

@@ -32,13 +32,14 @@ export default function PricingSection() {
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Simple Pricing. No Surprises.
+            One Plan.{" "}
+            <span style={{ color: "#8B5CF6" }}>Everything Included.</span>
           </h2>
           <p
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            One plan. Everything included. Cancel anytime.
+            7 days free. Then $29/month — locked in forever at the Founder rate.
           </p>
         </div>
 
