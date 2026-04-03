@@ -14,8 +14,9 @@ export function hasActiveSubscription(
 ): boolean {
   if (user.subscription_status === "lifetime") return true;
   if (user.subscription_status === "active") {
-    if (!user.current_period_end) return false;
-    return new Date(user.current_period_end) > new Date();
+    if (!user.current_period_end) return true;
+    // 24h grace period for webhook delays
+    return new Date(user.current_period_end).getTime() + 24 * 60 * 60 * 1000 > Date.now();
   }
   return false;
 }

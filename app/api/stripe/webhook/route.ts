@@ -47,9 +47,11 @@ export async function POST(request: NextRequest) {
   const getCustomerId = (obj: unknown) =>
     (obj as { customer?: string })?.customer ?? null;
 
-  // In Stripe API 2026+, current_period_end moved to items.data[0]
+  // In Stripe API 2024-09-30.acacia+, current_period_end moved to items.data[0]
   const getPeriodEnd = (sub: Stripe.Subscription): string | null => {
-    const ts = sub.items?.data?.[0]?.current_period_end;
+    const ts =
+      sub.items?.data?.[0]?.current_period_end ??
+      (sub as unknown as { current_period_end?: number }).current_period_end;
     if (!ts) return null;
     return new Date(ts * 1000).toISOString();
   };
