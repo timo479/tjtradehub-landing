@@ -219,6 +219,19 @@ export default function ChartsVideoSection() {
             ))}
           </div>
 
+          {/* TradingView attribution */}
+          <p className="text-center text-xs mt-6" style={{ color: "#4B5563" }}>
+            Charts powered by{" "}
+            <a
+              href="https://www.tradingview.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ color: "#6B7280", textDecoration: "underline", textUnderlineOffset: "2px" }}
+            >
+              TradingView
+            </a>
+          </p>
+
           {/* CTA */}
           <div className="text-center mt-12">
             <a
