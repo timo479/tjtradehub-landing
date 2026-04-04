@@ -41,7 +41,21 @@ export default function ScreenshotCarousel() {
   const [fading, setFading] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [lightbox, setLightbox] = useState(false);
+  const [isZooming, setIsZooming] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const zoomRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const isAnalytics = slides[active].id === "analytics";
+
+  const handleZoomMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!zoomRef.current) return;
+    const rect = zoomRef.current.getBoundingClientRect();
+    setZoomPos({
+      x: ((e.clientX - rect.left) / rect.width) * 100,
+      y: ((e.clientY - rect.top) / rect.height) * 100,
+    });
+  };
 
   const goTo = (index: number) => {
     if (index === active) return;
@@ -195,15 +209,23 @@ export default function ScreenshotCarousel() {
 
             {/* Screenshot */}
             <div style={{ position: "relative" }}>
-              <div style={{
-                maxHeight: "580px",
-                overflowY: "auto",
-                backgroundColor: "#050507",
-                opacity: fading ? 0 : 1,
-                transition: "opacity 0.18s ease",
-                scrollbarWidth: "thin",
-                scrollbarColor: "rgba(139,92,246,0.4) transparent",
-              }}>
+              <div
+                ref={isAnalytics ? zoomRef : undefined}
+                onMouseMove={isAnalytics ? handleZoomMove : undefined}
+                onMouseEnter={isAnalytics ? () => setIsZooming(true) : undefined}
+                onMouseLeave={isAnalytics ? () => { setIsZooming(false); setZoomPos({ x: 50, y: 50 }); } : undefined}
+                style={{
+                  maxHeight: "580px",
+                  overflowY: isAnalytics ? "hidden" : "auto",
+                  overflow: isAnalytics ? "hidden" : undefined,
+                  backgroundColor: "#050507",
+                  opacity: fading ? 0 : 1,
+                  transition: "opacity 0.18s ease",
+                  scrollbarWidth: "thin",
+                  scrollbarColor: "rgba(139,92,246,0.4) transparent",
+                  cursor: isAnalytics ? (isZooming ? "crosshair" : "zoom-in") : "default",
+                }}
+              >
                 <Image
                   key={slides[active].id}
                   src={slides[active].image}
@@ -212,10 +234,41 @@ export default function ScreenshotCarousel() {
                   height={1800}
                   sizes="(max-width: 768px) 100vw, 1080px"
                   unoptimized
-                  style={{ width: "100%", height: "auto", display: "block" }}
+                  style={{
+                    width: "100%",
+                    height: "auto",
+                    display: "block",
+                    transform: isAnalytics && isZooming ? "scale(2.2)" : "scale(1)",
+                    transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                    transition: isZooming ? "transform 0.15s ease, transform-origin 0s" : "transform 0.3s ease",
+                    willChange: "transform",
+                  }}
                   priority={active === 0}
                 />
               </div>
+              {/* Zoom hint badge – only for analytics */}
+              {isAnalytics && !isZooming && (
+                <div style={{
+                  position: "absolute", top: "14px", right: "14px",
+                  display: "flex", alignItems: "center", gap: "6px",
+                  padding: "5px 10px", borderRadius: "8px",
+                  backgroundColor: "rgba(10,10,15,0.75)",
+                  border: "1px solid rgba(139,92,246,0.3)",
+                  backdropFilter: "blur(8px)",
+                  pointerEvents: "none",
+                  opacity: fading ? 0 : 1,
+                  transition: "opacity 0.2s ease",
+                }}>
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none">
+                    <circle cx="11" cy="11" r="7" stroke="#A78BFA" strokeWidth="2"/>
+                    <path d="M16.5 16.5L21 21" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M11 8v6M8 11h6" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round"/>
+                  </svg>
+                  <span style={{ color: "#C4B5FD", fontSize: "11px", fontWeight: 600, letterSpacing: "0.03em" }}>
+                    Hover to explore
+                  </span>
+                </div>
+              )}
               {/* Fade out bottom – for tall/scrollable images */}
               <div style={{
                 position: "absolute", bottom: 0, left: 0, right: 0,
