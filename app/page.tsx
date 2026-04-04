@@ -57,8 +57,8 @@ export default function Home() {
       <Header />
       <main>
         <Hero />
-        <ScreenshotCarousel />
         <EarlyAccessBanner />
+        <ScreenshotCarousel />
         <MT5Section />
         <ChartsVideoSection />
         <CalculatorsSection />
