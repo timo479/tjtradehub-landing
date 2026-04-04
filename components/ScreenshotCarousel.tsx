@@ -7,7 +7,7 @@ const slides = [
     id: "dashboard",
     label: "Dashboard",
     description: "Performance overview — stats, equity curve, MT5 sync and more at a glance",
-    image: "/screenshots/ss-dashboard.png",
+    image: "/screenshots/ss-dashboard-v2.png",
   },
   {
     id: "journal",
