@@ -211,6 +211,7 @@ export default function ScreenshotCarousel() {
                   width={1080}
                   height={1800}
                   sizes="(max-width: 768px) 100vw, 1080px"
+                  quality={90}
                   style={{ width: "100%", height: "auto", display: "block" }}
                   priority={active === 0}
                 />
@@ -337,6 +338,7 @@ export default function ScreenshotCarousel() {
                 width={1080}
                 height={1800}
                 sizes="100vw"
+                quality={90}
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             </div>
