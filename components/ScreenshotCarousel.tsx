@@ -338,7 +338,7 @@ export default function ScreenshotCarousel() {
                 width={1080}
                 height={1800}
                 sizes="100vw"
-                quality={90}
+                unoptimized
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
             </div>
