@@ -33,7 +33,17 @@ export async function GET() {
       accountId: user.metaapi_account_id,
       lastSync: user.last_meta_sync,
     });
-  } catch {
+  } catch (err) {
+    // 404 = MetaAPI hat den Account gelöscht (z.B. Broker-Handshake fehlgeschlagen)
+    // → DB bereinigen, User kann sauber neu verbinden
+    if (err instanceof Error && err.message.startsWith("MetaAPI 404")) {
+      await db.from("users").update({
+        metaapi_account_id: null,
+        metaapi_account_state: null,
+      }).eq("id", session.user.id);
+      return NextResponse.json({ connected: false });
+    }
+    // Andere Fehler (Netzwerk, MetaAPI temporär down) → stale State zurückgeben
     return NextResponse.json({
       connected: true,
       state: user.metaapi_account_state ?? "UNKNOWN",
