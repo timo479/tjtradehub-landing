@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
-import { getAccountState, provisionAccount, removeAccount, updateAccount } from "@/lib/metaapi";
+import { getAccountState, provisionAccount, removeAccount, updateAccount, deployAccount, undeployAccount } from "@/lib/metaapi";
 import { encrypt } from "@/lib/encrypt";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -17,6 +17,8 @@ export async function GET() {
     .single();
 
   if (!user?.metaapi_account_id) return NextResponse.json({ connected: false });
+  // Slot reserviert aber bewusst getrennt (mt_login fehlt) → nicht auto-redeploy triggern
+  if (!user?.mt_login) return NextResponse.json({ connected: false });
 
   // Live-State von MetaAPI holen
   try {
@@ -86,6 +88,7 @@ export async function POST(req: NextRequest) {
     if (existing?.metaapi_account_id && existing.mt_platform === platform) {
       try {
         await updateAccount(existing.metaapi_account_id, { login, password, server, name: accountName });
+        await deployAccount(existing.metaapi_account_id);
         await db.from("users").update({
           mt_login: login,
           mt_password: encrypt(password),
@@ -140,12 +143,15 @@ export async function DELETE() {
     .from("users").select("metaapi_account_id").eq("id", session.user.id).single();
 
   if (user?.metaapi_account_id) {
-    await removeAccount(user.metaapi_account_id).catch(() => null);
+    // Nur undeploy (nicht löschen) → Slot bleibt, kein neuer Key beim Reconnect
+    await undeployAccount(user.metaapi_account_id).catch(() => null);
   }
 
   await db.from("users").update({
-    mt_login: null, mt_password: null, mt_server: null, mt_platform: null,
-    metaapi_account_id: null, metaapi_account_state: null, last_meta_sync: null,
+    mt_login: null, mt_password: null, mt_server: null,
+    // metaapi_account_id + mt_platform bleiben → Slot-Wiederverwendung beim Reconnect
+    metaapi_account_state: "UNDEPLOYED",
+    last_meta_sync: null,
   }).eq("id", session.user.id);
 
   return NextResponse.json({ success: true });
