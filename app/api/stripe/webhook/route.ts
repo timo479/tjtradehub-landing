@@ -3,6 +3,7 @@ import Stripe from "stripe";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { removeAccount } from "@/lib/metaapi";
+import { sendTikTokCompletePayment } from "@/lib/tiktok-events";
 
 async function cleanupMetaAccount(stripeCustomerId: string) {
   const { data: user } = await db
@@ -76,7 +77,19 @@ export async function POST(request: NextRequest) {
           current_period_end: getPeriodEnd(sub),
         })
         .eq("stripe_customer_id", customerId);
-      if (csErr) console.error("Webhook DB error (checkout.completed):", csErr, "customer:", customerId);
+      if (csErr) {
+        console.error("Webhook DB error (checkout.completed):", csErr, "customer:", customerId);
+        break;
+      }
+
+      await sendTikTokCompletePayment({
+        eventId: event.id,
+        eventTime: event.created,
+        email: session.customer_details?.email,
+        externalId: session.metadata?.userId ?? null,
+        value: session.amount_total != null ? session.amount_total / 100 : null,
+        currency: session.currency,
+      });
       break;
     }
 
