@@ -3,7 +3,7 @@ export default function BuiltForSection() {
     "You have a defined system with entry rules, exit rules, and risk limits",
     "You want to know if your losses come from bad setups — or bad execution",
     "You're tired of guessing why you underperform and ready to see the actual data",
-    "You've outgrown basic P&L journals and need real accountability",
+    "You've outgrown generic journals that can't tell a good trade from a rule break",
   ];
 
   return (
@@ -26,13 +26,13 @@ export default function BuiltForSection() {
           style={{ color: "#F9FAFB" }}
         >
           Not for Casual Traders.{" "}
-          <span style={{ color: "#8B5CF6" }}>Built for Traders Who Have a System — and Keep Breaking It.</span>
+          <span style={{ color: "#8B5CF6" }}>Built for Traders Who Are Done With Journals That Don&apos;t Fit Their System.</span>
         </h2>
         <p
           className="text-lg leading-relaxed mb-12"
           style={{ color: "#9CA3AF" }}
         >
-          If you have rules but don&apos;t track whether you follow them, your journal is just a diary. TJ TradeHub turns it into a mirror.
+          If your rules don&apos;t fit in a generic journal, build your own. TJ TradeHub gives you the structure — and holds you to it.
         </p>
 
         {/* Traits List */}
@@ -68,10 +68,10 @@ export default function BuiltForSection() {
           }}
         >
           <p className="font-semibold text-base mb-2" style={{ color: "#F9FAFB" }}>
-            Most traders don&apos;t have a strategy problem. They have a discipline problem.
+            Most traders don&apos;t have a strategy problem. They have a journal problem.
           </p>
           <p className="text-sm" style={{ color: "#9CA3AF" }}>
-            TJ TradeHub shows you exactly where your execution breaks down — and how much it&apos;s costing you.
+            Their journal doesn&apos;t know their rules. TJ TradeHub does — because you define them yourself.
           </p>
         </div>
       </div>

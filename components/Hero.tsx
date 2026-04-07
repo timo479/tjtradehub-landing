@@ -37,15 +37,15 @@ export default function Hero() {
               className="text-4xl md:text-5xl lg:text-[56px] font-bold leading-tight tracking-tight"
               style={{ color: "#F9FAFB" }}
             >
-              You Know The Rules.{" "}
-              <span style={{ color: "#8B5CF6" }}>You Break Them Anyway.</span>
+              Most Journals Are Built for Someone Else.{" "}
+              <span style={{ color: "#8B5CF6" }}>This One Is Built by You.</span>
             </h1>
 
             <p
               className="text-lg leading-relaxed"
               style={{ color: "#9CA3AF", maxWidth: "480px" }}
             >
-              TJ TradeHub shows you exactly when you broke your rules, why your losses happened, and what your execution actually looks like — trade by trade.
+              Define your own entry rules, setups, and risk criteria. TJ TradeHub tracks every trade against your system — not a generic template.
             </p>
 
             {/* Custom Journal Highlight */}
@@ -60,10 +60,10 @@ export default function Hero() {
               <span style={{ fontSize: "20px", lineHeight: 1, marginTop: "2px" }}>✦</span>
               <div>
                 <p className="text-sm font-semibold mb-1" style={{ color: "#E2D9FF" }}>
-                  It&apos;s not your strategy. It&apos;s your execution.
+                  It adapts to you. Not the other way around.
                 </p>
                 <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
-                  Most losing trades aren&apos;t random. They follow a pattern. You just can&apos;t see it without the data. TJ TradeHub tracks your rules, your emotions, your setups — trade by trade.
+                  Every trader has different rules, different setups, different mistakes. TJ TradeHub doesn&apos;t force you into a template — you build the journal that fits your system, and it shows you exactly where you deviate from it.
                 </p>
               </div>
             </div>

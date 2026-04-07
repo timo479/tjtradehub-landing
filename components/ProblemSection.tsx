@@ -12,7 +12,7 @@ const problems = [
       </svg>
     ),
     title: "You Break Rules. Nothing Flags It.",
-    desc: "You took the trade. You knew it wasn't a clean setup. Your journal recorded it like any other entry. No warning. No pattern. No accountability.",
+    desc: "You took the trade. You knew it didn't match your setup criteria. A generic journal recorded it like any other entry. No warning. No pattern. No accountability.",
   },
   {
     icon: (
@@ -57,7 +57,7 @@ const problems = [
       </svg>
     ),
     title: "You Don't Know Why You Really Lost.",
-    desc: "Was it the setup? The entry? The size? Or did you just break your own rules again? Most journals can't tell you. This one can.",
+    desc: "Was it the setup? The entry? The sizing? Or did you ignore your own rules again? Generic journals can't answer that. TJ TradeHub can — because you defined the rules yourself.",
   },
 ];
 
@@ -83,16 +83,16 @@ export default function ProblemSection() {
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Your P&amp;L Lies To You.{" "}
+            Your Journal Doesn&apos;t Know Your Rules.{" "}
             <span style={{ color: "#8B5CF6" }}>
-              It Hides The Real Issue.
+              So It Can&apos;t Tell You When You Break Them.
             </span>
           </h2>
           <p
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            The numbers show you what happened. Not that you knew it was a bad trade before you took it.
+            A generic journal records what happened. TJ TradeHub tracks whether it should have happened — based on your rules.
           </p>
         </div>
 

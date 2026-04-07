@@ -1,7 +1,7 @@
 const features = [
   {
     title: "Rule Tracking",
-    desc: "Define your rules once. Check them off on every trade. Over time, you'll see exactly which rules you break — and when. Most traders are shocked by what the data shows.",
+    desc: "You define the rules — entry criteria, risk limits, execution checklist. Whatever matters to your system. TJ TradeHub tracks every trade against them and shows exactly which rules you break, and how often.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -16,7 +16,7 @@ const features = [
   },
   {
     title: "Setup Tagging",
-    desc: "Tag every trade with the setup type. See which setups actually work, which ones you overtrade, and where you're taking trades you shouldn't.",
+    desc: "Create your own setup types — whatever you actually trade. Tag every entry, see which setups perform, which you overtrade, and where you're taking trades outside your own criteria.",
     icon: (
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path
@@ -79,22 +79,22 @@ export default function DifferentiatorSection() {
             className="text-sm font-semibold uppercase tracking-widest mb-4"
             style={{ color: "#8B5CF6" }}
           >
-            How It Works
+            Your Journal, Your Rules
           </p>
           <h2
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
           >
-            Stop Guessing.{" "}
+            Define Your System.{" "}
             <span style={{ color: "#8B5CF6" }}>
-              Start Measuring.
+              Track It Exactly.
             </span>
           </h2>
           <p
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            The tools that actually change how you trade.
+            No templates. No compromises. Just your rules, your setups, your data.
           </p>
         </div>
 
