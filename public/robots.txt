@@ -6,5 +6,7 @@ Disallow: /dashboard/
 Disallow: /api/
 Disallow: /billing
 Disallow: /billing/
+Disallow: /login
+Disallow: /register
 
 Sitemap: https://www.tjtradehub.com/sitemap.xml

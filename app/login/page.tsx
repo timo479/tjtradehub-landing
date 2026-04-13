@@ -4,6 +4,7 @@ import LoginForm from "@/components/auth/LoginForm";
 export const metadata = {
   title: "Sign In – TJ TradeHub",
   description: "Sign in to your TJ TradeHub account.",
+  robots: { index: false, follow: false },
 };
 
 export default async function LoginPage({

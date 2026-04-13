@@ -2,6 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Terms of Service – TJ TradeHub",
+  robots: { index: false, follow: false },
 };
 
 export default function TermsPage() {

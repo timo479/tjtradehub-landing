@@ -46,6 +46,7 @@ import PricingSection from "@/components/PricingSection";
 import AboutSection from "@/components/AboutSection";
 import FinalCTA from "@/components/FinalCTA";
 import EarlyAccessBanner from "@/components/EarlyAccessBanner";
+import SEOLinksSection from "@/components/SEOLinksSection";
 
 export default function Home() {
   return (
@@ -68,6 +69,7 @@ export default function Home() {
         <TestimonialsSection />
         <PricingSection />
         <AboutSection />
+        <SEOLinksSection />
         <FinalCTA />
       </main>
       <footer
