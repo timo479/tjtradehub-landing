@@ -551,7 +551,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Quickview Stats */}
       {todayTrades.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: "10px" }}>
+        <div className="journal-today-stats">
           {[
             { label: "Trades Today", value: String(todayTrades.length), color: "#F9FAFB" },
             { label: "P&L Today", value: `${todayPnl >= 0 ? "+" : ""}${todayPnl.toFixed(2)}`, color: todayPnl >= 0 ? "#22c55e" : "#ef4444" },

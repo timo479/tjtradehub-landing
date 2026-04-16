@@ -36,6 +36,7 @@ function MoonIcon() {
 export default function JournalLayoutClient({ name, email, subscriptionStatus, journalTourCompleted }: Props) {
   const [darkMode, setDarkMode] = useState(true);
   const [mounted, setMounted] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     try { const s = localStorage.getItem("tj-journal-theme"); if (s !== null) setDarkMode(s === "dark"); } catch {}
@@ -83,7 +84,8 @@ export default function JournalLayoutClient({ name, email, subscriptionStatus, j
                 TJ TradeHub
               </span>
             </Link>
-            <nav style={{ display: "flex", gap: "24px" }}>
+            {/* Desktop nav – hidden on mobile */}
+            <nav className="hidden md:flex" style={{ gap: "24px" }}>
               <Link href="/dashboard" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Dashboard</Link>
               <Link href="/dashboard/journal" style={{ color: navActive, fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Journal</Link>
               <Link href="/dashboard/calendar" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Calendar</Link>
@@ -103,8 +105,46 @@ export default function JournalLayoutClient({ name, email, subscriptionStatus, j
             )}
             <HelpButton />
             <UserMenu name={name} email={email} subscriptionStatus={subscriptionStatus} />
+            {/* Hamburger – mobile only */}
+            <button
+              className="flex md:hidden"
+              onClick={() => setMenuOpen((o) => !o)}
+              aria-label="Toggle navigation menu"
+              style={{ padding: "8px", background: "transparent", border: `1px solid ${btnBorder}`, borderRadius: "8px", color: btnClr, cursor: "pointer", lineHeight: 1, alignItems: "center", justifyContent: "center" }}
+            >
+              {menuOpen ? (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                </svg>
+              ) : (
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
+        {/* Mobile dropdown nav */}
+        {menuOpen && (
+          <div className="md:hidden" style={{ borderTop: headerBord, marginTop: "16px", paddingTop: "8px" }}>
+            {[
+              { href: "/dashboard", label: "Dashboard", active: false },
+              { href: "/dashboard/journal", label: "Journal", active: true },
+              { href: "/dashboard/calendar", label: "Calendar", active: false },
+              { href: "/dashboard/charts", label: "Charts", active: false },
+              { href: "/dashboard/calculator", label: "Calculator", active: false },
+            ].map(({ href, label, active }) => (
+              <Link
+                key={href}
+                href={href}
+                onClick={() => setMenuOpen(false)}
+                style={{ display: "block", padding: "12px 4px", color: active ? navActive : navInact, fontSize: "15px", fontWeight: active ? 600 : 400, textDecoration: "none", borderBottom: `1px solid ${dk ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}`, transition: "color 0.3s ease" }}
+              >
+                {label}
+              </Link>
+            ))}
+          </div>
+        )}
       </header>
 
       {/* Content */}

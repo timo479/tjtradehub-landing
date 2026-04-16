@@ -974,23 +974,23 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
 
       {/* Row 2: KPI (1fr) | Equity Curve (2fr) | Win/Loss (1fr) */}
       {entries.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr 1fr", gap: "16px", alignItems: "stretch" }}>
+        <div className="wg-row-3col">
           {cell("kpi-cards")}{cell("equity-curve")}{cell("winloss")}
         </div>
       )}
 
       {/* Row 3: Weekday | Monthly P&L | Frequency */}
       {entries.length > 0 && (
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "16px", alignItems: "stretch" }}>
+        <div className="wg-row-equal">
           {cell("weekday")}{cell("monthly-pnl")}{cell("frequency")}
         </div>
       )}
 
-      {/* Row 3: Instrument (1fr) | Calendar + Profit Factor stacked (3fr) */}
+      {/* Row 4: Instrument (1fr) | Calendar + Profit Factor stacked (3fr) */}
       {entries.length > 0 && (() => {
         const showInstrument = active.includes("instrument");
         return (
-          <div style={{ display: "grid", gridTemplateColumns: showInstrument ? "1fr 3fr" : "1fr", gap: "16px", alignItems: "start" }}>
+          <div className="wg-row-sidebar" style={{ gridTemplateColumns: showInstrument ? "1fr 3fr" : "1fr" }}>
             {showInstrument && cell("instrument")}
             <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               {cell("calendar")}

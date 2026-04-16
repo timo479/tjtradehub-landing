@@ -2,12 +2,10 @@ import { auth } from "@/lib/auth";
 import { getDaysRemaining, isTrialActive } from "@/lib/trial";
 import { db } from "@/lib/db";
 import Link from "next/link";
-import Image from "next/image";
 import { redirect } from "next/navigation";
-import UserMenu from "@/components/UserMenu";
-import HelpButton from "@/components/HelpButton";
 import DashboardStats from "@/components/dashboard/DashboardStats";
 import DashboardKpiCards from "@/components/dashboard/DashboardKpiCards";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetaConnect from "@/components/meta/MetaConnect";
 import DashboardTourWrapper from "@/components/DashboardTourWrapper";
 import TikTokConversion from "@/components/TikTokConversion";
@@ -123,51 +121,13 @@ export default async function DashboardPage() {
       )}
 
       {/* Header */}
-      <header style={{ borderBottom: "1px solid rgba(255,255,255,0.06)", backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }} className="px-6 py-5">
-        <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-              <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <Image
-                    key={i}
-                    src="/logo-tj-transparent.png"
-                    alt={i === 0 ? "TJ TradeHub" : ""}
-                    width={36}
-                    height={36}
-                    className="logo-layer object-contain"
-                    style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }}
-                  />
-                ))}
-              </div>
-              <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif" }}>
-                TJ TradeHub
-              </span>
-            </Link>
-            <nav style={{ display: "flex", gap: "24px" }}>
-              <Link href="/dashboard" style={{ color: "#8B5CF6", fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>
-                Dashboard
-              </Link>
-              <Link href="/dashboard/journal" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
-                Journal
-              </Link>
-              <Link href="/dashboard/calendar" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
-                Calendar
-              </Link>
-              <Link href="/dashboard/charts" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
-                Charts
-              </Link>
-              <Link href="/dashboard/calculator" style={{ color: "#9CA3AF", fontSize: "14px", textDecoration: "none" }}>
-                Calculator
-              </Link>
-            </nav>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            <HelpButton />
-            <UserMenu name={name} email={session.user.email} subscriptionStatus={subscriptionStatus} />
-          </div>
-        </div>
-      </header>
+      <DashboardHeader
+        activePage="dashboard"
+        name={name}
+        email={session.user.email}
+        subscriptionStatus={subscriptionStatus}
+        headerStyle={{ borderBottom: "1px solid rgba(255,255,255,0.06)", backgroundColor: "rgba(0,0,0,0.7)", backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100 }}
+      />
 
       {/* Main */}
       <main className="mx-auto px-6 py-8" style={{ maxWidth: "1200px" }}>

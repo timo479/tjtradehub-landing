@@ -1230,32 +1230,45 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
           </div>
         )}
 
-        {/* Widget Grid — drag & resizable */}
+        {/* Widget Grid — drag & resizable (desktop) / vertical stack (mobile) */}
         {filtered.length > 0 && (
-          <ReactGridLayout
-            width={gridWidth}
-            layout={activeLayout}
-            cols={12}
-            rowHeight={60}
-            margin={[16, 16]}
-            containerPadding={[0, 0]}
-            onLayoutChange={handleLayoutChange}
-            draggableHandle=".widget-drag-handle"
-            isResizable
-            isDraggable
-            resizeHandles={["se", "sw", "s", "e"]}
-          >
-            {activeWidgets.map(w => (
-              <div key={w.id}>
-                <WidgetCard>
-                  <SectionTitle className="widget-drag-handle" color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+          gridWidth < 768 ? (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              {activeWidgets.map(w => (
+                <WidgetCard key={w.id}>
+                  <SectionTitle color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
                   <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
                     <w.component entries={filtered} journal={journal} />
                   </div>
                 </WidgetCard>
-              </div>
-            ))}
-          </ReactGridLayout>
+              ))}
+            </div>
+          ) : (
+            <ReactGridLayout
+              width={gridWidth}
+              layout={activeLayout}
+              cols={12}
+              rowHeight={60}
+              margin={[16, 16]}
+              containerPadding={[0, 0]}
+              onLayoutChange={handleLayoutChange}
+              draggableHandle=".widget-drag-handle"
+              isResizable
+              isDraggable
+              resizeHandles={["se", "sw", "s", "e"]}
+            >
+              {activeWidgets.map(w => (
+                <div key={w.id}>
+                  <WidgetCard>
+                    <SectionTitle className="widget-drag-handle" color={w.dotColor}>{w.icon} {w.name}</SectionTitle>
+                    <div style={{ flex: 1, overflow: "auto", minHeight: 0 }}>
+                      <w.component entries={filtered} journal={journal} />
+                    </div>
+                  </WidgetCard>
+                </div>
+              ))}
+            </ReactGridLayout>
+          )
         )}
 
       </div>

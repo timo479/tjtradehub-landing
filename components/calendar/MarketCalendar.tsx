@@ -53,7 +53,7 @@ export default function MarketCalendar() {
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: "24px", alignItems: "start" }}>
+      <div className="calendar-layout">
 
         {/* Calendar */}
         <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "24px" }}>

@@ -123,7 +123,7 @@ export default function ScreenshotCarousel() {
           </div>
 
           {/* Tab switcher */}
-          <div style={{ display: "flex", justifyContent: "center", gap: "6px", marginBottom: "32px" }}>
+          <div className="screenshot-tabs">
             {slides.map((slide, i) => (
               <button
                 key={slide.id}

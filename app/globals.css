@@ -198,3 +198,83 @@ html.dashboard-light .trial-banner {
   box-shadow: 0 0 24px rgba(139,92,246,0.12), 0 8px 32px rgba(0,0,0,0.5);
   transform: translateY(-2px);
 }
+
+/* ── Mobile Responsive ─────────────────────────────────── */
+
+/* MarketCalendar: sidebar stacks below calendar on mobile */
+.calendar-layout {
+  display: grid;
+  grid-template-columns: 1fr 320px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .calendar-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ScreenshotCarousel: tabs wrap on mobile */
+.screenshot-tabs {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+}
+
+/* JournalNew: today-stats grid collapses on mobile */
+.journal-today-stats {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+@media (max-width: 768px) {
+  .journal-today-stats {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* JournalNew: top toolbar wraps cleanly on mobile */
+.journal-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* WidgetGrid: multi-column grids collapse to 1 column on mobile */
+.wg-row-3col {
+  display: grid;
+  grid-template-columns: 1fr 2fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.wg-row-equal {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+  align-items: stretch;
+}
+.wg-row-sidebar {
+  display: grid;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 768px) {
+  .wg-row-3col,
+  .wg-row-equal {
+    grid-template-columns: 1fr;
+  }
+  .wg-row-sidebar {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Dashboard main content: reduce horizontal padding on mobile */
+@media (max-width: 640px) {
+  .dashboard-main {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+}

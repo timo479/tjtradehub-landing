@@ -372,7 +372,8 @@ export default function JournalV2() {
               </button>
             </div>
           ) : (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div style={{ overflowX: "auto" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px", minWidth: "620px" }}>
               {/* Column Headers */}
               <div style={{ display: "grid", gridTemplateColumns: "1fr 90px 80px 90px 110px 120px 24px", gap: "12px", padding: "0 18px", alignItems: "center" }}>
                 {["Instrument", "Direction", "P&L", "Rating", "Emotion", "Date", ""].map(h => (
@@ -493,6 +494,7 @@ export default function JournalV2() {
                   </div>
                 );
               })}
+            </div>
             </div>
           )}
         </>
