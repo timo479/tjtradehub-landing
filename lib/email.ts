@@ -9,94 +9,102 @@ export type TrialEmailType = "day5" | "day6" | "day7" | "day8" | "week1" | "week
 const TRIAL_EMAIL_CONFIGS: Record<TrialEmailType, {
   subject: string;
   headline: string;
+  moment: string;
   quote: string;
   body: string;
   benefits: [string, string, string];
   cta: string;
 }> = {
   day5: {
-    subject: "2 days left – don't lose your edge",
-    headline: "In 2 days, your progress disappears.",
+    subject: "In 2 days, you lose your edge",
+    headline: "In 2 days, you go back to guessing.",
+    moment: "You know that trade. It feels right. You enter anyway – against your rule. No journal means no proof it was wrong. So you do it again next week.",
     quote: "You don't have a strategy problem. You have a discipline problem.",
-    body: "You've been building something real. Every trade logged, every pattern tracked. That consistency is your edge – and it only grows if you keep showing up.",
+    body: "Losing access isn't just losing a tool. It's losing the only thing holding you accountable.",
     benefits: [
-      "Know exactly when and why you break your rules",
-      "Catch the emotional patterns that are costing you real money",
-      "Build the consistency that separates pros from the rest",
+      "See exactly which rules you break – and when",
+      "Stop repeating the same losing setups week after week",
+      "Trade from data, not from how you feel in the moment",
     ],
-    cta: "Keep Your Edge",
+    cta: "Lock In My Edge",
   },
   day6: {
     subject: "Tomorrow it stops.",
-    headline: "Tomorrow, your journal goes dark.",
-    quote: "The best traders aren't the smartest. They're the most consistent.",
-    body: "One more day. After that, you'll trade without your data, your patterns, your feedback loop. Most traders who lose that structure never rebuild it.",
+    headline: "Tomorrow you lose your feedback loop.",
+    moment: "That trade you took while frustrated after a loss – you knew it was wrong. Your journal caught it. Tomorrow it won't.",
+    quote: "Discipline fades the moment you stop tracking it.",
+    body: "One day left. After that, you trade alone – no record, no pattern, no accountability.",
     benefits: [
-      "Stop repeating the same losing trades over and over",
-      "Catch yourself before emotions take the wheel",
-      "See your real win rate – not the one you imagine",
+      "Catch the emotional spirals before they cost you",
+      "Know your actual win rate – not the one you remember",
+      "Keep the structure that keeps you from overtrading",
     ],
-    cta: "Don't Break the Streak",
+    cta: "Don't Lose the Streak",
   },
   day7: {
-    subject: "Today is the day you decide.",
-    headline: "Commit. Or go back to guessing.",
-    quote: "Every trader says they'll be more disciplined next week. Most aren't.",
-    body: "Your trial ends today. Your journal, your stats, your patterns – all still here. One decision away. Either you take your trading seriously, or you don't.",
+    subject: "Today. Commit or quit.",
+    headline: "This is the moment. Commit or quit.",
+    moment: "Most traders who say 'I'll come back to it' don't. They tell themselves they'll be more disciplined next week. They aren't.",
+    quote: "Every trader has a plan until emotions take over.",
+    body: "Your data is here. Your patterns are here. The only question is whether you are.",
     benefits: [
-      "Finally understand why you keep making the same mistakes",
-      "Replace gut feeling with data-backed decisions",
-      "Stop losing money to patterns you can't even see",
+      "Stop guessing and start seeing your real patterns",
+      "Keep the accountability you built over 7 days",
+      "One click to lock in what you've already started",
     ],
-    cta: "I'm Ready to Be Consistent",
+    cta: "I'm In – Stay Consistent",
   },
   day8: {
     subject: "You stopped. Your losses didn't.",
     headline: "Your trial ended. The mistakes didn't.",
-    quote: "Without a journal, you're flying blind. Again.",
-    body: "Traders who stop tracking fall back into old habits fast. The clarity you had during your trial fades without structure. Your data is still here – pick it back up.",
+    moment: "Without a record, every loss feels like bad luck. It isn't. The patterns were always there. You just stopped looking.",
+    quote: "Without data, you're just a trader with opinions.",
+    body: "Your journal is still here. Your entries, your stats, your patterns – all saved. Come back to structure.",
     benefits: [
-      "Resume instantly – all your data is still saved",
+      "Resume instantly – zero setup, all data intact",
+      "See the patterns that repeated while you were away",
       "Get back the clarity you had when you were tracking",
-      "Trade with structure instead of emotion",
     ],
     cta: "Get Back in Control",
   },
   week1: {
-    subject: "One week without structure. How's that going?",
-    headline: "One week. Back to old habits?",
+    subject: "One week without structure. Be honest.",
+    headline: "One week gone. How's the discipline?",
+    moment: "You probably told yourself you'd track trades manually. Or remember them. Traders always say that. They don't.",
     quote: "Discipline doesn't survive without a system.",
-    body: "It's been 7 days. No journal, no structure, no feedback loop. The traders who upgrade don't do it because they have to – they do it because they've felt the difference.",
+    body: "The structure is still here. Your data is still here. The only thing missing is you.",
     benefits: [
-      "Your entries and trade history are still waiting for you",
-      "Rebuild the routine that actually holds you accountable",
-      "Stop trading on memory – start trading on data",
+      "Everything you logged during your trial is saved",
+      "No catching up – just pick up where you left off",
+      "Rebuild the routine before the old habits take over",
     ],
     cta: "Come Back to Structure",
   },
   week2: {
-    subject: "What separates winning traders from losing ones.",
-    headline: "The traders who win all have one thing in common.",
-    quote: "They show up with data. Every single time.",
-    body: "Not a better strategy. Not insider knowledge. Just a system. A journal. A way to see what's working and what isn't – before it costs them more money.",
+    subject: "Your best week vs. your worst. You know the difference.",
+    headline: "You already know what separates them.",
+    moment: "Your best week – you were tracking. Reviewing. Seeing what worked. Your worst – you were guessing and hoping it would fix itself.",
+    quote: "The traders who win long-term aren't luckier. They're more honest with themselves.",
+    body: "The edge isn't in a new strategy. It's in understanding your own behavior.",
     benefits: [
-      "Turn inconsistency into a repeatable, trackable edge",
-      "See patterns in your trading that no one else can show you",
-      "Build confidence that comes from proof, not hope",
+      "See exactly what makes your best days different",
+      "Identify the setups you should have stopped taking",
+      "Build consistency from patterns, not promises",
     ],
-    cta: "Build My System",
+    cta: "Build My Edge",
   },
   week3: {
-    subject: "Last call. Your data is still here.",
-    headline: "Last call.",
-    quote: "Your data is saved. Your edge isn't – that takes work.",
-    body: "This is our final message. Everything you logged is still there. The hardest part is starting – and you already did that. Come back and keep going.",
+    subject: "Last call.",
+    headline: "This is the last time we'll say this.",
+    moment: "Three weeks without a journal. You know how that's gone. The same mistakes don't feel like mistakes anymore – they just feel like trading.",
+    quote: "The cost of inconsistency compounds. Just like losses.",
+    body: "Your data is still here. This is our last message. The decision is yours.",
     benefits: [
-      "Pick up exactly where you left off – zero setup needed",
-      "The journal that held you accountable is still here",
-      "The longer you wait, the harder consistency gets",
+      "All your data is saved – no starting over",
+      "Come back before the habits become permanent",
+      "The hardest part is starting. You already did that once.",
     ],
-    cta: "Reclaim Your Edge",
+    cta: "Reclaim My Edge",
   },
 };
 
@@ -107,66 +115,78 @@ function buildTrialEmailHtml(type: TrialEmailType, upgradeUrl: string): string {
   return `<!DOCTYPE html>
 <html>
 <head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
-<body style="margin:0;padding:0;background-color:#080808;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#080808;padding:40px 0;">
+<body style="margin:0;padding:0;background-color:#060606;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#060606;padding:48px 0;">
     <tr><td align="center">
-      <table width="520" cellpadding="0" cellspacing="0" style="background-color:#0d0d0d;border:1px solid #1a1a1a;border-radius:16px;overflow:hidden;">
+      <table width="540" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;border:1px solid #1c1c1c;border-radius:16px;overflow:hidden;">
 
         <!-- Logo -->
-        <tr><td align="center" style="padding:32px 40px 28px;">
-          <img src="${logoUrl}" alt="TJTradeHub" width="88" style="display:block;border-radius:10px;" />
+        <tr><td align="center" style="padding:36px 48px 32px;">
+          <img src="${logoUrl}" alt="TJTradeHub" width="84" style="display:block;border-radius:10px;" />
         </td></tr>
 
-        <tr><td style="padding:0 40px;"><div style="height:1px;background:linear-gradient(90deg,transparent,#2a2a2a,transparent);"></div></td></tr>
+        <!-- Gradient separator -->
+        <tr><td><div style="height:1px;background:linear-gradient(90deg,#0a0a0a,#7c3aed 40%,#a855f7 60%,#0a0a0a);opacity:0.6;"></div></td></tr>
 
         <!-- Headline -->
-        <tr><td style="padding:36px 40px 0px;">
-          <h1 style="margin:0;font-size:26px;font-weight:800;color:#ffffff;letter-spacing:-0.5px;line-height:1.25;">${config.headline}</h1>
+        <tr><td style="padding:44px 48px 0;">
+          <h1 style="margin:0;font-size:30px;font-weight:900;color:#ffffff;letter-spacing:-0.8px;line-height:1.2;">${config.headline}</h1>
         </td></tr>
 
-        <!-- Quote block -->
-        <tr><td style="padding:24px 40px;">
-          <div style="border-left:3px solid #a855f7;padding:12px 18px;background-color:#16101f;border-radius:0 6px 6px 0;">
-            <p style="margin:0;font-size:14px;font-style:italic;color:#c084fc;line-height:1.6;">${config.quote}</p>
+        <!-- Moment trigger -->
+        <tr><td style="padding:20px 48px 0;">
+          <p style="margin:0;font-size:15px;color:#6b7280;line-height:1.8;font-style:italic;">${config.moment}</p>
+        </td></tr>
+
+        <!-- Quote block – reality check -->
+        <tr><td style="padding:28px 48px;">
+          <div style="background-color:#050505;border:1px solid #2a1a3e;border-left:4px solid #a855f7;border-radius:4px 8px 8px 4px;padding:20px 24px;">
+            <p style="margin:0;font-size:15px;font-weight:700;color:#e2d4f8;line-height:1.5;letter-spacing:0.1px;">${config.quote}</p>
           </div>
         </td></tr>
 
         <!-- Body -->
-        <tr><td style="padding:0 40px 28px;">
-          <p style="margin:0;font-size:15px;color:#9ca3af;line-height:1.75;">${config.body}</p>
+        <tr><td style="padding:0 48px 36px;">
+          <p style="margin:0;font-size:15px;color:#9ca3af;line-height:1.8;">${config.body}</p>
         </td></tr>
 
         <!-- Benefits -->
-        <tr><td style="padding:0 40px 36px;">
-          <table cellpadding="0" cellspacing="0" width="100%" style="background-color:#111111;border:1px solid #1f1f1f;border-radius:10px;padding:20px;">
-            ${config.benefits.map((b) => `
-            <tr><td style="padding:8px 0;">
-              <table cellpadding="0" cellspacing="0"><tr>
-                <td style="vertical-align:top;padding-right:10px;padding-top:1px;">
-                  <div style="width:18px;height:18px;background-color:#1e0a2e;border-radius:50%;text-align:center;line-height:18px;">
-                    <span style="color:#a855f7;font-size:11px;font-weight:700;">✓</span>
+        <tr><td style="padding:0 48px 44px;">
+          <table cellpadding="0" cellspacing="0" width="100%" style="border:1px solid #1c1c1c;border-radius:12px;background-color:#0f0f0f;">
+            ${config.benefits.map((b, i) => `
+            <tr><td style="padding:16px 22px;${i < 2 ? "border-bottom:1px solid #161616;" : ""}">
+              <table cellpadding="0" cellspacing="0" width="100%"><tr>
+                <td width="28" style="vertical-align:middle;">
+                  <div style="width:22px;height:22px;background:linear-gradient(135deg,#3b1a6e,#6d28d9);border-radius:50%;text-align:center;line-height:22px;">
+                    <span style="color:#e9d5ff;font-size:12px;font-weight:800;">✓</span>
                   </div>
                 </td>
-                <td><span style="font-size:14px;color:#d1d5db;line-height:1.5;">${b}</span></td>
+                <td style="padding-left:12px;"><span style="font-size:14px;color:#e5e7eb;line-height:1.6;">${b}</span></td>
               </tr></table>
             </td></tr>`).join("")}
           </table>
         </td></tr>
 
-        <!-- CTA -->
-        <tr><td align="center" style="padding:0 40px 44px;">
-          <a href="${upgradeUrl}" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#a855f7);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 48px;border-radius:10px;letter-spacing:0.3px;box-shadow:0 0 24px rgba(168,85,247,0.3);">
-            ${config.cta} →
-          </a>
-          <p style="margin:12px 0 0;font-size:12px;color:#4b5563;">$29/mo · Cancel anytime</p>
+        <!-- CTA section – dark contrast block -->
+        <tr><td style="background-color:#070707;border-top:1px solid #1c1c1c;padding:40px 48px;">
+          <table cellpadding="0" cellspacing="0" width="100%">
+            <tr><td align="center">
+              <a href="${upgradeUrl}" style="display:inline-block;background:linear-gradient(135deg,#6d28d9,#9333ea,#a855f7);color:#ffffff;text-decoration:none;font-size:17px;font-weight:800;padding:18px 56px;border-radius:10px;letter-spacing:0.4px;box-shadow:0 0 32px rgba(139,92,246,0.45),0 4px 16px rgba(0,0,0,0.5);">
+                ${config.cta} →
+              </a>
+            </td></tr>
+            <tr><td align="center" style="padding-top:14px;">
+              <p style="margin:0;font-size:12px;color:#374151;">$29/mo &nbsp;·&nbsp; Cancel anytime</p>
+            </td></tr>
+          </table>
         </td></tr>
 
         <!-- Footer -->
-        <tr><td style="padding:20px 40px;border-top:1px solid #1a1a1a;">
-          <p style="margin:0;font-size:11px;color:#374151;text-align:center;line-height:1.8;">
-            TJTradeHub · support@tjtradehub.com<br/>
-            <a href="${upgradeUrl}" style="color:#4b5563;text-decoration:none;">Upgrade</a> &nbsp;·&nbsp;
-            <a href="https://www.tjtradehub.com" style="color:#4b5563;text-decoration:none;">Website</a>
+        <tr><td style="padding:22px 48px;border-top:1px solid #141414;">
+          <p style="margin:0;font-size:11px;color:#2d2d2d;text-align:center;line-height:2;">
+            TJTradeHub &nbsp;·&nbsp; support@tjtradehub.com<br/>
+            <a href="${upgradeUrl}" style="color:#3f3f46;text-decoration:none;">Upgrade</a> &nbsp;·&nbsp;
+            <a href="https://www.tjtradehub.com" style="color:#3f3f46;text-decoration:none;">Website</a>
           </p>
         </td></tr>
 
