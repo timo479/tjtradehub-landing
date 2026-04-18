@@ -34,4 +34,5 @@ export interface User {
   journal_tour_completed: boolean;
   role: string;
   is_banned: boolean;
+  trial_emails_sent: string[];
 }
