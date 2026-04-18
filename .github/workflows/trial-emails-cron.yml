@@ -1,0 +1,15 @@
+name: Trial Reminder Emails
+
+on:
+  schedule:
+    - cron: "0 9 * * *"  # every day at 09:00 UTC
+
+jobs:
+  send-trial-emails:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger trial email cron
+        run: |
+          curl -s -X GET \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/trial-emails"
