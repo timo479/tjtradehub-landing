@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { SessionProvider } from "next-auth/react";
+import { Analytics } from "@vercel/analytics/react";
 import CursorTrail from "@/components/CursorTrail";
 import CookieBanner from "@/components/CookieBanner";
 import "./globals.css";
@@ -87,6 +88,7 @@ export default function RootLayout({
         <CursorTrail />
         <CookieBanner />
         <SessionProvider>{children}</SessionProvider>
+        <Analytics />
       </body>
     </html>
   );

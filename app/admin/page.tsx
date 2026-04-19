@@ -31,6 +31,12 @@ interface ActivityLog {
   created_at: string;
 }
 
+interface RevenueMonth { month: string; amount: number; count: number }
+interface ChurnMonth { month: string; canceled: number; rate: number }
+interface MetaApiStats { connected: number; mt4: number; mt5: number; deployed: number; undeployed: number; recentlyActive: number; total: number }
+interface VisitorDay { date: string; pageviews: number }
+interface AnalyticsData { revenue: RevenueMonth[]; churn: ChurnMonth[]; metaapi: MetaApiStats; visitors: VisitorDay[] }
+
 function StatusBadge({ user }: { user: AdminUser }) {
   if (user.is_banned) return <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-500/20 text-red-400 border border-red-500/30">Banned</span>;
   if (user.role === "admin") return <span className="px-2 py-0.5 rounded text-xs font-medium bg-purple-500/20 text-purple-300 border border-purple-500/30">Admin</span>;
@@ -97,7 +103,9 @@ export default function AdminPage() {
   const [revenue, setRevenue] = useState({ mrr: 0, conversionRate: 0 });
   const [regByDay, setRegByDay] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"users" | "activity">("users");
+  const [tab, setTab] = useState<"users" | "analytics" | "activity">("users");
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analyticsLoading, setAnalyticsLoading] = useState(false);
   const [search, setSearch] = useState("");
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
@@ -124,7 +132,19 @@ export default function AdminPage() {
     if (res.ok) { const d = await res.json(); setLogs(d.logs ?? []); }
   }, []);
 
+  const fetchAnalytics = useCallback(async () => {
+    setAnalyticsLoading(true);
+    try {
+      const res = await fetch("/api/admin/analytics");
+      if (res.ok) { const d = await res.json(); setAnalytics(d); }
+    } finally { setAnalyticsLoading(false); }
+  }, []);
+
   useEffect(() => { fetchUsers(); fetchLogs(); }, [fetchUsers, fetchLogs]);
+
+  useEffect(() => {
+    if (tab === "analytics" && !analytics) fetchAnalytics();
+  }, [tab, analytics, fetchAnalytics]);
 
   async function doAction(id: string, action: string, extra?: Record<string, unknown>) {
     setActionLoading(id + action); setError(null);
@@ -225,13 +245,13 @@ export default function AdminPage() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6">
-          {(["users", "activity"] as const).map(t => (
+          {(["users", "analytics", "activity"] as const).map(t => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`px-4 py-2 text-sm rounded-lg border transition-colors ${tab === t ? "bg-purple-600 border-purple-500 text-white" : "bg-zinc-900 border-zinc-700 text-zinc-400 hover:text-white"}`}
             >
-              {t === "users" ? "Users" : "Activity Log"}
+              {t === "users" ? "Users" : t === "analytics" ? "Analytics" : "Activity Log"}
             </button>
           ))}
         </div>
@@ -394,6 +414,153 @@ export default function AdminPage() {
               )}
             </div>
             <p className="mt-3 text-xs text-zinc-600 text-center">{filtered.length} of {total + users.filter(u => u.role === "admin").length} users shown</p>
+          </>
+        )}
+
+        {/* ANALYTICS TAB */}
+        {tab === "analytics" && (
+          <>
+            {analyticsLoading || !analytics ? (
+              <div className="py-16 text-center text-zinc-500 text-sm">{analyticsLoading ? "Loading analytics..." : "No data"}</div>
+            ) : (
+              <>
+                {/* MetaAPI Stats */}
+                <div className="mb-6">
+                  <h3 className="text-sm font-medium text-zinc-400 mb-3">MetaAPI Usage</h3>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                    {[
+                      { label: "Connected", value: analytics.metaapi.connected, sub: `of ${analytics.metaapi.total} users`, color: "text-green-400" },
+                      { label: "MT4", value: analytics.metaapi.mt4, sub: "accounts", color: "text-blue-400" },
+                      { label: "MT5", value: analytics.metaapi.mt5, sub: "accounts", color: "text-purple-400" },
+                      { label: "Deployed Now", value: analytics.metaapi.deployed, sub: "live", color: "text-yellow-400" },
+                      { label: "Undeployed", value: analytics.metaapi.undeployed, sub: "sleeping", color: "text-zinc-400" },
+                      { label: "Active 7d", value: analytics.metaapi.recentlyActive, sub: "used recently", color: "text-emerald-400" },
+                    ].map(s => (
+                      <div key={s.label} className="bg-zinc-900 border border-zinc-800 rounded-xl p-4">
+                        <div className={`text-2xl font-bold ${s.color}`}>{s.value}</div>
+                        <div className="text-xs text-zinc-500 mt-0.5">{s.label}</div>
+                        <div className="text-xs text-zinc-700 mt-0.5">{s.sub}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Revenue Chart */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-zinc-400">Monthly Revenue – Last 12 Months</h3>
+                    <span className="text-xs text-zinc-600">
+                      Total: ${analytics.revenue.reduce((s, m) => s + m.amount, 0).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                    </span>
+                  </div>
+                  {(() => {
+                    const maxAmt = Math.max(...analytics.revenue.map(m => m.amount), 1);
+                    return (
+                      <div className="flex items-end gap-1.5 h-28">
+                        {analytics.revenue.map(m => {
+                          const height = m.amount > 0 ? Math.max(8, Math.round((m.amount / maxAmt) * 96)) : 0;
+                          const label = new Date(m.month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+                          return (
+                            <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
+                              {m.amount > 0 && <span className="text-xs text-zinc-400" style={{ fontSize: "9px" }}>${m.amount % 1 === 0 ? m.amount : m.amount.toFixed(0)}</span>}
+                              <div
+                                className="w-full rounded-t bg-purple-600/70 hover:bg-purple-500 transition-colors"
+                                style={{ height: `${height}px` }}
+                                title={`${m.month}: $${m.amount} (${m.count} payments)`}
+                              />
+                              <span className="text-zinc-600" style={{ fontSize: "8px" }}>{label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Churn Chart */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-zinc-400">Cancellations – Last 12 Months</h3>
+                    <span className="text-xs text-zinc-600">
+                      Total: {analytics.churn.reduce((s, m) => s + m.canceled, 0)} canceled
+                    </span>
+                  </div>
+                  {(() => {
+                    const maxCanceled = Math.max(...analytics.churn.map(m => m.canceled), 1);
+                    return (
+                      <div className="flex items-end gap-1.5 h-28">
+                        {analytics.churn.map(m => {
+                          const height = m.canceled > 0 ? Math.max(8, Math.round((m.canceled / maxCanceled) * 96)) : 0;
+                          const label = new Date(m.month + "-01").toLocaleDateString("en-US", { month: "short", year: "2-digit" });
+                          return (
+                            <div key={m.month} className="flex-1 flex flex-col items-center gap-1">
+                              {m.canceled > 0 && <span className="text-xs text-red-400" style={{ fontSize: "9px" }}>{m.canceled}</span>}
+                              <div
+                                className="w-full rounded-t bg-red-600/60 hover:bg-red-500/80 transition-colors"
+                                style={{ height: `${height}px` }}
+                                title={`${m.month}: ${m.canceled} canceled (${m.rate}% churn)`}
+                              />
+                              <span className="text-zinc-600" style={{ fontSize: "8px" }}>{label}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+
+                {/* Visitor → Signup Funnel */}
+                <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-sm font-medium text-zinc-400">Visitors vs. Signups – Last 14 Days</h3>
+                    <div className="flex items-center gap-4 text-xs text-zinc-600">
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-purple-600/70 inline-block" />Visitors</span>
+                      <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-sm bg-zinc-500/70 inline-block" />Signups</span>
+                    </div>
+                  </div>
+                  {analytics.visitors.length === 0 ? (
+                    <div className="py-8 text-center text-zinc-600 text-sm">
+                      Vercel Analytics not yet active. Data will appear after deployment &amp; first page views.
+                    </div>
+                  ) : (() => {
+                    const last14 = Array.from({ length: 14 }, (_, i) => {
+                      const d = new Date(); d.setDate(d.getDate() - (13 - i));
+                      return d.toISOString().slice(0, 10);
+                    });
+                    const visitorMap: Record<string, number> = {};
+                    for (const v of analytics.visitors) visitorMap[v.date] = v.pageviews;
+                    const maxVal = Math.max(...last14.map(d => Math.max(visitorMap[d] ?? 0, regByDay[d] ?? 0)), 1);
+                    return (
+                      <div className="flex items-end gap-2 h-28">
+                        {last14.map(day => {
+                          const visits = visitorMap[day] ?? 0;
+                          const signups = regByDay[day] ?? 0;
+                          const vH = visits > 0 ? Math.max(4, Math.round((visits / maxVal) * 96)) : 0;
+                          const sH = signups > 0 ? Math.max(4, Math.round((signups / maxVal) * 96)) : 0;
+                          return (
+                            <div key={day} className="flex-1 flex flex-col items-center gap-1">
+                              <div className="flex items-end gap-0.5 w-full">
+                                <div
+                                  className="flex-1 rounded-t bg-purple-600/70 hover:bg-purple-500 transition-colors"
+                                  style={{ height: `${vH}px` }}
+                                  title={`${day}: ${visits} pageviews`}
+                                />
+                                <div
+                                  className="flex-1 rounded-t bg-zinc-500/70 hover:bg-zinc-400/80 transition-colors"
+                                  style={{ height: `${sH}px` }}
+                                  title={`${day}: ${signups} signups`}
+                                />
+                              </div>
+                              <span className="text-zinc-600" style={{ fontSize: "8px" }}>{day.slice(5)}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              </>
+            )}
           </>
         )}
 
