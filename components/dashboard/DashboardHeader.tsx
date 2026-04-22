@@ -5,7 +5,7 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator";
+type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist";
 
 interface Props {
   activePage: ActivePage;
@@ -22,7 +22,10 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard/calendar", label: "Calendar", key: "calendar" },
   { href: "/dashboard/charts", label: "Charts", key: "charts" },
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
+  { href: "/dashboard/checklist", label: "Checklist", key: "checklist" },
 ];
+
+const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
 
 export default function DashboardHeader({
   activePage,
@@ -79,9 +82,17 @@ export default function DashboardHeader({
                   fontSize: "14px",
                   fontWeight: activePage === key ? 600 : 400,
                   textDecoration: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "5px",
                 }}
               >
                 {label}
+                {key === "checklist" && !checklistEnabled && (
+                  <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
+                    SOON
+                  </span>
+                )}
               </Link>
             ))}
           </nav>
@@ -135,7 +146,9 @@ export default function DashboardHeader({
               href={href}
               onClick={() => setOpen(false)}
               style={{
-                display: "block",
+                display: "flex",
+                alignItems: "center",
+                gap: "6px",
                 padding: "12px 4px",
                 color: activePage === key ? "#8B5CF6" : "#9CA3AF",
                 fontSize: "15px",
@@ -145,6 +158,11 @@ export default function DashboardHeader({
               }}
             >
               {label}
+              {key === "checklist" && !checklistEnabled && (
+                <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
+                  SOON
+                </span>
+              )}
             </Link>
           ))}
         </div>
