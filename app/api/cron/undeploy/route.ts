@@ -30,7 +30,7 @@ export async function GET(req: Request) {
     .select("id, metaapi_account_id")
     .eq("metaapi_account_state", "DEPLOYED")
     .not("metaapi_account_id", "is", null)
-    .lt("meta_last_active", cutoff);
+    .or(`meta_last_active.lt.${cutoff},meta_last_active.is.null`);
 
   if (!staleAccounts?.length) {
     return NextResponse.json({ undeployed: 0 });

@@ -87,6 +87,8 @@ export async function POST(req: NextRequest) {
     // Reuse existing MetaAPI slot if platform matches → no extra billing
     if (existing?.metaapi_account_id && existing.mt_platform === platform) {
       try {
+        // Undeploy first so credentials can be updated cleanly (ok if already undeployed)
+        await undeployAccount(existing.metaapi_account_id).catch(() => null);
         await updateAccount(existing.metaapi_account_id, { login, password, server, name: accountName });
         await deployAccount(existing.metaapi_account_id);
         await db.from("users").update({
@@ -99,8 +101,14 @@ export async function POST(req: NextRequest) {
           meta_last_active: new Date().toISOString(),
         }).eq("id", session.user.id);
         return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
-      } catch {
-        // Update failed (account deleted externally etc.) → fall through to create new
+      } catch (e) {
+        const msg = e instanceof Error ? e.message : "";
+        // Only create a new account if MetaAPI says the account no longer exists (404)
+        // For all other errors (network, timeout, etc.) return an error – do NOT provision a new key
+        if (!msg.startsWith("MetaAPI 404")) {
+          return NextResponse.json({ error: "Reconnect failed – please try again." }, { status: 502 });
+        }
+        // Account was deleted externally → clean up reference and provision fresh below
         await removeAccount(existing.metaapi_account_id).catch(() => null);
       }
     } else if (existing?.metaapi_account_id) {

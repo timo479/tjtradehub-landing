@@ -55,6 +55,7 @@ export async function provisionAccount(params: {
       magic: 0,
       manualTrades: true,
       quoteStreamingIntervalInSeconds: 2.5,
+      reliability: "regular",
     }),
   });
 }
