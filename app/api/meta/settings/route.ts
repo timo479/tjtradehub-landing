@@ -103,12 +103,12 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "";
-        // Only create a new account if MetaAPI says the account no longer exists (404)
-        // For all other errors (network, timeout, etc.) return an error – do NOT provision a new key
-        if (!msg.startsWith("MetaAPI 404")) {
+        // 404 = account deleted externally; 400 = login cannot be changed (non-draft account)
+        // Both cases: remove old slot and provision a fresh one below
+        const canReprovision = msg.startsWith("MetaAPI 404") || msg.startsWith("MetaAPI 400");
+        if (!canReprovision) {
           return NextResponse.json({ error: "Reconnect failed – please try again." }, { status: 502 });
         }
-        // Account was deleted externally → clean up reference and provision fresh below
         await removeAccount(existing.metaapi_account_id).catch(() => null);
       }
     } else if (existing?.metaapi_account_id) {
