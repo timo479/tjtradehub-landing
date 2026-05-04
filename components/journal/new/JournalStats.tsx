@@ -672,8 +672,9 @@ function WRiskDiscipline({ entries, journal }: { entries: Trade[]; journal: Jour
 
     let peak = 0, cum = 0, maxDD = 0;
     for (const p of [...entries]
+      .filter(e => pnlNum(e) !== null)
       .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())
-      .map(e => pnlNum(e) ?? 0)) {
+      .map(e => pnlNum(e)!)) {
       cum += p; if (cum > peak) peak = cum; if (peak - cum > maxDD) maxDD = peak - cum;
     }
     const maxDDPct = journal.starting_balance ? (maxDD / journal.starting_balance) * 100 : null;
