@@ -26,18 +26,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   if (!entry) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
   await db.from("trade_entries").update({ trade_date }).eq("id", id);
-  await db.from("trade_field_values").delete().eq("trade_id", id);
 
-  if (field_values && Object.keys(field_values).length) {
-    await db.from("trade_field_values").insert(
-      Object.entries(field_values)
-        .filter(([, v]) => v !== "" && v !== null && v !== undefined)
-        .map(([field_id, value]) => ({
-          trade_id: id,
-          field_id,
-          value: Array.isArray(value) ? JSON.stringify(value) : String(value),
-        }))
-    );
+  if (field_values !== undefined) {
+    await db.from("trade_field_values").delete().eq("trade_id", id);
+    if (Object.keys(field_values).length > 0) {
+      await db.from("trade_field_values").insert(
+        Object.entries(field_values)
+          .filter(([, v]) => v !== "" && v !== null && v !== undefined)
+          .map(([field_id, value]) => ({
+            trade_id: id,
+            field_id,
+            value: Array.isArray(value) ? JSON.stringify(value) : String(value),
+          }))
+      );
+    }
   }
 
   return NextResponse.json({ success: true });

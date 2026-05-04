@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
-import { deployAccount, provisionAccount, undeployAccount } from "@/lib/metaapi";
+import { deployAccount, provisionAccount, removeAccount, undeployAccount } from "@/lib/metaapi";
 import { decrypt } from "@/lib/encrypt";
 import { NextResponse } from "next/server";
 
@@ -33,11 +33,16 @@ export async function POST() {
         platform: user.mt_platform as "mt4" | "mt5",
         name: accountName,
       });
-      await db.from("users").update({
+      // Atomic write: only update if metaapi_account_id is still null
+      const { data: updated } = await db.from("users").update({
         metaapi_account_id: account.id,
         metaapi_account_state: "DEPLOYING",
         meta_last_active: new Date().toISOString(),
-      }).eq("id", session.user.id);
+      }).eq("id", session.user.id).is("metaapi_account_id", null).select("id");
+      if (!updated?.length) {
+        // Another concurrent request already provisioned → clean up ours
+        await removeAccount(account.id).catch(() => null);
+      }
       return NextResponse.json({ success: true, reprovisioned: true });
     } catch (e) {
       return NextResponse.json({ error: e instanceof Error ? e.message : "Reprovision failed" }, { status: 502 });

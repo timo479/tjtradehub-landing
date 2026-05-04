@@ -272,9 +272,14 @@ export async function POST(req: Request) {
       ].filter(Boolean) as { field_id: string; value: string }[];
 
       if (fieldValues.length > 0) {
-        await db.from("trade_field_values").insert(
+        const { error: fvErr } = await db.from("trade_field_values").insert(
           fieldValues.map(fv => ({ trade_id: entry.id, ...fv }))
         );
+        if (fvErr) {
+          await db.from("trade_entries").delete().eq("id", entry.id);
+          skipped++;
+          continue;
+        }
       }
 
       synced++;
