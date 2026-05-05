@@ -2,7 +2,7 @@ name: MetaAPI Inactivity Undeploy
 
 on:
   schedule:
-    - cron: "*/30 * * * *"  # every 30 minutes
+    - cron: "0 2 * * *"  # daily at 02:00 UTC
 
 jobs:
   undeploy:
@@ -10,6 +10,12 @@ jobs:
     steps:
       - name: Trigger undeploy cron
         run: |
-          curl -s -X GET \
+          response=$(curl -s -o /tmp/response.txt -w "%{http_code}" -X GET \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            "${{ secrets.APP_URL }}/api/cron/undeploy"
+            "${{ secrets.APP_URL }}/api/cron/undeploy")
+          echo "HTTP Status: $response"
+          echo "Response: $(cat /tmp/response.txt)"
+          if [ "$response" -lt 200 ] || [ "$response" -ge 300 ]; then
+            echo "Error: unexpected status $response"
+            exit 1
+          fi
