@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
         .eq("stripe_customer_id", customerId);
       if (csErr) {
         console.error("Webhook DB error (checkout.completed):", csErr, "customer:", customerId);
-        break;
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
       }
 
       await sendTikTokCompletePayment({
@@ -107,7 +107,10 @@ export async function POST(request: NextRequest) {
           current_period_end: getPeriodEnd(sub),
         })
         .eq("stripe_customer_id", customerId);
-      if (cuErr) console.error("Webhook DB error (subscription.created/updated):", cuErr, "customer:", customerId);
+      if (cuErr) {
+        console.error("Webhook DB error (subscription.created/updated):", cuErr, "customer:", customerId);
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+      }
       break;
     }
 
@@ -124,7 +127,10 @@ export async function POST(request: NextRequest) {
           current_period_end: null,
         })
         .eq("stripe_customer_id", customerId);
-      if (sdErr) console.error("Webhook DB error (subscription.deleted):", sdErr, "customer:", customerId);
+      if (sdErr) {
+        console.error("Webhook DB error (subscription.deleted):", sdErr, "customer:", customerId);
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+      }
       break;
     }
 
@@ -138,7 +144,10 @@ export async function POST(request: NextRequest) {
         .from("users")
         .update({ subscription_status: "past_due" })
         .eq("stripe_customer_id", customerId);
-      if (pfErr) console.error("Webhook DB error (payment_failed):", pfErr, "customer:", customerId);
+      if (pfErr) {
+        console.error("Webhook DB error (payment_failed):", pfErr, "customer:", customerId);
+        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+      }
       break;
     }
 
@@ -160,9 +169,13 @@ export async function POST(request: NextRequest) {
             current_period_end: getPeriodEnd(sub),
           })
           .eq("stripe_customer_id", customerId);
-        if (psErr) console.error("Webhook DB error (payment_succeeded):", psErr, "customer:", customerId);
+        if (psErr) {
+          console.error("Webhook DB error (payment_succeeded):", psErr, "customer:", customerId);
+          return NextResponse.json({ error: "DB update failed" }, { status: 500 });
+        }
       } catch (e) {
         console.error("Webhook payment_succeeded retrieve error:", e);
+        return NextResponse.json({ error: "Stripe retrieve failed" }, { status: 500 });
       }
       break;
     }
