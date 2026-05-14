@@ -13,7 +13,9 @@ async function cleanupMetaAccount(stripeCustomerId: string) {
     .single();
 
   if (user?.metaapi_account_id) {
-    await removeAccount(user.metaapi_account_id).catch(() => null);
+    await removeAccount(user.metaapi_account_id).catch((e) =>
+      console.error("MetaAPI removeAccount failed (account may be orphaned):", e, "account:", user.metaapi_account_id, "user:", user.id)
+    );
     await db.from("users").update({
       metaapi_account_id: null,
       metaapi_account_state: null,

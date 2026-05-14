@@ -42,8 +42,8 @@ export async function GET(req: Request) {
       await undeployAccount(user.metaapi_account_id);
       await db.from("users").update({ metaapi_account_state: "UNDEPLOYED" }).eq("id", user.id);
       undeployed++;
-    } catch {
-      // Continue with next account
+    } catch (e) {
+      console.error("Cron undeploy failed for user:", user.id, "account:", user.metaapi_account_id, "error:", e);
     }
   }
 
