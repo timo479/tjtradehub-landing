@@ -486,3 +486,27 @@ html.dashboard-light .trial-banner {
     animation: none;
   }
 }
+
+/* ========== MT5 Sync Animation ========== */
+@keyframes mt5-pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.6; transform: scale(1.4); }
+}
+
+.mt5-pulse {
+  animation: mt5-pulse 1.6s ease-in-out infinite;
+  box-shadow: 0 0 6px currentColor;
+}
+
+@keyframes mt5-dot-flow {
+  0%, 100% { opacity: 0.2; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+
+.mt5-dot {
+  animation: mt5-dot-flow 1.4s ease-in-out infinite;
+}
+
+.mt5-dot-1 { animation-delay: 0s; }
+.mt5-dot-2 { animation-delay: 0.2s; }
+.mt5-dot-3 { animation-delay: 0.4s; }

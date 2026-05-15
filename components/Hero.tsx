@@ -48,24 +48,29 @@ export default function Hero() {
               Define your own entry rules, setups, and risk criteria. TJ TradeHub tracks every trade against your system — not a generic template.
             </p>
 
-            {/* Custom Journal Highlight */}
-            <div
-              className="flex items-start gap-3 px-4 py-4 rounded-xl"
-              style={{
-                backgroundColor: "rgba(139,92,246,0.07)",
-                border: "1px solid rgba(139,92,246,0.2)",
-                maxWidth: "480px",
-              }}
-            >
-              <span style={{ fontSize: "20px", lineHeight: 1, marginTop: "2px" }}>✦</span>
-              <div>
-                <p className="text-sm font-semibold mb-1" style={{ color: "#E2D9FF" }}>
-                  It adapts to you. Not the other way around.
-                </p>
-                <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
-                  Every trader has different rules, different setups, different mistakes. TJ TradeHub doesn&apos;t force you into a template — you build the journal that fits your system, and it shows you exactly where you deviate from it.
-                </p>
-              </div>
+            {/* Feature badges */}
+            <div className="flex flex-wrap gap-2" style={{ maxWidth: "480px" }}>
+              {[
+                "MT4/MT5 Auto-Sync",
+                "Custom Rule Tracking",
+                "Discipline Score",
+                "Setup Analytics",
+              ].map((feature) => (
+                <span
+                  key={feature}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium"
+                  style={{
+                    backgroundColor: "rgba(139,92,246,0.08)",
+                    border: "1px solid rgba(139,92,246,0.2)",
+                    color: "#C4B5FD",
+                  }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="#8B5CF6" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                  {feature}
+                </span>
+              ))}
             </div>
 
             <div className="flex flex-col sm:flex-row gap-4 pt-2">

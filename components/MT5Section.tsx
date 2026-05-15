@@ -91,92 +91,136 @@ export default function MT5Section() {
             </ul>
           </div>
 
-          {/* Right: Sync Diagram (CSS) */}
+          {/* Right: Live Sync Mockup */}
           <div className="flex items-center justify-center">
-            <div
-              className="relative w-full"
-              style={{ maxWidth: "420px" }}
-            >
-              {/* Diagram Card */}
+            <div className="relative w-full" style={{ maxWidth: "440px" }}>
+              {/* Ambient glow */}
               <div
-                className="rounded-2xl p-8"
+                className="absolute pointer-events-none"
                 style={{
-                  backgroundColor: "#000000",
+                  inset: "-30px",
+                  background: "radial-gradient(ellipse at center, rgba(139,92,246,0.18) 0%, transparent 65%)",
+                  filter: "blur(40px)",
+                  zIndex: 0,
+                }}
+              />
+
+              {/* MT5 Source Card */}
+              <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{
+                  backgroundColor: "#0a0a14",
                   border: "1px solid #1F2937",
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.4)",
                 }}
               >
-                <p
-                  className="text-xs font-semibold uppercase tracking-widest mb-6 text-center"
-                  style={{ color: "#9CA3AF" }}
-                >
-                  How Sync Works
-                </p>
-
-                {/* MT5 Box */}
+                {/* MT5 header */}
                 <div
-                  className="rounded-xl p-4 mb-4 text-center"
+                  className="flex items-center gap-2.5 px-4 py-3"
+                  style={{ borderBottom: "1px solid #1a1a2e", backgroundColor: "#050507" }}
+                >
+                  <div
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #1e40af, #0369a1)" }}
+                  >
+                    <span style={{ color: "#FFFFFF", fontSize: "10px", fontWeight: 800, letterSpacing: "-0.02em" }}>MT5</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold" style={{ color: "#F9FAFB" }}>MetaTrader 5</p>
+                    <p className="text-[10px]" style={{ color: "#6B7280" }}>Account · 8047113</p>
+                  </div>
+                  <div className="flex items-center gap-1.5 px-2 py-1 rounded-full" style={{ backgroundColor: "rgba(34,197,94,0.12)" }}>
+                    <span className="w-1.5 h-1.5 rounded-full mt5-pulse" style={{ backgroundColor: "#22c55e" }} />
+                    <span className="text-[10px] font-semibold" style={{ color: "#22c55e" }}>LIVE</span>
+                  </div>
+                </div>
+
+                {/* Trade event */}
+                <div className="px-4 py-3.5">
+                  <p className="text-[10px] font-medium mb-1.5" style={{ color: "#6B7280" }}>POSITION CLOSED · 14:32:08</p>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: "#F9FAFB" }}>EURUSD</p>
+                      <p className="text-[11px]" style={{ color: "#9CA3AF" }}>BUY · 0.50 lots</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-bold" style={{ color: "#22c55e" }}>+$84.20</p>
+                      <p className="text-[11px]" style={{ color: "#22c55e" }}>+0.42%</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Sync Indicator */}
+              <div className="relative flex items-center justify-center py-3">
+                {/* Animated dots line */}
+                <div className="flex flex-col items-center gap-1.5">
+                  <span className="w-1.5 h-1.5 rounded-full mt5-dot mt5-dot-1" style={{ backgroundColor: "#8B5CF6" }} />
+                  <span className="w-1.5 h-1.5 rounded-full mt5-dot mt5-dot-2" style={{ backgroundColor: "#8B5CF6" }} />
+                  <span className="w-1.5 h-1.5 rounded-full mt5-dot mt5-dot-3" style={{ backgroundColor: "#8B5CF6" }} />
+                </div>
+                <div
+                  className="absolute left-1/2 -translate-x-1/2 px-3 py-1 rounded-full"
                   style={{
-                    backgroundColor: "#111827",
-                    border: "1px solid #1F2937",
+                    left: "calc(50% + 24px)",
+                    backgroundColor: "rgba(139,92,246,0.12)",
+                    border: "1px solid rgba(139,92,246,0.3)",
                   }}
                 >
-                  <p className="text-xs font-medium mb-1" style={{ color: "#9CA3AF" }}>
-                    MetaTrader 4 / 5
-                  </p>
-                  <p className="font-semibold text-sm" style={{ color: "#F9FAFB" }}>
-                    Trade Executed
-                  </p>
+                  <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#A78BFA", letterSpacing: "0.08em" }}>
+                    syncing
+                  </span>
                 </div>
+              </div>
 
-                {/* Arrow */}
-                <div className="flex flex-col items-center gap-1 my-2">
-                  <div
-                    className="w-px h-6"
-                    style={{ backgroundColor: "#8B5CF6" }}
-                  />
-                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-                    <path
-                      d="M1 1L5 5L9 1"
-                      stroke="#8B5CF6"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <p className="text-xs font-medium" style={{ color: "#8B5CF6" }}>
-                    Auto Sync
-                  </p>
-                  <svg width="10" height="6" viewBox="0 0 10 6" fill="none">
-                    <path
-                      d="M1 1L5 5L9 1"
-                      stroke="#8B5CF6"
-                      strokeWidth="1.5"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  </svg>
-                  <div
-                    className="w-px h-6"
-                    style={{ backgroundColor: "#8B5CF6" }}
-                  />
-                </div>
-
-                {/* TJ TradeHub Box */}
+              {/* TJ TradeHub Result Card */}
+              <div
+                className="relative rounded-2xl overflow-hidden"
+                style={{
+                  backgroundColor: "#0a0a14",
+                  border: "1px solid rgba(139,92,246,0.3)",
+                  boxShadow: "0 20px 40px rgba(0,0,0,0.5), 0 0 40px rgba(139,92,246,0.1)",
+                }}
+              >
+                {/* TJ header */}
                 <div
-                  className="rounded-xl p-4 text-center"
-                  style={{
-                    backgroundColor: "rgba(139, 92, 246, 0.1)",
-                    border: "1px solid rgba(139, 92, 246, 0.3)",
-                  }}
+                  className="flex items-center gap-2.5 px-4 py-3"
+                  style={{ borderBottom: "1px solid rgba(139,92,246,0.15)", background: "linear-gradient(90deg, rgba(139,92,246,0.08), transparent)" }}
                 >
-                  <p className="text-xs font-medium mb-1" style={{ color: "#8B5CF6" }}>
-                    TJ TradeHub
-                  </p>
-                  <p className="font-semibold text-sm" style={{ color: "#F9FAFB" }}>
-                    Logged &amp; Analyzed
-                  </p>
+                  <div
+                    className="flex items-center justify-center w-7 h-7 rounded-md flex-shrink-0"
+                    style={{ background: "linear-gradient(135deg, #8B5CF6, #A855F7)" }}
+                  >
+                    <span style={{ color: "#FFFFFF", fontSize: "11px", fontWeight: 800 }}>TJ</span>
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-xs font-semibold" style={{ color: "#F9FAFB" }}>TJ TradeHub</p>
+                    <p className="text-[10px]" style={{ color: "#A78BFA" }}>Trade logged automatically</p>
+                  </div>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+                    <path d="M5 12l5 5L20 7" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  </svg>
                 </div>
 
+                {/* Trade entry preview */}
+                <div className="px-4 py-3.5 flex flex-col gap-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold" style={{ color: "#F9FAFB" }}>EURUSD <span style={{ color: "#22c55e", fontSize: "10px", marginLeft: "6px" }}>LONG</span></p>
+                      <p className="text-[11px]" style={{ color: "#9CA3AF" }}>Setup: <span style={{ color: "#C4B5FD" }}>Breakout</span></p>
+                    </div>
+                    <p className="text-sm font-bold" style={{ color: "#22c55e" }}>+$84.20</p>
+                  </div>
+                  <div className="flex items-center gap-2 pt-2" style={{ borderTop: "1px solid #1F2937" }}>
+                    <div className="flex items-center gap-1 px-2 py-0.5 rounded-md" style={{ backgroundColor: "rgba(34,197,94,0.1)" }}>
+                      <svg width="9" height="9" viewBox="0 0 12 12" fill="none">
+                        <path d="M2 6l3 3 5-5" stroke="#22c55e" strokeWidth="2" strokeLinecap="round"/>
+                      </svg>
+                      <span className="text-[10px] font-semibold" style={{ color: "#22c55e" }}>Rules 4/4</span>
+                    </div>
+                    <span className="text-[10px]" style={{ color: "#6B7280" }}>Discipline: 87 · Awaiting review</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

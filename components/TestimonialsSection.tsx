@@ -2,20 +2,29 @@ const testimonials = [
   {
     quote:
       "Before TJ TradeHub I told myself I was following my rules — but I had no proof. Having to check them off for every single trade makes it impossible to lie to yourself. My discipline improved just because I couldn't skip the process anymore.",
-    name: "— Marc F.",
-    role: "Forex Trader",
+    initials: "MF",
+    name: "Marc F.",
+    location: "Zürich, CH",
+    role: "Forex Trader · FTMO $100k",
+    color: "#8B5CF6",
   },
   {
     quote:
       "The simple act of entering your rules into the journal changes how you trade. You become more conscious before you even open a position. I broke fewer rules in my first two weeks than in the two months before.",
-    name: "— Leon K.",
-    role: "Futures Trader",
+    initials: "LK",
+    name: "Leon K.",
+    location: "Hamburg, DE",
+    role: "Futures Trader · Apex $50k",
+    color: "#A855F7",
   },
   {
     quote:
       "I always knew what my rules were — I just didn't track whether I followed them. Now I have a Discipline Score and I can actually see the weeks where I slipped. That feedback loop alone is worth it.",
-    name: "— David S.",
-    role: "Swing Trader",
+    initials: "DS",
+    name: "David S.",
+    location: "London, UK",
+    role: "Swing Trader · 6 yrs experience",
+    color: "#7C3AED",
   },
 ];
 
@@ -73,13 +82,30 @@ export default function TestimonialsSection() {
                 &ldquo;{t.quote}&rdquo;
               </p>
 
-              <div>
-                <p className="text-sm font-semibold" style={{ color: "#F9FAFB" }}>
-                  {t.name}
-                </p>
-                <p className="text-xs mt-0.5" style={{ color: "#6B7280" }}>
-                  {t.role}
-                </p>
+              <div className="flex items-center gap-3 pt-2" style={{ borderTop: "1px solid #1F2937" }}>
+                <div
+                  className="flex-shrink-0 flex items-center justify-center rounded-full"
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    background: `linear-gradient(135deg, ${t.color}, rgba(0,0,0,0.4))`,
+                    color: "#FFFFFF",
+                    fontSize: "13px",
+                    fontWeight: 700,
+                    letterSpacing: "0.02em",
+                  }}
+                >
+                  {t.initials}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold" style={{ color: "#F9FAFB" }}>
+                    {t.name}
+                    <span className="font-normal" style={{ color: "#6B7280" }}> · {t.location}</span>
+                  </p>
+                  <p className="text-xs mt-0.5" style={{ color: "#9CA3AF" }}>
+                    {t.role}
+                  </p>
+                </div>
               </div>
             </div>
           ))}

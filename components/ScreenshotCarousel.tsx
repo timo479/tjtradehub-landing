@@ -129,13 +129,16 @@ export default function ScreenshotCarousel() {
                 key={slide.id}
                 onClick={() => goTo(i)}
                 style={{
-                  padding: "8px 20px", borderRadius: "10px",
-                  border: `1px solid ${active === i ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.06)"}`,
-                  backgroundColor: active === i ? "rgba(139,92,246,0.12)" : "transparent",
-                  color: active === i ? "#C4B5FD" : "#6B7280",
-                  fontWeight: active === i ? 600 : 400,
+                  padding: "9px 22px", borderRadius: "10px",
+                  border: active === i ? "1px solid transparent" : "1px solid rgba(255,255,255,0.08)",
+                  background: active === i
+                    ? "linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)"
+                    : "transparent",
+                  color: active === i ? "#FFFFFF" : "#9CA3AF",
+                  fontWeight: active === i ? 600 : 500,
                   fontSize: "14px", cursor: "pointer",
                   transition: "all 0.2s",
+                  boxShadow: active === i ? "0 4px 14px rgba(139,92,246,0.4)" : "none",
                 }}
               >
                 {slide.label}

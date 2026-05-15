@@ -15,12 +15,28 @@ export default function BuiltForSection() {
         className="mx-auto px-6 text-center"
         style={{ maxWidth: "800px" }}
       >
-        <p
-          className="text-sm font-semibold uppercase tracking-widest mb-4"
-          style={{ color: "#8B5CF6" }}
-        >
-          Who It&apos;s For
-        </p>
+        <div className="inline-flex items-center gap-3 mb-5">
+          <span
+            className="text-sm font-bold"
+            style={{
+              color: "#8B5CF6",
+              fontVariantNumeric: "tabular-nums",
+              letterSpacing: "0.05em",
+            }}
+          >
+            03
+          </span>
+          <span
+            className="h-px w-8"
+            style={{ backgroundColor: "rgba(139,92,246,0.4)" }}
+          />
+          <p
+            className="text-xs font-semibold uppercase tracking-widest"
+            style={{ color: "#9CA3AF" }}
+          >
+            Who It&apos;s For
+          </p>
+        </div>
         <h2
           className="text-3xl md:text-4xl font-bold leading-tight mb-6"
           style={{ color: "#F9FAFB" }}

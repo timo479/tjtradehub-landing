@@ -75,12 +75,28 @@ export default function DifferentiatorSection() {
       >
         {/* Header */}
         <div className="text-center mb-16" style={{ maxWidth: "680px", margin: "0 auto 64px" }}>
-          <p
-            className="text-sm font-semibold uppercase tracking-widest mb-4"
-            style={{ color: "#8B5CF6" }}
-          >
-            Your Journal, Your Rules
-          </p>
+          <div className="inline-flex items-center gap-3 mb-5">
+            <span
+              className="text-sm font-bold"
+              style={{
+                color: "#8B5CF6",
+                fontVariantNumeric: "tabular-nums",
+                letterSpacing: "0.05em",
+              }}
+            >
+              02
+            </span>
+            <span
+              className="h-px w-8"
+              style={{ backgroundColor: "rgba(139,92,246,0.4)" }}
+            />
+            <p
+              className="text-xs font-semibold uppercase tracking-widest"
+              style={{ color: "#9CA3AF" }}
+            >
+              Your Journal, Your Rules
+            </p>
+          </div>
           <h2
             className="text-3xl md:text-4xl font-bold leading-tight"
             style={{ color: "#F9FAFB" }}
