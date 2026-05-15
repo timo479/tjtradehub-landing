@@ -1,9 +1,14 @@
 "use client";
 
-const message =
-  "TJ TradeHub is currently in Early Access — built by active traders, for active traders. Your feedback directly shapes the product.";
+const messages = [
+  "TJ TradeHub is currently in Early Access — built by active traders, for active traders",
+  "Founder pricing $29/mo locked in forever — for everyone who joins now",
+  "Your feedback directly shapes the product — request a feature, see it shipped",
+  "MT4/MT5 auto-sync, Discipline Score, custom rules — all included from day one",
+  "Built in Switzerland by traders who couldn't find a journal that fit their system",
+];
 
-const items = Array(8).fill(message);
+const items = [...messages, ...messages];
 
 export default function EarlyAccessBanner() {
   return (
@@ -77,7 +82,9 @@ export default function EarlyAccessBanner() {
               }}
             />
             <span>
-              <span style={{ color: "#8B5CF6", fontWeight: 600 }}>Early Access</span>
+              <span style={{ color: "#8B5CF6", fontWeight: 600 }}>
+                {i % messages.length === 0 ? "Early Access" : i % messages.length === 1 ? "Founder Pricing" : i % messages.length === 2 ? "Built With You" : i % messages.length === 3 ? "Everything Included" : "Made in Switzerland"}
+              </span>
               {"  —  "}
               {text.replace("TJ TradeHub is currently in Early Access — ", "")}
             </span>

@@ -39,57 +39,29 @@ export default function Header() {
             <a
               key={item}
               href={`#${item.toLowerCase()}`}
-              className="text-sm font-medium transition-colors duration-200"
-              style={{ color: "#9CA3AF" }}
-              onMouseEnter={(e) =>
-                ((e.target as HTMLAnchorElement).style.color = "#F9FAFB")
-              }
-              onMouseLeave={(e) =>
-                ((e.target as HTMLAnchorElement).style.color = "#9CA3AF")
-              }
+              className="header-nav-link text-sm font-medium"
             >
               {item}
             </a>
           ))}
-          <Link
-            href="/terms"
-            className="text-sm font-medium transition-colors duration-200"
-            style={{ color: "#9CA3AF" }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.color = "#F9FAFB")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.color = "#9CA3AF")
-            }
-          >
-            Terms
-          </Link>
         </nav>
 
         {/* CTA */}
         <div className="hidden md:flex items-center gap-3">
           <Link
             href="/login"
-            className="text-sm font-medium transition-colors duration-200"
-            style={{ color: "#9CA3AF" }}
+            className="header-nav-link text-sm font-medium"
           >
             Sign In
           </Link>
           <Link
             href="/register"
-            className="inline-flex items-center px-5 py-2.5 text-sm font-semibold transition-all duration-200"
+            className="header-cta inline-flex items-center px-5 py-2.5 text-sm font-semibold"
             style={{
               backgroundColor: "#8B5CF6",
               color: "#F9FAFB",
               borderRadius: "14px",
             }}
-            onMouseEnter={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.filter =
-                "brightness(1.08)")
-            }
-            onMouseLeave={(e) =>
-              ((e.currentTarget as HTMLAnchorElement).style.filter = "none")
-            }
           >
             Start Free Trial
           </Link>
@@ -136,14 +108,6 @@ export default function Header() {
               {item}
             </a>
           ))}
-          <Link
-            href="/terms"
-            className="text-sm font-medium py-2"
-            style={{ color: "#9CA3AF" }}
-            onClick={() => setMenuOpen(false)}
-          >
-            Terms
-          </Link>
           <Link
             href="/login"
             className="text-sm font-medium py-2"

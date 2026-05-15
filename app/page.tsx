@@ -47,6 +47,7 @@ import AboutSection from "@/components/AboutSection";
 import FinalCTA from "@/components/FinalCTA";
 import EarlyAccessBanner from "@/components/EarlyAccessBanner";
 import SEOLinksSection from "@/components/SEOLinksSection";
+import ScrollReveal from "@/components/ScrollReveal";
 
 export default function Home() {
   return (
@@ -59,18 +60,18 @@ export default function Home() {
       <main>
         <Hero />
         <EarlyAccessBanner />
-        <ProblemSection />
-        <ScreenshotCarousel />
-        <MT5Section />
-        <ChartsVideoSection />
-        <CalculatorsSection />
-        <DifferentiatorSection />
-        <BuiltForSection />
-        <TestimonialsSection />
-        <PricingSection />
-        <AboutSection />
-        <SEOLinksSection />
-        <FinalCTA />
+        <ScrollReveal><ProblemSection /></ScrollReveal>
+        <ScrollReveal><ScreenshotCarousel /></ScrollReveal>
+        <ScrollReveal><MT5Section /></ScrollReveal>
+        <ScrollReveal><ChartsVideoSection /></ScrollReveal>
+        <ScrollReveal><CalculatorsSection /></ScrollReveal>
+        <ScrollReveal><DifferentiatorSection /></ScrollReveal>
+        <ScrollReveal><BuiltForSection /></ScrollReveal>
+        <ScrollReveal><TestimonialsSection /></ScrollReveal>
+        <ScrollReveal><PricingSection /></ScrollReveal>
+        <ScrollReveal><AboutSection /></ScrollReveal>
+        <ScrollReveal><SEOLinksSection /></ScrollReveal>
+        <ScrollReveal><FinalCTA /></ScrollReveal>
       </main>
       <footer
         style={{

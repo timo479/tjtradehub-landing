@@ -12,7 +12,7 @@ const problems = [
       </svg>
     ),
     title: "You Break Rules. Nothing Flags It.",
-    desc: "You took the trade. You knew it didn't match your setup criteria. A generic journal recorded it like any other entry. No warning. No pattern. No accountability.",
+    desc: "Generic journals log every trade equally — even the ones that violated your own setup criteria.",
   },
   {
     icon: (
@@ -27,7 +27,7 @@ const problems = [
       </svg>
     ),
     title: "Emotions Look Like Decisions.",
-    desc: "FOMO, frustration, boredom — they all look like regular trades in a basic journal. You can't fix what you can't see.",
+    desc: "FOMO and frustration leave no fingerprint in a basic journal. You can't fix what you can't see.",
   },
   {
     icon: (
@@ -42,7 +42,7 @@ const problems = [
       </svg>
     ),
     title: "The Same Mistake. Every Week.",
-    desc: "You overtrade on slow days. You move your stop. You know it. But without data, you can't see how often — or how much it's actually costing you.",
+    desc: "Overtrading. Stop-moving. Without data, you can't measure how often — or what it's costing.",
   },
   {
     icon: (
@@ -57,7 +57,7 @@ const problems = [
       </svg>
     ),
     title: "You Don't Know Why You Really Lost.",
-    desc: "Was it the setup? The entry? The sizing? Or did you ignore your own rules again? Generic journals can't answer that. TJ TradeHub can — because you defined the rules yourself.",
+    desc: "Bad setup? Bad execution? A broken rule? Generic journals can't tell. Yours should.",
   },
 ];
 

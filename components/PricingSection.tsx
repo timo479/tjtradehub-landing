@@ -4,9 +4,15 @@ const included = [
   "Strategy rule tracking",
   "Setup tagging",
   "Discipline score & trends",
-  "Execution analytics (coming soon)",
   "Full trade history import",
+  "Risk & drawdown tools",
   "Your data, always accessible",
+];
+
+const competitors = [
+  { name: "Edgewonk", price: "$169" },
+  { name: "Tradervue", price: "$49" },
+  { name: "Tradezella", price: "$39" },
 ];
 
 export default function PricingSection() {
@@ -110,9 +116,36 @@ export default function PricingSection() {
           >
             You save $16 every month — forever.
           </p>
-          <p className="text-sm mb-8" style={{ color: "#9CA3AF" }}>
+          <p className="text-sm mb-5" style={{ color: "#9CA3AF" }}>
             Founder rate — locked in for as long as you stay subscribed.
           </p>
+
+          {/* Competitor price anchor */}
+          <div
+            className="mb-6 px-4 py-3 rounded-xl"
+            style={{
+              backgroundColor: "rgba(255,255,255,0.02)",
+              border: "1px solid #1F2937",
+            }}
+          >
+            <p className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: "#6B7280" }}>
+              Compare
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {competitors.map((c) => (
+                <div key={c.name} className="flex items-center justify-between text-xs">
+                  <span style={{ color: "#9CA3AF" }}>{c.name}</span>
+                  <span className="font-medium" style={{ color: "#6B7280", textDecoration: "line-through" }}>
+                    {c.price}/mo
+                  </span>
+                </div>
+              ))}
+              <div className="flex items-center justify-between text-xs pt-2 mt-1" style={{ borderTop: "1px solid #1F2937" }}>
+                <span className="font-semibold" style={{ color: "#F9FAFB" }}>TJ TradeHub</span>
+                <span className="font-bold" style={{ color: "#8B5CF6" }}>$29/mo</span>
+              </div>
+            </div>
+          </div>
 
           {/* CTA */}
           <a
