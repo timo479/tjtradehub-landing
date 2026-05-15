@@ -39,7 +39,12 @@ export default function PricingSection() {
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            7 days free. Then $29/month — locked in forever at the Founder rate.
+            7 days free. Then just{" "}
+            <span style={{ color: "#F9FAFB", fontWeight: 600 }}>$29/month</span>{" "}
+            <span style={{ color: "#6B7280", textDecoration: "line-through" }}>
+              $45
+            </span>{" "}
+            — locked in forever at the Founder rate.
           </p>
         </div>
 
@@ -61,18 +66,31 @@ export default function PricingSection() {
               Founder Access
             </span>
             <span
-              className="px-3 py-1 text-xs font-semibold rounded-full"
+              className="px-3 py-1 text-xs font-bold rounded-full"
               style={{
-                backgroundColor: "rgba(139, 92, 246, 0.15)",
-                color: "#8B5CF6",
+                background:
+                  "linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)",
+                color: "#FFFFFF",
+                letterSpacing: "0.03em",
               }}
             >
-              Early Bird
+              SAVE 35%
             </span>
           </div>
 
           {/* Price */}
-          <div className="flex items-end gap-2 mb-2">
+          <div className="flex items-end gap-3 mb-2">
+            <span
+              className="text-2xl font-medium leading-none mb-2"
+              style={{
+                color: "#6B7280",
+                textDecoration: "line-through",
+                textDecorationColor: "#EF4444",
+                textDecorationThickness: "2px",
+              }}
+            >
+              $45
+            </span>
             <span
               className="text-5xl font-bold leading-none"
               style={{ color: "#F9FAFB" }}
@@ -86,6 +104,12 @@ export default function PricingSection() {
               / month
             </span>
           </div>
+          <p
+            className="text-sm font-semibold mb-1"
+            style={{ color: "#8B5CF6" }}
+          >
+            You save $16 every month — forever.
+          </p>
           <p className="text-sm mb-8" style={{ color: "#9CA3AF" }}>
             Founder rate — locked in for as long as you stay subscribed.
           </p>
