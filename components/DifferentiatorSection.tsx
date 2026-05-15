@@ -65,7 +65,7 @@ const features = [
 export default function DifferentiatorSection() {
   return (
     <section
-      id="features"
+      id="how-it-works"
       className="py-16 md:py-[120px]"
       style={{ backgroundColor: "#111827" }}
     >

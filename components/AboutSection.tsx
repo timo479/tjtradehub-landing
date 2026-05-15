@@ -42,23 +42,25 @@ export default function AboutSection() {
           </p>
 
           <div className="flex items-center justify-center gap-3 mt-6 pt-6" style={{ borderTop: "1px solid #1F2937" }}>
-            <div style={{ display: "flex", gap: "-8px" }}>
-              {["T", "J"].map((initial) => (
+            <div style={{ display: "flex" }}>
+              {["T", "J"].map((initial, i) => (
                 <div
                   key={initial}
                   style={{
-                    width: "32px",
-                    height: "32px",
+                    width: "34px",
+                    height: "34px",
                     borderRadius: "50%",
                     backgroundColor: "#1F2937",
                     border: "2px solid #000",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    fontSize: "12px",
+                    fontSize: "13px",
                     fontWeight: 700,
                     color: "#8B5CF6",
-                    marginLeft: initial === "J" ? "-8px" : "0",
+                    marginLeft: i > 0 ? "-12px" : "0",
+                    zIndex: 2 - i,
+                    position: "relative",
                   }}
                 >
                   {initial}

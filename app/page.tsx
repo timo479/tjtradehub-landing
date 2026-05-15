@@ -59,11 +59,11 @@ export default function Home() {
       <main>
         <Hero />
         <EarlyAccessBanner />
+        <ProblemSection />
         <ScreenshotCarousel />
         <MT5Section />
         <ChartsVideoSection />
         <CalculatorsSection />
-        <ProblemSection />
         <DifferentiatorSection />
         <BuiltForSection />
         <TestimonialsSection />

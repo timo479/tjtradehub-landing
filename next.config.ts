@@ -29,6 +29,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   typescript: { ignoreBuildErrors: true },
   eslint: { ignoreDuringBuilds: true },
+  images: {
+    qualities: [75, 90, 95, 100],
+  },
   async redirects() {
     return [
       {

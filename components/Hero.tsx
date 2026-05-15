@@ -98,30 +98,48 @@ export default function Hero() {
             </p>
           </div>
 
-          {/* Right: 3D Logo with Glow */}
-          <div className="flex items-center justify-center relative">
+          {/* Right: 3-Card Fan */}
+          <div className="hero-fan-container">
+            {/* Ambient glow */}
             <div
-              className="absolute inset-0 rounded-full"
+              className="absolute pointer-events-none"
               style={{
+                inset: "-60px",
                 background:
-                  "radial-gradient(ellipse at center, rgba(139, 92, 246, 0.25) 0%, transparent 70%)",
-                filter: "blur(40px)",
+                  "radial-gradient(ellipse at center, rgba(139,92,246,0.28) 0%, transparent 65%)",
+                filter: "blur(60px)",
+                zIndex: 0,
               }}
             />
-            <div className="logo-rotate-hero w-[220px] h-[220px] md:w-[340px] md:h-[340px] relative z-10" style={{ position: "relative" }}>
-              {Array.from({ length: 16 }).map((_, i) => (
-                <Image
-                  key={i}
-                  src="/logo-tj-transparent.png"
-                  alt=""
-                  width={340}
-                  height={340}
-                  className="logo-layer object-contain"
-                  style={{ transform: `translateZ(${i * 2}px)`, opacity: i === 15 ? 1 : 0.6 }}
-                  priority={i === 0}
-                />
-              ))}
-            </div>
+
+            {[
+              { id: "journal", url: "tjtradehub.com/journal", image: "/screenshots/ss-journal.png", pos: "left" },
+              { id: "dashboard", url: "tjtradehub.com/dashboard", image: "/screenshots/ss-dashboard-v2.png", pos: "center" },
+              { id: "stats", url: "tjtradehub.com/statistics", image: "/screenshots/ss-stats.png", pos: "right" },
+            ].map((card) => (
+              <div key={card.id} className={`hero-card hero-card-${card.pos}`}>
+                <div className="hero-card-chrome">
+                  <div className="hero-card-dots">
+                    <span style={{ backgroundColor: "#FF5F57" }} />
+                    <span style={{ backgroundColor: "#FFBD2E" }} />
+                    <span style={{ backgroundColor: "#28C840" }} />
+                  </div>
+                  <div className="hero-card-url">{card.url}</div>
+                </div>
+                <div className="hero-card-screenshot">
+                  <Image
+                    src={card.image}
+                    alt={card.id}
+                    width={1080}
+                    height={1800}
+                    unoptimized
+                    priority={card.pos === "center"}
+                    style={{ width: "100%", height: "auto", display: "block" }}
+                  />
+                  <div className="hero-card-fade" />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
