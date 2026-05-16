@@ -36,6 +36,7 @@ const jsonLd = {
 import Hero from "@/components/Hero";
 import ScreenshotCarousel from "@/components/ScreenshotCarousel";
 import MT5Section from "@/components/MT5Section";
+import BrokersSection from "@/components/BrokersSection";
 import ChartsVideoSection from "@/components/ChartsVideoSection";
 import CalculatorsSection from "@/components/CalculatorsSection";
 import ProblemSection from "@/components/ProblemSection";
@@ -63,6 +64,7 @@ export default function Home() {
         <ScrollReveal><ProblemSection /></ScrollReveal>
         <ScrollReveal><ScreenshotCarousel /></ScrollReveal>
         <ScrollReveal><MT5Section /></ScrollReveal>
+        <ScrollReveal><BrokersSection /></ScrollReveal>
         <ScrollReveal><ChartsVideoSection /></ScrollReveal>
         <ScrollReveal><CalculatorsSection /></ScrollReveal>
         <ScrollReveal><DifferentiatorSection /></ScrollReveal>

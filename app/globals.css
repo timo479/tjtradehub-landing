@@ -554,3 +554,30 @@ html.dashboard-light .trial-banner {
 .mt5-dot-1 { animation-delay: 0s; }
 .mt5-dot-2 { animation-delay: 0.2s; }
 .mt5-dot-3 { animation-delay: 0.4s; }
+
+/* --- Brokers marquee --- */
+@keyframes brokers-marquee {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes brokers-marquee-reverse {
+  from { transform: translateX(-50%); }
+  to   { transform: translateX(0); }
+}
+.brokers-track {
+  animation: brokers-marquee 40s linear infinite;
+}
+.brokers-track-reverse {
+  animation: brokers-marquee-reverse 50s linear infinite;
+}
+.brokers-marquee:hover .brokers-track,
+.brokers-marquee:hover .brokers-track-reverse {
+  animation-play-state: paused;
+}
+@keyframes brokers-glow-pulse {
+  0%, 100% { opacity: 0.55; }
+  50%      { opacity: 0.9; }
+}
+.brokers-glow {
+  animation: brokers-glow-pulse 6s ease-in-out infinite;
+}
