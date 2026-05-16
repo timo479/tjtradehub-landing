@@ -223,6 +223,17 @@ html.dashboard-light .trial-banner {
   flex-wrap: wrap;
 }
 
+/* Hide tab labels on small screens, keep icons only */
+@media (max-width: 640px) {
+  .screenshot-tab-label {
+    display: none;
+  }
+  .screenshot-tab-group {
+    width: 100%;
+    max-width: 360px;
+  }
+}
+
 /* JournalNew: today-stats grid collapses on mobile */
 .journal-today-stats {
   display: grid;

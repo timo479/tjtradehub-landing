@@ -2,37 +2,83 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
-const slides = [
+type Slide = {
+  id: string;
+  label: string;
+  path: string;
+  description: string;
+  image: string;
+  scrollable?: boolean;
+  icon: React.ReactNode;
+};
+
+const slides: Slide[] = [
   {
     id: "dashboard",
     label: "Dashboard",
+    path: "/dashboard",
     description: "Performance overview — stats, equity curve, MT5 sync and more at a glance",
     image: "/screenshots/ss-dashboard-v2.png",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <rect x="3" y="3" width="7" height="9" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        <rect x="14" y="3" width="7" height="5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        <rect x="14" y="12" width="7" height="9" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        <rect x="3" y="16" width="7" height="5" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+      </svg>
+    ),
   },
   {
     id: "journal",
     label: "Trade Journal",
+    path: "/dashboard/journal",
     description: "Log every trade with setup, emotions, rules checklist and screenshots",
     image: "/screenshots/ss-journal.png",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M6 3h11a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
+        <path d="M8 8h7M8 12h7M8 16h4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
   },
   {
     id: "analytics",
     label: "Analytics",
+    path: "/dashboard/statistics",
     description: "Deep-dive statistics: equity curve, win rate, rule compliance, setup performance and more",
     image: "/screenshots/ss-stats.png",
     scrollable: true,
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M4 19h16M7 16V9M12 16V5M17 16v-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
   },
   {
     id: "calculator",
     label: "Risk Calculator",
+    path: "/dashboard/calculator",
     description: "Calculate exact position size, risk amount and R:R ratio for any MT5 instrument",
     image: "/screenshots/ss-calculator.png",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+        <path d="M9 7h6M8 12h2M14 12h2M8 16h2M14 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+      </svg>
+    ),
   },
   {
     id: "drawdown",
     label: "Drawdown Tool",
+    path: "/dashboard/drawdown",
     description: "Know exactly how much you need to recover from any drawdown — and how long it takes",
     image: "/screenshots/ss-drawdown.png",
+    icon: (
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
+        <path d="M3 6l5 5 4-4 9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 16v4h-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
   },
 ];
 
@@ -46,7 +92,8 @@ export default function ScreenshotCarousel() {
   const zoomRef = useRef<HTMLDivElement>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const isAnalytics = slides[active].id === "analytics";
+  const currentSlide = slides[active];
+  const isAnalytics = currentSlide.id === "analytics";
 
   const handleZoomMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (!zoomRef.current) return;
@@ -91,20 +138,53 @@ export default function ScreenshotCarousel() {
 
   return (
     <>
-      <section style={{ backgroundColor: "#050507", padding: "96px 0 112px" }}>
-        <div style={{ maxWidth: "1080px", margin: "0 auto", padding: "0 24px" }}>
+      <section style={{ position: "relative", backgroundColor: "#050507", padding: "96px 0 112px", overflow: "hidden" }}>
+
+        {/* Ambient glow */}
+        <div
+          aria-hidden
+          className="brokers-glow"
+          style={{
+            position: "absolute",
+            inset: "-200px 0",
+            background: "radial-gradient(ellipse 900px 500px at 50% 30%, rgba(139,92,246,0.16) 0%, transparent 70%)",
+            filter: "blur(40px)",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+
+        {/* Subtle grid pattern */}
+        <div
+          aria-hidden
+          style={{
+            position: "absolute",
+            inset: 0,
+            backgroundImage:
+              "linear-gradient(rgba(139,92,246,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(139,92,246,0.05) 1px, transparent 1px)",
+            backgroundSize: "60px 60px",
+            maskImage: "radial-gradient(ellipse 800px 400px at 50% 0%, #000 0%, transparent 70%)",
+            WebkitMaskImage: "radial-gradient(ellipse 800px 400px at 50% 0%, #000 0%, transparent 70%)",
+            pointerEvents: "none",
+            zIndex: 0,
+          }}
+        />
+
+        <div style={{ position: "relative", maxWidth: "1080px", margin: "0 auto", padding: "0 24px", zIndex: 1 }}>
 
           {/* Section label */}
           <div style={{ textAlign: "center", marginBottom: "20px" }}>
             <span style={{
-              display: "inline-block",
-              padding: "4px 14px", borderRadius: "20px",
-              fontSize: "11px", fontWeight: 700, letterSpacing: "0.1em",
+              display: "inline-flex", alignItems: "center", gap: "8px",
+              padding: "6px 14px", borderRadius: "20px",
+              fontSize: "11px", fontWeight: 700, letterSpacing: "0.12em",
               textTransform: "uppercase",
-              backgroundColor: "rgba(139,92,246,0.12)",
+              backgroundColor: "rgba(139,92,246,0.1)",
               border: "1px solid rgba(139,92,246,0.25)",
               color: "#A78BFA",
+              backdropFilter: "blur(8px)",
             }}>
+              <span className="mt5-pulse" style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#A78BFA", display: "inline-block" }} />
               Product Tour
             </span>
           </div>
@@ -112,38 +192,90 @@ export default function ScreenshotCarousel() {
           {/* Heading */}
           <div style={{ textAlign: "center", marginBottom: "52px" }}>
             <h2 style={{
-              fontSize: "clamp(28px, 4vw, 42px)", fontWeight: 800,
-              color: "#F9FAFB", lineHeight: 1.2, marginBottom: "14px",
+              fontSize: "clamp(28px, 4vw, 46px)", fontWeight: 800,
+              color: "#F9FAFB", lineHeight: 1.15, marginBottom: "16px",
+              letterSpacing: "-0.02em",
             }}>
-              See it in action
+              See it{" "}
+              <span style={{
+                background: "linear-gradient(135deg, #C4B5FD 0%, #8B5CF6 50%, #A855F7 100%)",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                backgroundClip: "text",
+              }}>
+                in action
+              </span>
             </h2>
-            <p style={{ color: "#6B7280", fontSize: "17px", maxWidth: "480px", margin: "0 auto", lineHeight: 1.6 }}>
+            <p style={{ color: "#9CA3AF", fontSize: "17px", maxWidth: "520px", margin: "0 auto", lineHeight: 1.6 }}>
               Everything you need to track, analyze, and improve your trading — in one place.
             </p>
           </div>
 
-          {/* Tab switcher */}
-          <div className="screenshot-tabs">
-            {slides.map((slide, i) => (
-              <button
-                key={slide.id}
-                onClick={() => goTo(i)}
+          {/* Segmented tab pill */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: "36px" }}>
+            <div
+              role="tablist"
+              style={{
+                position: "relative",
+                display: "grid",
+                gridTemplateColumns: `repeat(${slides.length}, 1fr)`,
+                gap: "2px",
+                padding: "5px",
+                borderRadius: "14px",
+                backgroundColor: "rgba(255,255,255,0.03)",
+                border: "1px solid rgba(255,255,255,0.06)",
+                backdropFilter: "blur(10px)",
+              }}
+              className="screenshot-tab-group"
+            >
+              {/* Sliding indicator */}
+              <div
+                aria-hidden
                 style={{
-                  padding: "9px 22px", borderRadius: "10px",
-                  border: active === i ? "1px solid transparent" : "1px solid rgba(255,255,255,0.08)",
-                  background: active === i
-                    ? "linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)"
-                    : "transparent",
-                  color: active === i ? "#FFFFFF" : "#9CA3AF",
-                  fontWeight: active === i ? 600 : 500,
-                  fontSize: "14px", cursor: "pointer",
-                  transition: "all 0.2s",
-                  boxShadow: active === i ? "0 4px 14px rgba(139,92,246,0.4)" : "none",
+                  position: "absolute",
+                  top: "5px",
+                  bottom: "5px",
+                  left: `calc(5px + ${active} * ((100% - 10px) / ${slides.length}))`,
+                  width: `calc((100% - 10px) / ${slides.length})`,
+                  borderRadius: "10px",
+                  background: "linear-gradient(135deg, #8B5CF6 0%, #A855F7 100%)",
+                  boxShadow: "0 6px 20px rgba(139,92,246,0.45), inset 0 1px 0 rgba(255,255,255,0.2)",
+                  transition: "left 0.32s cubic-bezier(0.22, 1, 0.36, 1)",
+                  zIndex: 0,
                 }}
-              >
-                {slide.label}
-              </button>
-            ))}
+              />
+              {slides.map((slide, i) => (
+                <button
+                  key={slide.id}
+                  role="tab"
+                  aria-selected={active === i}
+                  onClick={() => goTo(i)}
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "8px",
+                    padding: "10px 16px",
+                    borderRadius: "10px",
+                    border: "none",
+                    background: "transparent",
+                    color: active === i ? "#FFFFFF" : "#9CA3AF",
+                    fontWeight: active === i ? 600 : 500,
+                    fontSize: "13.5px",
+                    cursor: "pointer",
+                    transition: "color 0.2s",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  <span style={{ display: "inline-flex", color: active === i ? "#FFFFFF" : "#6B7280", transition: "color 0.2s" }}>
+                    {slide.icon}
+                  </span>
+                  <span className="screenshot-tab-label">{slide.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Browser mockup + screenshot */}
@@ -151,10 +283,11 @@ export default function ScreenshotCarousel() {
             onMouseEnter={() => setHovered(true)}
             onMouseLeave={() => setHovered(false)}
             style={{
-              borderRadius: "16px",
+              position: "relative",
+              borderRadius: "18px",
               overflow: "hidden",
-              border: "1px solid rgba(255,255,255,0.07)",
-              boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 40px 80px rgba(0,0,0,0.6), 0 0 120px rgba(139,92,246,0.08)",
+              border: "1px solid rgba(139,92,246,0.18)",
+              boxShadow: "0 0 0 1px rgba(139,92,246,0.1), 0 50px 100px rgba(0,0,0,0.65), 0 0 160px rgba(139,92,246,0.15)",
             }}
           >
             {/* Browser chrome bar */}
@@ -172,19 +305,37 @@ export default function ScreenshotCarousel() {
               </div>
               {/* URL bar */}
               <div style={{
-                flex: 1, maxWidth: "340px", margin: "0 auto",
+                flex: 1, maxWidth: "420px", margin: "0 auto",
                 backgroundColor: "rgba(255,255,255,0.05)",
-                borderRadius: "6px", padding: "5px 12px",
-                display: "flex", alignItems: "center", gap: "7px",
+                borderRadius: "7px", padding: "6px 12px",
+                display: "flex", alignItems: "center", gap: "8px",
+                border: "1px solid rgba(255,255,255,0.04)",
               }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" stroke="#4B5563" strokeWidth="1.5"/>
-                  <path d="M12 2c-2.5 2.5-4 5.5-4 10s1.5 7.5 4 10M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10M2 12h20" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round"/>
+                {/* Lock icon */}
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <rect x="5" y="11" width="14" height="9" rx="2" stroke="#6B7280" strokeWidth="2"/>
+                  <path d="M8 11V7a4 4 0 018 0v4" stroke="#6B7280" strokeWidth="2"/>
                 </svg>
-                <span style={{ color: "#6B7280", fontSize: "12px" }}>tjtradehub.com</span>
-                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" style={{ marginLeft: "auto", flexShrink: 0 }}>
-                  <path d="M12 2l3 6.3L22 9.3l-5 4.9 1.2 6.8L12 18l-6.2 3 1.2-6.8-5-4.9 7-1z" fill="#4B5563"/>
-                </svg>
+                <span style={{ color: "#9CA3AF", fontSize: "12px", fontWeight: 500 }}>
+                  tjtradehub.com
+                </span>
+                <span
+                  key={currentSlide.id}
+                  style={{
+                    color: "#A78BFA",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    opacity: fading ? 0 : 1,
+                    transition: "opacity 0.18s",
+                  }}
+                >
+                  {currentSlide.path}
+                </span>
+                {/* Live status */}
+                <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "5px", flexShrink: 0 }}>
+                  <span className="mt5-pulse" style={{ width: "6px", height: "6px", borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block" }} />
+                  <span style={{ color: "#22c55e", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em" }}>LIVE</span>
+                </div>
               </div>
               {/* Fullscreen button */}
               <button
@@ -230,12 +381,13 @@ export default function ScreenshotCarousel() {
                 }}
               >
                 <Image
-                  key={slides[active].id}
-                  src={slides[active].image}
-                  alt={slides[active].label}
+                  key={currentSlide.id}
+                  src={currentSlide.image}
+                  alt={currentSlide.label}
                   width={1080}
                   height={1800}
                   sizes="(max-width: 768px) 100vw, 1080px"
+                  quality={100}
                   unoptimized
                   style={{
                     width: "100%",
@@ -272,38 +424,40 @@ export default function ScreenshotCarousel() {
                   </span>
                 </div>
               )}
-              {/* Fade out bottom – for tall/scrollable images */}
-              <div style={{
-                position: "absolute", bottom: 0, left: 0, right: 0,
-                height: "100px", pointerEvents: "none",
-                background: "linear-gradient(to bottom, transparent, #050507)",
-              }} />
+              {/* Fade out bottom – only for scrollable slides */}
+              {currentSlide.scrollable && (
+                <div style={{
+                  position: "absolute", bottom: 0, left: 0, right: 0,
+                  height: "100px", pointerEvents: "none",
+                  background: "linear-gradient(to bottom, transparent, #050507)",
+                }} />
+              )}
             </div>
           </div>
 
-          {/* Slide description + progress dots */}
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px", marginTop: "28px" }}>
-            <p style={{
-              color: "#6B7280", fontSize: "14px",
-              opacity: fading ? 0 : 1, transition: "opacity 0.18s ease",
+          {/* Description */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "center",
+            gap: "10px", marginTop: "28px",
+            opacity: fading ? 0 : 1, transition: "opacity 0.18s ease",
+          }}>
+            <span style={{
+              display: "inline-flex", alignItems: "center", justifyContent: "center",
+              width: "22px", height: "22px",
+              borderRadius: "50%",
+              backgroundColor: "rgba(139,92,246,0.12)",
+              border: "1px solid rgba(139,92,246,0.25)",
+              flexShrink: 0,
+              color: "#A78BFA",
             }}>
-              {slides[active].description}
+              {currentSlide.icon}
+            </span>
+            <p style={{
+              color: "#9CA3AF", fontSize: "14.5px", lineHeight: 1.6,
+              textAlign: "center",
+            }}>
+              {currentSlide.description}
             </p>
-            <div style={{ display: "flex", gap: "6px" }}>
-              {slides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => goTo(i)}
-                  style={{
-                    width: active === i ? "24px" : "6px",
-                    height: "6px", borderRadius: "3px",
-                    backgroundColor: active === i ? "#8B5CF6" : "#1F2937",
-                    border: "none", cursor: "pointer", padding: 0,
-                    transition: "all 0.25s ease",
-                  }}
-                />
-              ))}
-            </div>
           </div>
 
         </div>
@@ -347,16 +501,17 @@ export default function ScreenshotCarousel() {
                 ))}
               </div>
               <div style={{
-                flex: 1, maxWidth: "340px", margin: "0 auto",
+                flex: 1, maxWidth: "420px", margin: "0 auto",
                 backgroundColor: "rgba(255,255,255,0.05)",
                 borderRadius: "6px", padding: "5px 12px",
                 display: "flex", alignItems: "center", gap: "7px",
               }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
-                  <path d="M12 2a10 10 0 100 20A10 10 0 0012 2z" stroke="#4B5563" strokeWidth="1.5"/>
-                  <path d="M12 2c-2.5 2.5-4 5.5-4 10s1.5 7.5 4 10M12 2c2.5 2.5 4 5.5 4 10s-1.5 7.5-4 10M2 12h20" stroke="#4B5563" strokeWidth="1.5" strokeLinecap="round"/>
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" style={{ flexShrink: 0 }}>
+                  <rect x="5" y="11" width="14" height="9" rx="2" stroke="#6B7280" strokeWidth="2"/>
+                  <path d="M8 11V7a4 4 0 018 0v4" stroke="#6B7280" strokeWidth="2"/>
                 </svg>
-                <span style={{ color: "#6B7280", fontSize: "12px" }}>tjtradehub.com / {slides[active].label.toLowerCase()}</span>
+                <span style={{ color: "#9CA3AF", fontSize: "12px" }}>tjtradehub.com</span>
+                <span style={{ color: "#A78BFA", fontSize: "12px" }}>{currentSlide.path}</span>
               </div>
               {/* Close button */}
               <button
@@ -389,11 +544,12 @@ export default function ScreenshotCarousel() {
               scrollbarColor: "rgba(139,92,246,0.4) transparent",
             }}>
               <Image
-                src={slides[active].image}
-                alt={slides[active].label}
+                src={currentSlide.image}
+                alt={currentSlide.label}
                 width={1080}
                 height={1800}
                 sizes="100vw"
+                quality={100}
                 unoptimized
                 style={{ width: "100%", height: "auto", display: "block" }}
               />
