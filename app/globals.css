@@ -592,3 +592,31 @@ html.dashboard-light .trial-banner {
 .brokers-glow {
   animation: brokers-glow-pulse 6s ease-in-out infinite;
 }
+
+/* ── Aurora gradient text (Hero) ──────────────────────── */
+@keyframes aurora-slide {
+  to { background-position: -200% 0; }
+}
+.aurora-text {
+  background: linear-gradient(90deg, #8B5CF6 0%, #C4B5FD 30%, #F0ABFC 55%, #8B5CF6 100%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+          background-clip: text;
+  color: transparent;
+  animation: aurora-slide 6s linear infinite;
+  will-change: background-position;
+}
+
+/* ── Logo Marquee ─────────────────────────────────────── */
+@keyframes marquee-x {
+  to { transform: translateX(-50%); }
+}
+.marquee-track { animation: marquee-x 40s linear infinite; }
+.marquee-track-rev { animation: marquee-x 40s linear infinite reverse; }
+.marquee-mask {
+  mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+  -webkit-mask-image: linear-gradient(to right, transparent, black 8%, black 92%, transparent);
+}
+
+/* ── Magnetic helper ──────────────────────────────────── */
+.magnet { will-change: transform; }

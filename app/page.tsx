@@ -49,6 +49,8 @@ import FinalCTA from "@/components/FinalCTA";
 import EarlyAccessBanner from "@/components/EarlyAccessBanner";
 import SEOLinksSection from "@/components/SEOLinksSection";
 import ScrollReveal from "@/components/ScrollReveal";
+import SmoothScroll from "@/components/SmoothScroll";
+import LogoMarquee from "@/components/LogoMarquee";
 
 export default function Home() {
   return (
@@ -58,8 +60,10 @@ export default function Home() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <Header />
+      <SmoothScroll>
       <main>
         <Hero />
+        <LogoMarquee />
         <EarlyAccessBanner />
         <ScrollReveal><ProblemSection /></ScrollReveal>
         <ScrollReveal><ScreenshotCarousel /></ScrollReveal>
@@ -75,6 +79,7 @@ export default function Home() {
         <ScrollReveal><SEOLinksSection /></ScrollReveal>
         <ScrollReveal><FinalCTA /></ScrollReveal>
       </main>
+      </SmoothScroll>
       <footer
         style={{
           backgroundColor: "#000000",

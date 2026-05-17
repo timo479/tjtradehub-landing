@@ -3,13 +3,24 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const { scrollY } = useScroll();
+  const headerBg = useTransform(scrollY, [0, 80], ["rgba(0,0,0,1)", "rgba(0,0,0,0.55)"]);
+  const headerBorder = useTransform(scrollY, [0, 80], ["#1F2937", "rgba(255,255,255,0.08)"]);
+  const headerBlur = useTransform(scrollY, [0, 80], ["blur(0px)", "blur(18px)"]);
 
   return (
-    <header
-      style={{ backgroundColor: "#000000", borderBottom: "1px solid #1F2937" }}
+    <motion.header
+      style={{
+        backgroundColor: headerBg,
+        borderBottom: "1px solid",
+        borderColor: headerBorder,
+        backdropFilter: headerBlur,
+        WebkitBackdropFilter: headerBlur,
+      }}
       className="fixed top-0 left-0 right-0 z-50 h-20"
     >
       <div
@@ -19,7 +30,7 @@ export default function Header() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-3">
           <Image
-            src="/logo-3d.png"
+            src="/logo-tj-transparent.png"
             alt="TJ TradeHub Logo"
             width={40}
             height={40}
@@ -130,6 +141,6 @@ export default function Header() {
           </Link>
         </div>
       )}
-    </header>
+    </motion.header>
   );
 }
