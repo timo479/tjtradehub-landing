@@ -4,6 +4,7 @@ import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { removeAccount } from "@/lib/metaapi";
 import { sendTikTokCompletePayment } from "@/lib/tiktok-events";
+import { claimFounderSlot } from "@/lib/founders";
 
 async function cleanupMetaAccount(stripeCustomerId: string) {
   const { data: user } = await db
@@ -62,12 +63,64 @@ export async function POST(request: NextRequest) {
   switch (event.type) {
     case "checkout.session.completed": {
       const session = event.data.object as Stripe.Checkout.Session;
+      if (session.payment_status !== "paid") break;
+
+      // One-time Founder Lifetime payment (mode='payment')
+      if (session.mode === "payment" && session.metadata?.kind === "founder_lifetime") {
+        const userId = session.metadata.userId;
+        if (!userId) {
+          console.error("Founder webhook: missing userId in metadata, session:", session.id);
+          return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+        }
+
+        const { data: u } = await db
+          .from("users")
+          .select("email")
+          .eq("id", userId)
+          .single();
+        const email = u?.email ?? session.customer_details?.email ?? "";
+
+        const result = await claimFounderSlot({
+          userId,
+          email,
+          acquiredVia: "sale",
+          stripeSessionId: session.id,
+        });
+
+        if ("error" in result) {
+          // Critical: money taken but no slot. Loud log — investigate + refund manually.
+          console.error(
+            "FOUNDER_SLOT_CLAIM_FAILED — refund required:",
+            result.error,
+            "session:",
+            session.id,
+            "user:",
+            userId,
+            "amount:",
+            session.amount_total
+          );
+          return NextResponse.json({ error: result.error }, { status: 500 });
+        }
+
+        console.log(`Founder #${String(result.slot).padStart(3, "0")} claimed by ${userId}`);
+
+        await sendTikTokCompletePayment({
+          eventId: event.id,
+          eventTime: event.created,
+          email: session.customer_details?.email,
+          externalId: userId,
+          value: session.amount_total != null ? session.amount_total / 100 : null,
+          currency: session.currency,
+        });
+        break;
+      }
+
+      // Existing subscription flow ($29/mo)
       if (session.mode !== "subscription" || !session.subscription) break;
 
       const sub = await stripe.subscriptions.retrieve(
         session.subscription as string
       );
-      if (session.payment_status !== "paid") break;
       const customerId = session.customer as string;
       if (!customerId) break;
 

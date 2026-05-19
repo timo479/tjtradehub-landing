@@ -185,7 +185,7 @@ export default function FounderLaunchBanner() {
         />
 
         <Link
-          href="/register?ref=giveaway"
+          href="/founders"
           className="tj-banner-link"
           style={{
             position: "relative",
@@ -314,7 +314,7 @@ export default function FounderLaunchBanner() {
               textTransform: "uppercase",
             }}
           >
-            Enter to win
+            Claim or win
             <span className="tj-banner-arrow" style={{ transition: "transform 0.25s", fontSize: 15 }}>
               →
             </span>
