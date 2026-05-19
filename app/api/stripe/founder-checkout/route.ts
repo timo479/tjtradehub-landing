@@ -47,6 +47,7 @@ export async function POST() {
     mode: "payment",
     payment_method_types: ["card"],
     line_items: [{ price: priceId, quantity: 1 }],
+    allow_promotion_codes: true,
     success_url: `${baseUrl}/founders/success?session_id={CHECKOUT_SESSION_ID}`,
     cancel_url: `${baseUrl}/founders?cancelled=true`,
     metadata: {
