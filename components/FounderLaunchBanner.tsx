@@ -24,7 +24,7 @@ export default function FounderLaunchBanner() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    if (localStorage.getItem(STORAGE_KEY) === "1") return;
+    if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
     setNow(Date.now());
     setVisible(true);
     const t = setInterval(() => setNow(Date.now()), 1_000);
@@ -43,7 +43,7 @@ export default function FounderLaunchBanner() {
     e.stopPropagation();
     e.preventDefault();
     try {
-      localStorage.setItem(STORAGE_KEY, "1");
+      sessionStorage.setItem(STORAGE_KEY, "1");
     } catch {
       /* private mode */
     }
