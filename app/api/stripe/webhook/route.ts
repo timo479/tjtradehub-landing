@@ -1,10 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import Stripe from "stripe";
+import crypto from "crypto";
+import bcrypt from "bcryptjs";
 import { stripe } from "@/lib/stripe";
 import { db } from "@/lib/db";
 import { removeAccount } from "@/lib/metaapi";
 import { sendTikTokCompletePayment } from "@/lib/tiktok-events";
 import { claimFounderSlot } from "@/lib/founders";
+import { sendFounderWelcomeEmail } from "@/lib/email";
+import { generateUniqueReferralCode } from "@/lib/lottery";
 
 async function cleanupMetaAccount(stripeCustomerId: string) {
   const { data: user } = await db
@@ -67,28 +71,81 @@ export async function POST(request: NextRequest) {
 
       // One-time Founder Lifetime payment (mode='payment')
       if (session.mode === "payment" && session.metadata?.kind === "founder_lifetime") {
-        const userId = session.metadata.userId;
-        if (!userId) {
-          console.error("Founder webhook: missing userId in metadata, session:", session.id);
-          return NextResponse.json({ error: "Missing userId" }, { status: 400 });
+        const email = (session.customer_details?.email ?? "").toLowerCase().trim();
+        if (!email) {
+          console.error("FOUNDER_NO_EMAIL — refund required. session:", session.id);
+          return NextResponse.json({ error: "No customer email" }, { status: 400 });
         }
 
-        const { data: u } = await db
-          .from("users")
-          .select("email")
-          .eq("id", userId)
-          .single();
-        const email = u?.email ?? session.customer_details?.email ?? "";
+        let userId = session.metadata.userId ?? null;
+        let resetToken: string | null = null;
+
+        // Guest checkout: find or create user
+        if (!userId) {
+          const { data: existing } = await db
+            .from("users")
+            .select("id")
+            .eq("email", email)
+            .maybeSingle();
+
+          if (existing) {
+            userId = existing.id;
+          } else {
+            // Create a fresh account for the buyer. Password set later via email link.
+            const randomPwHash = await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 12);
+            const trialEnds = new Date();
+            trialEnds.setDate(trialEnds.getDate() + 7);
+            const referralCode = await generateUniqueReferralCode(email);
+
+            const { data: created, error: createErr } = await db
+              .from("users")
+              .insert({
+                email,
+                name: session.customer_details?.name ?? email.split("@")[0],
+                password_hash: randomPwHash,
+                email_verified: true, // Stripe paid → email is real
+                trial_ends_at: trialEnds.toISOString(),
+                subscription_status: "trialing",
+                stripe_customer_id: (session.customer as string | null) ?? null,
+                referral_code: referralCode,
+              })
+              .select("id")
+              .single();
+
+            if (createErr || !created) {
+              console.error(
+                "FOUNDER_USER_CREATE_FAILED — refund required. session:",
+                session.id,
+                "email:",
+                email,
+                "error:",
+                createErr
+              );
+              return NextResponse.json({ error: "User create failed" }, { status: 500 });
+            }
+            userId = created.id;
+          }
+
+          // Issue a password-reset token so they can set up access
+          resetToken = crypto.randomBytes(32).toString("hex");
+          const expires = new Date(Date.now() + 60 * 60 * 1000).toISOString();
+          await db
+            .from("users")
+            .update({
+              password_reset_token: resetToken,
+              password_reset_token_expires: expires,
+            })
+            .eq("id", userId);
+        }
 
         const result = await claimFounderSlot({
-          userId,
+          userId: userId!,
           email,
           acquiredVia: "sale",
           stripeSessionId: session.id,
         });
 
         if ("error" in result) {
-          // Critical: money taken but no slot. Loud log — investigate + refund manually.
           console.error(
             "FOUNDER_SLOT_CLAIM_FAILED — refund required:",
             result.error,
@@ -104,10 +161,21 @@ export async function POST(request: NextRequest) {
 
         console.log(`Founder #${String(result.slot).padStart(3, "0")} claimed by ${userId}`);
 
+        // Welcome email (best-effort — user can recover via /forgot-password)
+        try {
+          await sendFounderWelcomeEmail({
+            to: email,
+            resetToken,
+            founderNumber: result.slot,
+          });
+        } catch (emailErr) {
+          console.error("Founder welcome email failed:", emailErr, "user:", userId);
+        }
+
         await sendTikTokCompletePayment({
           eventId: event.id,
           eventTime: event.created,
-          email: session.customer_details?.email,
+          email,
           externalId: userId,
           value: session.amount_total != null ? session.amount_total / 100 : null,
           currency: session.currency,

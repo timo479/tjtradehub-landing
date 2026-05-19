@@ -1,7 +1,6 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 type Stats = {
@@ -40,7 +39,6 @@ export default function FoundersClient({ initialStats }: { initialStats: Stats }
   const [now, setNow] = useState(Date.now());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     const t = setInterval(() => setNow(Date.now()), 1_000);
@@ -66,10 +64,6 @@ export default function FoundersClient({ initialStats }: { initialStats: Stats }
     try {
       const res = await fetch("/api/stripe/founder-checkout", { method: "POST" });
       const data = await res.json();
-      if (res.status === 401) {
-        router.push("/register?ref=founder");
-        return;
-      }
       if (!res.ok || !data.url) {
         setError(data.error ?? "Could not start checkout");
         setLoading(false);
@@ -80,7 +74,7 @@ export default function FoundersClient({ initialStats }: { initialStats: Stats }
       setError("Something went wrong. Please try again.");
       setLoading(false);
     }
-  }, [router]);
+  }, []);
 
   const diff = LAUNCH_DATE - now;
   const launched = diff <= 0;
