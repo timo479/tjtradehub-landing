@@ -5,7 +5,7 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist";
+type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery";
 
 interface Props {
   activePage: ActivePage;
@@ -23,6 +23,7 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard/charts", label: "Charts", key: "charts" },
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
   { href: "/dashboard/checklist", label: "Checklist", key: "checklist" },
+  { href: "/dashboard/lottery", label: "Lottery", key: "lottery" },
 ];
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";

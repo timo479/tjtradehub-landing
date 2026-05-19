@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
 import { getAccountState, provisionAccount, removeAccount, updateAccount, deployAccount, undeployAccount } from "@/lib/metaapi";
 import { encrypt } from "@/lib/encrypt";
+import { awardLots, LOTS_PER_SOURCE } from "@/lib/lottery";
 import { NextRequest, NextResponse } from "next/server";
 
 // GET – Status der Verbindung abrufen
@@ -65,13 +66,19 @@ export async function POST(req: NextRequest) {
 
   const { data: userSub } = await db
     .from("users")
-    .select("subscription_status, current_period_end")
+    .select("subscription_status, current_period_end, email")
     .eq("id", session.user.id)
     .single();
 
   if (!userSub || !hasActiveSubscription(userSub)) {
     return NextResponse.json({ error: "Pro plan required" }, { status: 403 });
   }
+
+  const userEmail = userSub.email as string;
+  const awardMt5Lots = () =>
+    awardLots(session.user.id!, userEmail, "mt5_connect", LOTS_PER_SOURCE.mt5_connect).catch(
+      (err) => console.error("Lottery mt5_connect error:", err)
+    );
 
   const { login, password, server, platform } = await req.json();
   if (!login || !password || !server || !platform) {
@@ -100,6 +107,7 @@ export async function POST(req: NextRequest) {
           last_meta_sync: null,
           meta_last_active: new Date().toISOString(),
         }).eq("id", session.user.id);
+        await awardMt5Lots();
         return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
       } catch (e) {
         const msg = e instanceof Error ? e.message : "";
@@ -136,6 +144,7 @@ export async function POST(req: NextRequest) {
       meta_last_active: new Date().toISOString(),
     }).eq("id", session.user.id);
 
+    await awardMt5Lots();
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });
   } catch (e) {
     return NextResponse.json({ error: e instanceof Error ? e.message : "Connection failed" }, { status: 502 });

@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { canAccessDashboard } from "@/lib/trial";
+import { awardLots, LOTS_PER_SOURCE } from "@/lib/lottery";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -78,6 +79,20 @@ export async function POST(req: NextRequest) {
     .update({ is_frozen: true })
     .eq("id", template_id)
     .eq("user_id", session.user.id);
+
+  // Lottery: +5 lots once user crosses 5-trade threshold (idempotent in awardLots)
+  try {
+    const { count } = await db
+      .from("trade_entries")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user.id);
+    if ((count ?? 0) >= 5) {
+      const { data: u } = await db.from("users").select("email").eq("id", session.user.id).single();
+      if (u?.email) await awardLots(session.user.id, u.email, "five_trades", LOTS_PER_SOURCE.five_trades);
+    }
+  } catch (err) {
+    console.error("Lottery five_trades error:", err);
+  }
 
   return NextResponse.json(entry);
 }

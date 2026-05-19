@@ -5,6 +5,7 @@ import bcrypt from "bcryptjs";
 import { db } from "./db";
 import { authConfig } from "@/auth.config";
 import { rateLimit } from "./rate-limit";
+import { awardLots, generateUniqueReferralCode, LOTS_PER_SOURCE } from "./lottery";
 
 const JWT_REFRESH_INTERVAL = 5 * 60; // 5 Minuten in Sekunden
 
@@ -26,6 +27,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           // Create new user with 7-day trial
           const trialEnds = new Date();
           trialEnds.setDate(trialEnds.getDate() + parseInt(process.env.TRIAL_DAYS ?? "7"));
+          const referralCode = await generateUniqueReferralCode(user.email);
           const { data: newUser } = await db.from("users").insert({
             email: user.email,
             name: user.name ?? user.email.split("@")[0],
@@ -33,8 +35,11 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
             trial_ends_at: trialEnds.toISOString(),
             subscription_status: "trialing",
             email_verified: true,
+            referral_code: referralCode,
           }).select().single();
           if (!newUser) return false;
+          // Lottery: +1 lot for signup (best-effort)
+          awardLots(newUser.id, user.email, "register", LOTS_PER_SOURCE.register).catch(() => null);
           user.id = newUser.id;
           (user as Record<string, unknown>).trialEndsAt = newUser.trial_ends_at;
           (user as Record<string, unknown>).subscriptionStatus = newUser.subscription_status;

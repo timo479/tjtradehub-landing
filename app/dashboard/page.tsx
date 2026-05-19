@@ -9,6 +9,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetaConnect from "@/components/meta/MetaConnect";
 import DashboardTourWrapper from "@/components/DashboardTourWrapper";
 import TikTokConversion from "@/components/TikTokConversion";
+import LotteryWidget from "@/components/lottery/LotteryWidget";
 
 export const metadata = {
   title: "Dashboard – TJ TradeHub",
@@ -142,6 +143,9 @@ export default async function DashboardPage() {
               : `You're on your free trial. ${daysLeft} days remaining.`}
           </p>
         </div>
+
+        {/* Founder Lottery */}
+        <LotteryWidget />
 
         {/* Stats Cards */}
         <DashboardKpiCards cards={cards} />
