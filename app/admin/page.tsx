@@ -221,7 +221,20 @@ export default function AdminPage() {
           <span className="text-zinc-600">/</span>
           <span className="text-zinc-400 font-medium">Admin Panel</span>
         </div>
-        <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">← Dashboard</a>
+        <div className="flex items-center gap-3">
+          <a
+            href="/admin/founders"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
+            style={{
+              background: "linear-gradient(135deg, rgba(251,191,36,0.15) 0%, rgba(251,191,36,0.05) 100%)",
+              borderColor: "rgba(251,191,36,0.4)",
+              color: "#FCD34D",
+            }}
+          >
+            <span>✦</span> Founder Slots
+          </a>
+          <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">← Dashboard</a>
+        </div>
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
