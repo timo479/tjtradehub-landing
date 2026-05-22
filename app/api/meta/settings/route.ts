@@ -37,9 +37,23 @@ export async function GET() {
       lastSync: user.last_meta_sync,
     });
   } catch (err) {
-    // 404 = MetaAPI hat den Account gelöscht (z.B. Broker-Handshake fehlgeschlagen)
-    // → DB bereinigen, User kann sauber neu verbinden
     if (err instanceof Error && err.message.startsWith("MetaAPI 404")) {
+      // Grace period: a freshly provisioned account often 404s for a few seconds
+      // because of MetaAPI eventual consistency. Only treat 404 as "account deleted"
+      // when we're past the deploying phase (DEPLOYED/UNDEPLOYED). For DEPLOYING/null,
+      // report the stale state and let the next poll retry.
+      if (user.metaapi_account_state === "DEPLOYING" || user.metaapi_account_state == null) {
+        return NextResponse.json({
+          connected: true,
+          state: "DEPLOYING",
+          login: user.mt_login,
+          server: user.mt_server,
+          platform: user.mt_platform,
+          accountId: user.metaapi_account_id,
+          lastSync: user.last_meta_sync,
+        });
+      }
+      // Genuinely gone — cleanup so user can reconnect cleanly.
       await db.from("users").update({
         metaapi_account_id: null,
         metaapi_account_state: null,
