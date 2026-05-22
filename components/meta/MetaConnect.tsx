@@ -252,6 +252,22 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     setConn({ connected: false });
     setAccount(null);
     setSyncResult(null);
+    // Clear stored credentials from local state so a re-connect starts blank.
+    setLogin("");
+    setServer("");
+    setPassword("");
+  };
+
+  // Always close the modal AND clear inputs so the next open starts blank.
+  // Without this, a previous wrong login number stayed in the field and the
+  // user couldn't tell whether they were re-submitting old or new credentials.
+  const closeModal = () => {
+    setShowForm(false);
+    setLogin("");
+    setPassword("");
+    setServer("");
+    setPlatform("mt5");
+    setError(null);
   };
 
   const card: React.CSSProperties = {
@@ -407,7 +423,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
       {/* Connect Modal */}
       {showForm && (
         <div style={{ position: "fixed", inset: 0, zIndex: 60, backgroundColor: "rgba(0,0,0,0.85)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}
-          onClick={() => setShowForm(false)}>
+          onClick={closeModal}>
           <div style={{ backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "20px", width: "100%", maxWidth: "440px" }}
             onClick={e => e.stopPropagation()}>
 
@@ -416,7 +432,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
                 <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "16px", margin: 0 }}>Connect MetaTrader</h3>
                 <p style={{ color: "#6B7280", fontSize: "12px", marginTop: "3px" }}>MT4 or MT5 trading account</p>
               </div>
-              <button onClick={() => setShowForm(false)} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px" }}>✕</button>
+              <button onClick={closeModal} style={{ background: "none", border: "none", color: "#6B7280", cursor: "pointer", fontSize: "20px" }}>✕</button>
             </div>
 
             <div style={{ padding: "22px 26px", display: "flex", flexDirection: "column", gap: "14px" }}>
@@ -450,6 +466,12 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
                 <p style={{ color: "#374151", fontSize: "11px", marginTop: "5px" }}>Found in your broker email or in MetaTrader under File → Accounts</p>
               </div>
 
+              <div style={{ backgroundColor: "rgba(245,158,11,0.07)", border: "1px solid rgba(245,158,11,0.2)", borderRadius: "10px", padding: "10px 14px" }}>
+                <p style={{ color: "#FCD34D", fontSize: "11px", lineHeight: 1.5 }}>
+                  ⚠️ <strong>Double-check your credentials before connecting.</strong> After a few wrong attempts, MetaAPI locks the account for 1 hour. Best practice: log into MetaTrader Desktop first to verify the password works.
+                </p>
+              </div>
+
               <div style={{ backgroundColor: "rgba(139,92,246,0.07)", border: "1px solid rgba(139,92,246,0.15)", borderRadius: "10px", padding: "10px 14px" }}>
                 <p style={{ color: "#9CA3AF", fontSize: "11px" }}>
                   🔒 Your credentials are transmitted encrypted. The connection runs via MetaAPI.cloud – read-only access to your trade history.
@@ -460,7 +482,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
             </div>
 
             <div style={{ padding: "16px 26px", borderTop: "1px solid #1F2937", display: "flex", gap: "10px" }}>
-              <button onClick={() => setShowForm(false)} style={{ flex: 1, padding: "11px", borderRadius: "11px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
+              <button onClick={closeModal} style={{ flex: 1, padding: "11px", borderRadius: "11px", border: "1px solid #1F2937", backgroundColor: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "14px" }}>
                 Cancel
               </button>
               <button onClick={connect} disabled={connecting || !login || !password || !server}

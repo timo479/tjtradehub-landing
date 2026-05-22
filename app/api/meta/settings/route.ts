@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
-import { getAccountState, provisionAccount, removeAccount, updateAccount, deployAccount, undeployAccount, translateMetaError } from "@/lib/metaapi";
+import { getAccountState, provisionAccount, removeAccount, undeployAccount, translateMetaError } from "@/lib/metaapi";
 import { encrypt } from "@/lib/encrypt";
 import { awardLots, LOTS_PER_SOURCE } from "@/lib/lottery";
 import { NextRequest, NextResponse } from "next/server";
@@ -105,38 +105,20 @@ export async function POST(req: NextRequest) {
   const accountName = `TJTradeHub-${session.user.id.slice(0, 8)}-${login}`;
 
   try {
-    // Reuse existing MetaAPI slot if platform matches → no extra billing
-    if (existing?.metaapi_account_id && existing.mt_platform === platform) {
-      try {
-        // Undeploy first so credentials can be updated cleanly (ok if already undeployed)
-        await undeployAccount(existing.metaapi_account_id).catch(() => null);
-        await updateAccount(existing.metaapi_account_id, { login, password, server, name: accountName });
-        await deployAccount(existing.metaapi_account_id);
-        await db.from("users").update({
-          mt_login: login,
-          mt_password: encrypt(password),
-          mt_server: server,
-          mt_platform: platform,
-          metaapi_account_state: "DEPLOYING",
-          last_meta_sync: null,
-          meta_last_active: new Date().toISOString(),
-        }).eq("id", session.user.id);
-        await awardMt5Lots();
-        return NextResponse.json({ success: true, accountId: existing.metaapi_account_id, state: "DEPLOYING" });
-      } catch (e) {
-        const msg = e instanceof Error ? e.message : "";
-        // 404 = account deleted externally; 400 = login cannot be changed (non-draft account)
-        // Both cases: remove old slot and provision a fresh one below
-        const canReprovision = msg.startsWith("MetaAPI 404") || msg.startsWith("MetaAPI 400");
-        if (!canReprovision) {
-          const friendly = translateMetaError(e);
-          return NextResponse.json({ error: friendly.message, code: friendly.code, retryAfterSeconds: friendly.retryAfterSeconds }, { status: friendly.code === "rate_limited" ? 429 : 502 });
-        }
-        await removeAccount(existing.metaapi_account_id).catch(() => null);
-      }
-    } else if (existing?.metaapi_account_id) {
-      // Platform changed (mt4↔mt5) → must create new account
+    // Always rebuild from scratch when (re)connecting.
+    // The previous "reuse slot via updateAccount" path had two failure modes:
+    //   1) updateAccount can't change login on non-draft accounts (400)
+    //   2) if the existing slot was rate-limited by MetaAPI (e.g. user typed
+    //      wrong password a few times), every retry on the same slot keeps
+    //      returning 429 even with new credentials, because MetaAPI's lock
+    //      is tied to the metaapi-account-id.
+    // Wiping the slot and provisioning fresh sidesteps both problems.
+    if (existing?.metaapi_account_id) {
       await removeAccount(existing.metaapi_account_id).catch(() => null);
+      await db.from("users").update({
+        metaapi_account_id: null,
+        metaapi_account_state: null,
+      }).eq("id", session.user.id);
     }
 
     // Create new account
