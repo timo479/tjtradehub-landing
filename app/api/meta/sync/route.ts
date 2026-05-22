@@ -168,7 +168,10 @@ export async function POST(req: Request) {
     : new Date(Date.now() - 730 * 24 * 60 * 60 * 1000);
 
   if (fullResync) {
-    // Delete all previously imported MetaAPI entries so they get re-imported with correct timestamps
+    // Reset cursor FIRST so that if the delete fails midway, the next sync still
+    // re-fetches the full 2-year window. Existing trades are deduped via meta_deal_id check.
+    await db.from("users").update({ last_meta_sync: null }).eq("id", session.user.id);
+
     const templateData = await db
       .from("journal_templates")
       .select("id")
@@ -182,7 +185,6 @@ export async function POST(req: Request) {
         .eq("template_id", templateData.data.id)
         .not("meta_deal_id", "is", null);
     }
-    await db.from("users").update({ last_meta_sync: null }).eq("id", session.user.id);
   }
 
   try {
@@ -203,8 +205,15 @@ export async function POST(req: Request) {
     }
 
     if (closedDeals.length === 0) {
-      // Always advance the timestamp so we don't re-fetch 2 years on every sync
-      await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
+      // Only advance the cursor if we can confirm the API is healthy (some deals returned).
+      // If deals.length === 0 too, the API might have transient errors — keep old cursor
+      // so the next sync re-checks the same time range and catches any missed trades.
+      const apiHealthy = deals.length > 0;
+      if (apiHealthy) {
+        await db.from("users").update({ last_meta_sync: to.toISOString(), meta_last_active: to.toISOString() }).eq("id", session.user.id);
+      } else {
+        await db.from("users").update({ meta_last_active: to.toISOString() }).eq("id", session.user.id);
+      }
       return NextResponse.json({ synced: 0, skipped: 0 });
     }
 
@@ -230,7 +239,8 @@ export async function POST(req: Request) {
         ? new Date(deal.brokerTime.replace(" ", "T")).toISOString()
         : deal.time;
 
-      // Create entry
+      // Create entry. If UNIQUE constraint on (user_id, meta_deal_id) is set in DB,
+      // a concurrent sync would hit Postgres error 23505 here and we treat it as a dup.
       const { data: entry, error: eErr } = await db
         .from("trade_entries")
         .insert({
@@ -245,7 +255,14 @@ export async function POST(req: Request) {
         .select()
         .single();
 
-      if (eErr || !entry) { skipped++; continue; }
+      if (eErr || !entry) {
+        // Postgres 23505 = unique_violation → a concurrent sync just inserted this deal.
+        // Log everything else so we can investigate silent skips.
+        const isDup = eErr && (eErr.code === "23505" || /duplicate key|unique/i.test(eErr.message ?? ""));
+        if (eErr && !isDup) console.error("Sync insert failed:", deal.id, eErr);
+        skipped++;
+        continue;
+      }
 
       // Direction: closing SELL = was LONG, closing BUY = was SHORT
       const isLong = deal.type === "DEAL_TYPE_SELL";

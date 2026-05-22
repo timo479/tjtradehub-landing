@@ -193,5 +193,7 @@ export async function fetchDeals(accountId: string, from: Date, to: Date): Promi
   const region: string = account.region ?? "london";
   const url = `${clientUrl(region)}/users/current/accounts/${accountId}/history-deals/time/${from.toISOString()}/${to.toISOString()}`;
   const data = await apiFetch(url, token);
-  return Array.isArray(data) ? data : (data.deals ?? []);
+  if (data == null) return [];
+  if (Array.isArray(data)) return data;
+  return Array.isArray(data.deals) ? data.deals : [];
 }

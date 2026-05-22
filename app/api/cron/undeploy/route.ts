@@ -37,15 +37,46 @@ export async function GET(req: Request) {
   }
 
   let undeployed = 0;
+  const failures: { userId: string; accountId: string; error: string }[] = [];
+
   for (const user of staleAccounts) {
-    try {
-      await undeployAccount(user.metaapi_account_id);
-      await db.from("users").update({ metaapi_account_state: "UNDEPLOYED" }).eq("id", user.id);
+    // Retry up to 3 times with brief backoff before giving up. MetaAPI undeploy
+    // is critical for cost control — silent failure here means we keep paying.
+    let lastErr: unknown = null;
+    let success = false;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        await undeployAccount(user.metaapi_account_id);
+        success = true;
+        break;
+      } catch (e) {
+        lastErr = e;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+      }
+    }
+
+    if (success) {
+      const { error: dbErr } = await db.from("users").update({ metaapi_account_state: "UNDEPLOYED" }).eq("id", user.id);
+      if (dbErr) {
+        // MetaAPI is undeployed but DB still says DEPLOYED — next cron will try again, harmless.
+        console.error("Cron undeploy: MetaAPI succeeded but DB update failed", { userId: user.id, dbErr });
+      }
       undeployed++;
-    } catch (e) {
-      console.error("Cron undeploy failed for user:", user.id, "account:", user.metaapi_account_id, "error:", e);
+    } else {
+      const errMsg = lastErr instanceof Error ? lastErr.message : String(lastErr);
+      console.error("Cron undeploy FAILED after 3 attempts — user still being billed", {
+        userId: user.id,
+        accountId: user.metaapi_account_id,
+        error: errMsg,
+      });
+      failures.push({ userId: user.id, accountId: user.metaapi_account_id, error: errMsg });
     }
   }
 
-  return NextResponse.json({ undeployed, total: staleAccounts.length });
+  return NextResponse.json({
+    undeployed,
+    total: staleAccounts.length,
+    failureCount: failures.length,
+    failures: failures.length > 0 ? failures : undefined,
+  });
 }
