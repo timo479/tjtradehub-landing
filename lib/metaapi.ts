@@ -187,6 +187,79 @@ export async function fetchAccountInfo(accountId: string): Promise<MetaAccountIn
   );
 }
 
+// ─── Error Mapping ─────────────────────────────────────────────────────────────
+
+export interface FriendlyMetaError {
+  code: "rate_limited" | "invalid_credentials" | "invalid_server" | "account_not_found" | "metaapi_down" | "network" | "unknown";
+  message: string;
+  retryAfterSeconds?: number;
+}
+
+// Maps the raw "MetaAPI <status>: <body>" error thrown by apiFetch into a
+// short, user-facing message. Keep the original message available via .details.
+export function translateMetaError(err: unknown): FriendlyMetaError {
+  const raw = err instanceof Error ? err.message : String(err);
+
+  // Network: "MetaAPI network error: ..."
+  if (raw.startsWith("MetaAPI network error")) {
+    return { code: "network", message: "Connection to MetaAPI failed. Please check your internet and try again." };
+  }
+
+  const statusMatch = raw.match(/^MetaAPI (\d{3})/);
+  const status = statusMatch ? parseInt(statusMatch[1], 10) : null;
+  const bodyStr = raw.replace(/^MetaAPI \d{3}:\s*/, "");
+
+  // Parse the JSON body to extract the MetaAPI error code/message
+  let body: { error?: string; message?: string; metadata?: { recommendedRetryDelayInSeconds?: number } } = {};
+  try { body = JSON.parse(bodyStr); } catch { /* not JSON */ }
+
+  // 429: rate limited — most often "credentials rejected too many times" or general quota
+  if (status === 429 || body.error === "TooManyRequestsError") {
+    const retry = body.metadata?.recommendedRetryDelayInSeconds;
+    const hours = retry ? Math.ceil(retry / 3600) : 1;
+    if (/rejected too many times|verify your trading account credentials/i.test(body.message ?? "")) {
+      return {
+        code: "rate_limited",
+        message: `MetaAPI has locked this account for ${hours}h after too many failed validation attempts. Please double-check your login number, password and broker server, then retry in ${hours} hour${hours === 1 ? "" : "s"}.`,
+        retryAfterSeconds: retry,
+      };
+    }
+    return {
+      code: "rate_limited",
+      message: `Too many requests — please wait ${hours} hour${hours === 1 ? "" : "s"} before trying again.`,
+      retryAfterSeconds: retry,
+    };
+  }
+
+  // 401: bad token (server-side config issue, not user-facing — but report it)
+  if (status === 401) {
+    return { code: "invalid_credentials", message: "MetaAPI authentication failed. Please contact support." };
+  }
+
+  // 400: usually validation — invalid server name, malformed credentials, etc.
+  if (status === 400) {
+    if (/server/i.test(body.message ?? "")) {
+      return { code: "invalid_server", message: "Broker server name not recognized. Check the exact server name in your MetaTrader (File → Accounts)." };
+    }
+    if (/login|password|credential/i.test(body.message ?? "")) {
+      return { code: "invalid_credentials", message: "Login number or password is invalid. Please double-check the credentials." };
+    }
+    return { code: "invalid_credentials", message: body.message ?? "Invalid credentials. Please check login, password and broker server." };
+  }
+
+  // 404: account not found in MetaAPI
+  if (status === 404) {
+    return { code: "account_not_found", message: "MetaAPI account not found. Please reconnect to provision a new one." };
+  }
+
+  // 5xx: MetaAPI is down
+  if (status != null && status >= 500) {
+    return { code: "metaapi_down", message: "MetaAPI is temporarily unavailable. Please try again in a few minutes." };
+  }
+
+  return { code: "unknown", message: body.message ?? raw };
+}
+
 export async function fetchDeals(accountId: string, from: Date, to: Date): Promise<MetaDeal[]> {
   const token = getToken();
   const account = await getAccountState(accountId);

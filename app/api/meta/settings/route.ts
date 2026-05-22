@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
 import { hasActiveSubscription } from "@/lib/trial";
-import { getAccountState, provisionAccount, removeAccount, updateAccount, deployAccount, undeployAccount } from "@/lib/metaapi";
+import { getAccountState, provisionAccount, removeAccount, updateAccount, deployAccount, undeployAccount, translateMetaError } from "@/lib/metaapi";
 import { encrypt } from "@/lib/encrypt";
 import { awardLots, LOTS_PER_SOURCE } from "@/lib/lottery";
 import { NextRequest, NextResponse } from "next/server";
@@ -129,7 +129,8 @@ export async function POST(req: NextRequest) {
         // Both cases: remove old slot and provision a fresh one below
         const canReprovision = msg.startsWith("MetaAPI 404") || msg.startsWith("MetaAPI 400");
         if (!canReprovision) {
-          return NextResponse.json({ error: "Reconnect failed – please try again." }, { status: 502 });
+          const friendly = translateMetaError(e);
+          return NextResponse.json({ error: friendly.message, code: friendly.code, retryAfterSeconds: friendly.retryAfterSeconds }, { status: friendly.code === "rate_limited" ? 429 : 502 });
         }
         await removeAccount(existing.metaapi_account_id).catch(() => null);
       }
@@ -161,7 +162,11 @@ export async function POST(req: NextRequest) {
     await awardMt5Lots();
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });
   } catch (e) {
-    return NextResponse.json({ error: e instanceof Error ? e.message : "Connection failed" }, { status: 502 });
+    const friendly = translateMetaError(e);
+    return NextResponse.json(
+      { error: friendly.message, code: friendly.code, retryAfterSeconds: friendly.retryAfterSeconds },
+      { status: friendly.code === "rate_limited" ? 429 : 502 }
+    );
   }
 }
 
