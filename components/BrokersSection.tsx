@@ -31,7 +31,6 @@ export default function BrokersSection() {
         backgroundColor: "rgba(255,255,255,0.02)",
         border: "1px solid rgba(139,92,246,0.18)",
         color: "#E5E7EB",
-        backdropFilter: "blur(8px)",
       }}
     >
       {name}
