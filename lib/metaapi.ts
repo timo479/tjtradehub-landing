@@ -22,6 +22,15 @@ async function apiFetch(url: string, token: string, options?: RequestInit) {
     const cause = (e as { cause?: { message?: string } })?.cause;
     throw new Error(`MetaAPI network error: ${cause?.message ?? (e instanceof Error ? e.message : String(e))}`);
   }
+  // 202 Accepted from MetaAPI provisioning means "credential validation is in
+  // progress" — NOT that an account was created. The body looks like
+  // {"id": 49897, "error": "AcceptedError", "message": "...retry in 60s"}.
+  // The `id` is an error-tracking id, not a MetaAPI account id, so we must
+  // never persist it. Throw and let translateMetaError() surface it as pending.
+  if (res.status === 202) {
+    const body = await res.text().catch(() => "");
+    throw new Error(`MetaAPI 202: ${body.slice(0, 300)}`);
+  }
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     throw new Error(`MetaAPI ${res.status}: ${body.slice(0, 300)}`);
@@ -190,7 +199,7 @@ export async function fetchAccountInfo(accountId: string): Promise<MetaAccountIn
 // ─── Error Mapping ─────────────────────────────────────────────────────────────
 
 export interface FriendlyMetaError {
-  code: "rate_limited" | "invalid_credentials" | "invalid_server" | "account_not_found" | "metaapi_down" | "network" | "unknown";
+  code: "rate_limited" | "invalid_credentials" | "invalid_server" | "account_not_found" | "metaapi_down" | "network" | "validation_pending" | "unknown";
   message: string;
   retryAfterSeconds?: number;
 }
@@ -210,8 +219,23 @@ export function translateMetaError(err: unknown): FriendlyMetaError {
   const bodyStr = raw.replace(/^MetaAPI \d{3}:\s*/, "");
 
   // Parse the JSON body to extract the MetaAPI error code/message
-  let body: { error?: string; message?: string; metadata?: { recommendedRetryDelayInSeconds?: number } } = {};
+  let body: { error?: string; message?: string; metadata?: { recommendedRetryDelayInSeconds?: number; recommendedRetryTime?: string } } = {};
   try { body = JSON.parse(bodyStr); } catch { /* not JSON */ }
+
+  // 202: MetaAPI is still validating credentials with the broker. No account
+  // was created yet. User should retry in ~60s with the same credentials.
+  if (status === 202 || body.error === "AcceptedError") {
+    let retrySecs = 60;
+    if (body.metadata?.recommendedRetryTime) {
+      const diff = Math.ceil((new Date(body.metadata.recommendedRetryTime).getTime() - Date.now()) / 1000);
+      if (diff > 0) retrySecs = diff;
+    }
+    return {
+      code: "validation_pending",
+      message: `MetaAPI is still validating your credentials with the broker. Please wait ${retrySecs} seconds and click Connect again.`,
+      retryAfterSeconds: retrySecs,
+    };
+  }
 
   // 429: rate limited — most often "credentials rejected too many times" or general quota
   if (status === 429 || body.error === "TooManyRequestsError") {

@@ -145,9 +145,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });
   } catch (e) {
     const friendly = translateMetaError(e);
+    const httpStatus =
+      friendly.code === "rate_limited" ? 429 :
+      friendly.code === "validation_pending" ? 202 :
+      502;
     return NextResponse.json(
       { error: friendly.message, code: friendly.code, retryAfterSeconds: friendly.retryAfterSeconds },
-      { status: friendly.code === "rate_limited" ? 429 : 502 }
+      { status: httpStatus }
     );
   }
 }
