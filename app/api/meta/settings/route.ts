@@ -145,9 +145,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ success: true, accountId: account.id, state: "DEPLOYING" });
   } catch (e) {
     const friendly = translateMetaError(e);
+    // validation_pending must be non-2xx so the frontend's `if (!res.ok)`
+    // branch fires and the friendly message gets shown. 425 (Too Early)
+    // semantically matches "MetaAPI is still validating, retry later".
     const httpStatus =
       friendly.code === "rate_limited" ? 429 :
-      friendly.code === "validation_pending" ? 202 :
+      friendly.code === "validation_pending" ? 425 :
       502;
     return NextResponse.json(
       { error: friendly.message, code: friendly.code, retryAfterSeconds: friendly.retryAfterSeconds },
