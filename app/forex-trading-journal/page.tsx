@@ -144,7 +144,7 @@ export default function ForexTradingJournalPage() {
               Start Your Forex Trading Journal Free
             </h2>
             <p>
-              Try TJ TradeHub free for 7 days — no credit card required. Connect your MT4 or MT5 account, start tracking your Forex trades, and discover patterns you never knew existed.
+              Try TJ TradeHub free, forever — no credit card required. Log Forex trades on the Basic plan or upgrade to Pro to connect your MT4 or MT5 account for automatic sync. Discover patterns you never knew existed.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link
@@ -152,7 +152,7 @@ export default function ForexTradingJournalPage() {
                 className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold"
                 style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", borderRadius: "14px" }}
               >
-                Start Free Trial – No Credit Card Required
+                Start Free — No Credit Card Required
               </Link>
               <Link
                 href="/"

@@ -183,7 +183,7 @@ export default function WhatIsATradingJournalPage() {
               TJ TradeHub is the trading journal built for serious Forex and Futures traders. Log trades manually or connect your MetaTrader 5 account for automatic sync. Track discipline scores, analyze performance across instruments and sessions, and build the data foundation your trading career needs.
             </p>
             <p className="mt-4">
-              7-day free trial. No credit card required.
+              Free Basic plan, forever. No credit card required.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link

@@ -145,7 +145,7 @@ export default function MT5TradingJournalPage() {
               Connect Your MT5 Account and Start Journaling Free
             </h2>
             <p>
-              Start a 7-day free trial with full access to MT5 trade sync and all analytics features. No credit card required. Connect your MetaTrader 5 account in minutes and see your trading performance in a whole new light.
+              Create your free TJ TradeHub account to start journaling instantly — no credit card required. Upgrade to Pro ($29/mo) or Founder Lifetime ($149) to unlock automatic MT5 trade sync. Connect your MetaTrader 5 account in minutes and see your trading performance in a whole new light.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link
@@ -153,7 +153,7 @@ export default function MT5TradingJournalPage() {
                 className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold"
                 style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", borderRadius: "14px" }}
               >
-                Start Free Trial – Connect MT5 for Free
+                Start Free — Upgrade to Connect MT5
               </Link>
               <Link
                 href="/"

@@ -144,7 +144,7 @@ export default function FuturesTradingJournalPage() {
               Start Your Futures Trading Journal Free
             </h2>
             <p>
-              Try TJ TradeHub free for 7 days. Connect your MetaTrader account, start tracking your futures trades, and build the performance record that separates systematic traders from guesswork traders.
+              Try TJ TradeHub free, forever. Log futures trades manually on the Basic plan or upgrade to Pro to connect your MetaTrader account for automatic sync. Build the performance record that separates systematic traders from guesswork traders.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link
@@ -152,7 +152,7 @@ export default function FuturesTradingJournalPage() {
                 className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold"
                 style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", borderRadius: "14px" }}
               >
-                Start Free Trial – No Credit Card Required
+                Start Free — No Credit Card Required
               </Link>
               <Link
                 href="/"

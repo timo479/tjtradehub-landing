@@ -9,7 +9,7 @@ export const metadata = { title: "Journal – TJ TradeHub" };
 export default async function JournalPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
-  if (!canAccessDashboard({ trial_ends_at: session.user.trialEndsAt, subscription_status: session.user.subscriptionStatus, current_period_end: session.user.currentPeriodEnd })) redirect("/billing");
+  if (!canAccessDashboard({ subscription_status: session.user.subscriptionStatus, current_period_end: session.user.currentPeriodEnd })) redirect("/billing");
 
   const { data: userRow } = await db
     .from("users")

@@ -1,5 +1,4 @@
 import { auth } from "@/lib/auth";
-import { getDaysRemaining, isTrialActive } from "@/lib/trial";
 import { db } from "@/lib/db";
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -19,9 +18,7 @@ export default async function DashboardPage() {
   const session = await auth();
   if (!session?.user) redirect("/login");
 
-  const { name, trialEndsAt, subscriptionStatus } = session.user;
-  const onTrial = isTrialActive({ trial_ends_at: trialEndsAt });
-  const daysLeft = getDaysRemaining({ trial_ends_at: trialEndsAt });
+  const { name, subscriptionStatus } = session.user;
   const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
 
   // Fetch entries from JournalV2
@@ -106,13 +103,12 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.22) 0%, transparent 60%), #000" }}>
       <TikTokConversion />
-      {/* Trial Banner */}
-      {onTrial && !isSubscribed && (
+      {/* Basic Plan Banner – upsell to MT5 Sync */}
+      {!isSubscribed && (
         <div className="w-full px-6 py-3 flex items-center justify-between text-sm"
           style={{ backgroundColor: "rgba(139, 92, 246, 0.1)", borderBottom: "1px solid rgba(139, 92, 246, 0.2)" }}>
           <span style={{ color: "#C4B5FD" }}>
-            <strong style={{ color: "#A78BFA" }}>{daysLeft} day{daysLeft !== 1 ? "s" : ""}</strong>{" "}
-            left in your free trial
+            You&apos;re on the <strong style={{ color: "#A78BFA" }}>Free Basic plan</strong>. Upgrade to unlock automatic MT4/MT5 sync.
           </span>
           <Link href="/billing" className="px-4 py-1.5 rounded-lg text-xs font-semibold transition-all"
             style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB" }}>
@@ -140,7 +136,7 @@ export default async function DashboardPage() {
           <p style={{ color: "#9CA3AF" }}>
             {isSubscribed
               ? "Your subscription is active. Track your trades below."
-              : `You're on your free trial. ${daysLeft} days remaining.`}
+              : "Free Basic plan – your journal is yours forever. Upgrade for MT5 Sync."}
           </p>
         </div>
 
@@ -182,23 +178,30 @@ export default async function DashboardPage() {
             </div>
           </Link>
 
-          <Link href="/dashboard/journal" style={{ textDecoration: "none" }}>
+          <Link href={isSubscribed ? "/dashboard/journal" : "/billing"} style={{ textDecoration: "none" }}>
             <div className="dash-card rounded-2xl p-6" data-tour="quick-action-mt5" style={{ cursor: "pointer" }}>
               <div className="flex items-center gap-4 mb-3">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ backgroundColor: "rgba(34,197,94,0.1)" }}>
+                  style={{ backgroundColor: isSubscribed ? "rgba(34,197,94,0.1)" : "rgba(139,92,246,0.1)" }}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke="#22c55e" strokeWidth="2"
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" stroke={isSubscribed ? "#22c55e" : "#8B5CF6"} strokeWidth="2"
                       strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                 </div>
                 <h3 className="font-semibold" style={{ color: "#F9FAFB" }}>MT4 / MT5 Sync</h3>
               </div>
               <p className="text-sm" style={{ color: "#9CA3AF" }}>Automatic trade synchronization via MetaTrader 4 & 5</p>
-              <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
-                style={{ backgroundColor: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
-                Live
-              </span>
+              {isSubscribed ? (
+                <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
+                  style={{ backgroundColor: "rgba(34,197,94,0.1)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.2)" }}>
+                  Live
+                </span>
+              ) : (
+                <span className="inline-block mt-3 px-3 py-1 rounded-lg text-xs font-medium"
+                  style={{ backgroundColor: "rgba(139,92,246,0.1)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.25)" }}>
+                  🔒 Upgrade to unlock
+                </span>
+              )}
             </div>
           </Link>
         </div>

@@ -12,6 +12,13 @@ export default function UserMenu({ name, email, subscriptionStatus }: { name?: s
   const ref = useRef<HTMLDivElement>(null);
 
   const isSubscribed = subscriptionStatus === "active";
+  const isLifetime = subscriptionStatus === "lifetime";
+  const planLabel = isLifetime ? "Founder" : isSubscribed ? "Pro" : "Basic";
+  const planColors = isLifetime
+    ? { bg: "rgba(251, 191, 36, 0.12)", border: "rgba(251, 191, 36, 0.3)", fg: "#FBBF24" }
+    : isSubscribed
+    ? { bg: "rgba(34, 197, 94, 0.12)", border: "rgba(34, 197, 94, 0.3)", fg: "#22c55e" }
+    : { bg: "rgba(139, 92, 246, 0.12)", border: "rgba(139, 92, 246, 0.3)", fg: "#A78BFA" };
 
   async function handleManageBilling() {
     setPortalLoading(true);
@@ -88,12 +95,44 @@ export default function UserMenu({ name, email, subscriptionStatus }: { name?: s
         }}>
           {/* User info */}
           <div style={{ padding: "12px 16px", borderBottom: "1px solid #1F2937" }}>
-            <p style={{ color: "#F9FAFB", fontSize: "14px", fontWeight: 600, margin: 0 }}>{name}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+              <p style={{ color: "#F9FAFB", fontSize: "14px", fontWeight: 600, margin: 0 }}>{name}</p>
+              <span
+                style={{
+                  fontSize: "10px", fontWeight: 700, letterSpacing: "0.04em",
+                  padding: "2px 7px", borderRadius: "5px",
+                  backgroundColor: planColors.bg, color: planColors.fg,
+                  border: `1px solid ${planColors.border}`,
+                }}
+              >
+                {planLabel.toUpperCase()}
+              </span>
+            </div>
             {email && <p style={{ color: "#6B7280", fontSize: "12px", margin: "2px 0 0" }}>{email}</p>}
           </div>
 
           {!showConfirm ? (
             <>
+              {/* Upgrade CTA for Basic users */}
+              {!isSubscribed && !isLifetime && (
+                <a
+                  href="/billing"
+                  style={{
+                    display: "flex", alignItems: "center", gap: "10px",
+                    padding: "11px 16px", textDecoration: "none",
+                    color: "#A78BFA", fontSize: "14px", fontWeight: 500,
+                  }}
+                  onMouseEnter={e => (e.currentTarget.style.backgroundColor = "rgba(139,92,246,0.08)")}
+                  onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+                >
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2v20M2 12h20" stroke="#A78BFA" strokeWidth="2" strokeLinecap="round" />
+                  </svg>
+                  Upgrade to Pro
+                </a>
+              )}
+              {!isSubscribed && !isLifetime && <div style={{ height: "1px", backgroundColor: "#1F2937", margin: "0 16px" }} />}
+
               {/* Manage Subscription */}
               {isSubscribed && (
                 <button

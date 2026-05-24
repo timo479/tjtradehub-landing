@@ -145,7 +145,7 @@ export default function TradingJournalPage() {
               Start Your Trading Journal Today
             </h2>
             <p>
-              TJ TradeHub offers a 7-day free trial with full access to all trading journal features. No credit card required. Start logging trades, measuring discipline, and building the data foundation for consistent performance.
+              TJ TradeHub offers a free Basic plan with unlimited trade logging, statistics, and analytics — forever, no credit card required. Upgrade to Pro for automatic MT4/MT5 sync whenever you&apos;re ready.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link
@@ -153,7 +153,7 @@ export default function TradingJournalPage() {
                 className="inline-flex items-center justify-center px-6 py-3 text-sm font-semibold"
                 style={{ backgroundColor: "#8B5CF6", color: "#F9FAFB", borderRadius: "14px" }}
               >
-                Start Free Trial – No Credit Card Required
+                Start Free — No Credit Card Required
               </Link>
               <Link
                 href="/"

@@ -45,7 +45,7 @@ export default function PricingSection() {
             className="mt-4 text-lg leading-relaxed"
             style={{ color: "#9CA3AF" }}
           >
-            7 days free. Then just{" "}
+            Journal is free forever. Add MT5 sync for just{" "}
             <span style={{ color: "#F9FAFB", fontWeight: 600 }}>$29/month</span>{" "}
             <span style={{ color: "#6B7280", textDecoration: "line-through" }}>
               $45
@@ -157,7 +157,7 @@ export default function PricingSection() {
               borderRadius: "14px",
             }}
           >
-            Start 7-Day Free Trial
+            Start Free Forever
           </a>
 
           <p className="text-xs text-center mb-8" style={{ color: "#9CA3AF" }}>

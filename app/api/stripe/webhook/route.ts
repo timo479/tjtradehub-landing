@@ -92,9 +92,8 @@ export async function POST(request: NextRequest) {
             userId = existing.id;
           } else {
             // Create a fresh account for the buyer. Password set later via email link.
+            // claim_founder_slot RPC (called below) flips subscription_status to "lifetime".
             const randomPwHash = await bcrypt.hash(crypto.randomBytes(24).toString("hex"), 12);
-            const trialEnds = new Date();
-            trialEnds.setDate(trialEnds.getDate() + 7);
             const referralCode = await generateUniqueReferralCode(email);
 
             const { data: created, error: createErr } = await db
@@ -104,8 +103,8 @@ export async function POST(request: NextRequest) {
                 name: session.customer_details?.name ?? email.split("@")[0],
                 password_hash: randomPwHash,
                 email_verified: true, // Stripe paid → email is real
-                trial_ends_at: trialEnds.toISOString(),
-                subscription_status: "trialing",
+                trial_ends_at: null,
+                subscription_status: "basic",
                 stripe_customer_id: (session.customer as string | null) ?? null,
                 referral_code: referralCode,
               })
@@ -242,11 +241,19 @@ export async function POST(request: NextRequest) {
       const customerId = getCustomerId(sub);
       if (!customerId) break;
 
+      // Skip lifetime users — never downgrade them (e.g. founder slot)
+      const { data: u } = await db
+        .from("users")
+        .select("subscription_status")
+        .eq("stripe_customer_id", customerId)
+        .maybeSingle();
+      if (u?.subscription_status === "lifetime") break;
+
       await cleanupMetaAccount(customerId);
       const { error: sdErr } = await db
         .from("users")
         .update({
-          subscription_status: "canceled",
+          subscription_status: "basic",
           current_period_end: null,
         })
         .eq("stripe_customer_id", customerId);
@@ -262,10 +269,17 @@ export async function POST(request: NextRequest) {
       const customerId = getCustomerId(invoice);
       if (!customerId) break;
 
+      const { data: u } = await db
+        .from("users")
+        .select("subscription_status")
+        .eq("stripe_customer_id", customerId)
+        .maybeSingle();
+      if (u?.subscription_status === "lifetime") break;
+
       await cleanupMetaAccount(customerId);
       const { error: pfErr } = await db
         .from("users")
-        .update({ subscription_status: "past_due" })
+        .update({ subscription_status: "basic" })
         .eq("stripe_customer_id", customerId);
       if (pfErr) {
         console.error("Webhook DB error (payment_failed):", pfErr, "customer:", customerId);

@@ -41,9 +41,9 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 style={{ color: "#F9FAFB", fontSize: "20px", fontWeight: 600, marginBottom: "12px" }}>4. Free Trial & Subscription</h2>
-            <p>New users receive a 7-day free trial with full access to all features. No credit card is required for the trial. After the trial period, continued access requires a paid subscription at $29 per month.</p>
-            <p className="mt-3">Subscriptions are billed monthly and renew automatically unless cancelled. You may cancel at any time through your account settings. No refunds are issued for partial billing periods.</p>
+            <h2 style={{ color: "#F9FAFB", fontSize: "20px", fontWeight: 600, marginBottom: "12px" }}>4. Plans & Subscription</h2>
+            <p>The free Basic plan provides unlimited trade logging, statistics, calendar, and custom fields at no cost — for as long as you choose to keep your account. No credit card is required. Premium features such as automatic MetaTrader 4/5 synchronization require a paid Pro subscription ($29 per month) or a Founder Lifetime purchase ($149 one-time).</p>
+            <p className="mt-3">Pro subscriptions are billed monthly and renew automatically unless cancelled. You may cancel at any time through your account settings; cancellation downgrades you to the free Basic plan at the end of the current billing period. No refunds are issued for partial billing periods. Founder Lifetime is a one-time payment with no recurring billing.</p>
           </section>
 
           <section>

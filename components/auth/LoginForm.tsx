@@ -133,7 +133,7 @@ export default function LoginForm() {
           className="font-medium transition-colors"
           style={{ color: "#8B5CF6" }}
         >
-          Start free trial
+          Sign up free
         </Link>
       </p>
     </form>

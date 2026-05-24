@@ -15,7 +15,6 @@ export default async function DashboardLayout({
   }
 
   const canAccess = canAccessDashboard({
-    trial_ends_at: session.user.trialEndsAt,
     subscription_status: session.user.subscriptionStatus,
     current_period_end: session.user.currentPeriodEnd,
   });

@@ -73,10 +73,6 @@ export async function POST(request: NextRequest) {
       Date.now() + 24 * 60 * 60 * 1000
     ).toISOString();
 
-    const trialDays = parseInt(process.env.TRIAL_DAYS ?? "7");
-    const trialEnds = new Date();
-    trialEnds.setDate(trialEnds.getDate() + trialDays);
-
     const referralCode = await generateUniqueReferralCode(email);
 
     const { data: inserted, error } = await db
@@ -88,8 +84,8 @@ export async function POST(request: NextRequest) {
         email_verified: false,
         verification_token,
         verification_token_expires,
-        trial_ends_at: trialEnds.toISOString(),
-        subscription_status: "trialing",
+        trial_ends_at: null,
+        subscription_status: "basic",
         referral_code: referralCode,
         referred_by_user_id: referredByUserId,
       })

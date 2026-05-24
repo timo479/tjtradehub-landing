@@ -219,10 +219,10 @@ export default function ForexTradingJournalGuidePage() {
               Start Your Forex Trading Journal with TJ TradeHub
             </h2>
             <p>
-              TJ TradeHub is the Forex trading journal built for system-based FX traders. Connect your MT4 or MT5 account to automatically sync trades, score every entry with a Discipline Score, and analyze your Forex performance with a full analytics dashboard.
+              TJ TradeHub is the Forex trading journal built for system-based FX traders. Log trades manually on the free Basic plan, or upgrade to Pro to connect your MT4/MT5 account for automatic sync. Score every entry with a Discipline Score and analyze your Forex performance with a full analytics dashboard.
             </p>
             <p className="mt-4">
-              Start free for 7 days. No credit card required.
+              Start free, keep it forever. No credit card required.
             </p>
             <div className="mt-6 flex flex-col sm:flex-row gap-4">
               <Link

@@ -68,26 +68,26 @@ export default function BillingPage() {
       </Link>
 
       {/* Header */}
-      <div className="text-center mb-10" style={{ maxWidth: "500px" }}>
+      <div className="text-center mb-10" style={{ maxWidth: "520px" }}>
         <div
           className="inline-flex items-center gap-2 px-3 py-1.5 text-xs font-medium mb-6 rounded-lg"
           style={{
-            backgroundColor: "rgba(239, 68, 68, 0.1)",
-            color: "#F87171",
-            border: "1px solid rgba(239, 68, 68, 0.2)",
+            backgroundColor: "rgba(139, 92, 246, 0.12)",
+            color: "#A78BFA",
+            border: "1px solid rgba(139, 92, 246, 0.25)",
           }}
         >
-          Trial ended
+          Upgrade your Basic plan
         </div>
         <h1
           className="text-3xl md:text-4xl font-bold mb-4"
           style={{ color: "#F9FAFB" }}
         >
-          Continue with TJ TradeHub
+          Unlock MT4/MT5 Auto-Sync
         </h1>
         <p className="text-lg" style={{ color: "#9CA3AF" }}>
-          Your 7-day trial has ended. Upgrade to keep full access for just{" "}
-          <strong style={{ color: "#F9FAFB" }}>$29/month</strong>.
+          Your journal stays free, forever. Upgrade to{" "}
+          <strong style={{ color: "#F9FAFB" }}>$29/month</strong> to add automatic trade syncing and advanced analytics.
         </p>
       </div>
 
@@ -187,13 +187,31 @@ export default function BillingPage() {
         </ul>
       </div>
 
-      <button
-        onClick={() => signOut({ callbackUrl: "/login" })}
-        className="mt-6 text-sm transition-colors"
-        style={{ color: "#4B5563", background: "none", border: "none", cursor: "pointer" }}
+      <Link
+        href="/founders"
+        className="mt-6 text-sm font-medium transition-colors"
+        style={{ color: "#FBBF24" }}
       >
-        Sign out
-      </button>
+        ✦ Looking for Lifetime? $149 one-time →
+      </Link>
+
+      <div className="flex items-center gap-4 mt-4">
+        <Link
+          href="/dashboard"
+          className="text-sm transition-colors"
+          style={{ color: "#6B7280" }}
+        >
+          ← Back to Journal
+        </Link>
+        <span style={{ color: "#1F2937" }}>·</span>
+        <button
+          onClick={() => signOut({ callbackUrl: "/login" })}
+          className="text-sm transition-colors"
+          style={{ color: "#4B5563", background: "none", border: "none", cursor: "pointer" }}
+        >
+          Sign out
+        </button>
+      </div>
     </div>
   );
 }

@@ -11,7 +11,6 @@ export default async function LotteryPage() {
   if (!session?.user) redirect("/login");
   if (
     !canAccessDashboard({
-      trial_ends_at: session.user.trialEndsAt,
       subscription_status: session.user.subscriptionStatus,
       current_period_end: session.user.currentPeriodEnd,
     })

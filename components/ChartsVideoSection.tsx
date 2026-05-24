@@ -244,7 +244,7 @@ export default function ChartsVideoSection() {
                 boxShadow: "0 8px 24px rgba(139,92,246,0.35)",
               }}
             >
-              Start Free Trial – 7 Days
+              Start Free Forever
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M3 8h10M9 4l4 4-4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>

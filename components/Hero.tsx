@@ -117,7 +117,7 @@ export default function Hero() {
                 }}
                 className="magnet btn-accent inline-flex items-center justify-center px-6 py-3.5 text-sm font-semibold transition-shadow duration-200 hover:shadow-[0_10px_60px_-10px_rgba(139,92,246,0.9)]"
               >
-                Start Free – 7 Days
+                Start Free Forever
               </motion.a>
               <a
                 href="#features"

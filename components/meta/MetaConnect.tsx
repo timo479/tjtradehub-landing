@@ -274,7 +274,7 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
     backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "20px 24px",
   };
 
-  // ── Upsell Card for Trial Users ──────────────────────────────────────────────
+  // ── Upsell Card for Basic Plan Users ─────────────────────────────────────────
   if (!isSubscribed) {
     return (
       <div style={{ ...card, display: "flex", flexDirection: "column", gap: "16px" }}>

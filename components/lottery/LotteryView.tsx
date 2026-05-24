@@ -86,7 +86,7 @@ export default function LotteryView() {
   const referralLots = status.sources.referrals ?? 0;
 
   const actions: { key: string; label: string; lots: number; done: boolean; hint?: string }[] = [
-    { key: "register", label: "Sign up for free trial", lots: status.rewards.register, done: has("register") },
+    { key: "register", label: "Create your free account", lots: status.rewards.register, done: has("register") },
     { key: "mt5_connect", label: "Connect MT4 / MT5", lots: status.rewards.mt5_connect, done: has("mt5_connect") },
     { key: "five_trades", label: "Log 5 real trades", lots: status.rewards.five_trades, done: has("five_trades") },
     { key: "twitter_share", label: "Share on X / Twitter", lots: status.rewards.twitter_share, done: has("twitter_share") },

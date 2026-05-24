@@ -1,13 +1,6 @@
 import type { User } from "./db";
 
-export function isTrialActive(user: Pick<User, "trial_ends_at">): boolean {
-  return new Date(user.trial_ends_at) >= new Date();
-}
-
-export function getDaysRemaining(user: Pick<User, "trial_ends_at">): number {
-  const diff = new Date(user.trial_ends_at).getTime() - Date.now();
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
-}
+export type PlanTier = "basic" | "pro" | "lifetime";
 
 export function hasActiveSubscription(
   user: Pick<User, "subscription_status" | "current_period_end">
@@ -21,9 +14,23 @@ export function hasActiveSubscription(
   return false;
 }
 
-export function canAccessDashboard(
-  user: Pick<User, "trial_ends_at" | "subscription_status" | "current_period_end">
+export function hasMt5Access(
+  user: Pick<User, "subscription_status" | "current_period_end">
 ): boolean {
-  if (user.subscription_status === "lifetime") return true;
-  return isTrialActive(user) || hasActiveSubscription(user);
+  return hasActiveSubscription(user);
+}
+
+export function canAccessDashboard(
+  user: Pick<User, "subscription_status" | "current_period_end">
+): boolean {
+  if (user.subscription_status === "basic") return true;
+  return hasActiveSubscription(user);
+}
+
+export function getPlanTier(
+  user: Pick<User, "subscription_status" | "current_period_end">
+): PlanTier {
+  if (user.subscription_status === "lifetime") return "lifetime";
+  if (hasActiveSubscription(user)) return "pro";
+  return "basic";
 }

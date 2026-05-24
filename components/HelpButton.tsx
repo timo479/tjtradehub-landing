@@ -82,12 +82,12 @@ const FAQS = [
     cat: "Account & Billing",
     items: [
       {
-        q: "How long is the free trial?",
-        a: "You get 7 days of full access for free — no credit card required. After the trial, you need a Pro subscription to continue accessing the dashboard.",
+        q: "Is the journal really free forever?",
+        a: "Yes. The Basic plan includes unlimited trade logging, full statistics, calendar and custom fields — free forever, no credit card required. You only pay if you want to add MetaTrader auto-sync via Pro ($29/month) or Founder Lifetime ($149 one-time).",
       },
       {
         q: "What is included in the Pro plan?",
-        a: "Pro gives you unlimited journals, unlimited trade entries, MT5 auto-sync, full statistics with all widgets, and all future features for $29 / month.",
+        a: "Pro adds MT4/MT5 auto-sync on top of everything in Basic — for $29 / month. Founder Lifetime ($149 one-time) is the same feature set without recurring billing.",
       },
       {
         q: "How do I cancel my subscription?",

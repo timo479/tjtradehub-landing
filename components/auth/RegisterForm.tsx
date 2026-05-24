@@ -174,11 +174,11 @@ export default function RegisterForm() {
           cursor: loading ? "not-allowed" : "pointer",
         }}
       >
-        {loading ? "Creating account…" : "Start 7-Day Free Trial"}
+        {loading ? "Creating account…" : "Create Free Account"}
       </button>
 
       <p className="text-xs text-center mt-2" style={{ color: "#6B7280" }}>
-        No credit card required · Cancel anytime
+        Free forever · No credit card required
       </p>
 
       <p className="text-sm text-center mt-4" style={{ color: "#9CA3AF" }}>

@@ -23,8 +23,7 @@ export default auth((req) => {
   if (isAuthPage && isLoggedIn && session?.user) {
     const user = session.user;
     const canAccess = canAccessDashboard({
-      trial_ends_at: user.trialEndsAt ?? "",
-      subscription_status: user.subscriptionStatus ?? "trialing",
+      subscription_status: user.subscriptionStatus ?? "basic",
       current_period_end: user.currentPeriodEnd ?? null,
     });
     if (canAccess) {
@@ -45,12 +44,11 @@ export default auth((req) => {
     }
   }
 
-  // Redirect to billing if trial expired and no active subscription
+  // Redirect to billing if user has no plan (shouldn't happen — all users default to basic)
   if (nextUrl.pathname.startsWith("/dashboard") && isLoggedIn && session?.user) {
     const user = session.user;
     const canAccess = canAccessDashboard({
-      trial_ends_at: user.trialEndsAt ?? "",
-      subscription_status: user.subscriptionStatus ?? "trialing",
+      subscription_status: user.subscriptionStatus ?? "basic",
       current_period_end: user.currentPeriodEnd ?? null,
     });
 

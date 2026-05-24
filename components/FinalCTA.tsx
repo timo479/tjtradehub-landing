@@ -46,7 +46,7 @@ export default function FinalCTA() {
           className="text-lg leading-relaxed mb-10"
           style={{ color: "#9CA3AF", maxWidth: "560px", margin: "0 auto 40px" }}
         >
-          7 days free. No credit card. See exactly where your discipline breaks — before it costs you another week of losses.
+          Free forever — no credit card. See exactly where your discipline breaks before it costs you another week of losses.
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -59,7 +59,7 @@ export default function FinalCTA() {
               borderRadius: "14px",
             }}
           >
-            Start Free Trial – 7 Days
+            Start Free — Keep Forever
           </a>
           <a
             href="#features"

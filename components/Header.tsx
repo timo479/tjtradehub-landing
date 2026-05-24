@@ -74,7 +74,7 @@ export default function Header() {
               borderRadius: "14px",
             }}
           >
-            Start Free Trial
+            Start Free
           </Link>
         </div>
 
@@ -137,7 +137,7 @@ export default function Header() {
             }}
             onClick={() => setMenuOpen(false)}
           >
-            Start Free Trial
+            Start Free
           </Link>
         </div>
       )}

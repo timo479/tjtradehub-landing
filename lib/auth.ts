@@ -24,16 +24,14 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           .single();
 
         if (!existing) {
-          // Create new user with 7-day trial
-          const trialEnds = new Date();
-          trialEnds.setDate(trialEnds.getDate() + parseInt(process.env.TRIAL_DAYS ?? "7"));
+          // Create new user on Basic plan (free forever, journal only — MT5 sync requires upgrade)
           const referralCode = await generateUniqueReferralCode(user.email);
           const { data: newUser } = await db.from("users").insert({
             email: user.email,
             name: user.name ?? user.email.split("@")[0],
             password_hash: "",
-            trial_ends_at: trialEnds.toISOString(),
-            subscription_status: "trialing",
+            trial_ends_at: null,
+            subscription_status: "basic",
             email_verified: true,
             referral_code: referralCode,
           }).select().single();

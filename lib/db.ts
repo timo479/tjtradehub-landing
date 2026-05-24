@@ -25,7 +25,7 @@ export interface User {
   name: string;
   password_hash: string;
   created_at: string;
-  trial_ends_at: string;
+  trial_ends_at: string | null;
   stripe_customer_id: string | null;
   subscription_id: string | null;
   subscription_status: string;
