@@ -166,7 +166,7 @@ export default function ChartsVideoSection() {
                   muted
                   loop
                   playsInline
-                  style={{ width: "100%", aspectRatio: "16 / 9", display: "block" }}
+                  style={{ width: "100%", display: "block" }}
                 >
                   <source src="/videos/charts-tour.mp4" type="video/mp4" />
                 </video>
