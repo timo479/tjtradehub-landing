@@ -368,8 +368,10 @@ export default function ScreenshotCarousel() {
                 onMouseMove={isAnalytics ? handleZoomMove : undefined}
                 onMouseEnter={isAnalytics ? () => setIsZooming(true) : undefined}
                 onMouseLeave={isAnalytics ? () => { setIsZooming(false); setZoomPos({ x: 50, y: 50 }); } : undefined}
+                data-lenis-prevent
                 style={{
-                  maxHeight: "580px",
+                  aspectRatio: "2885 / 1318",
+                  maxHeight: "480px",
                   overflowY: isAnalytics ? "hidden" : "auto",
                   overflow: isAnalytics ? "hidden" : undefined,
                   backgroundColor: "#050507",
