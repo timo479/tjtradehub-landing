@@ -10,18 +10,6 @@ type Stats = {
   lastClaimedAt: string | null;
 };
 
-const LAUNCH_DATE = new Date("2026-06-02T00:00:00+02:00").getTime();
-
-function format(ms: number) {
-  const days = Math.floor(ms / 86_400_000);
-  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
-  const minutes = Math.floor((ms % 3_600_000) / 60_000);
-  const seconds = Math.floor((ms % 60_000) / 1_000);
-  return { days, hours, minutes, seconds };
-}
-
-const pad = (n: number) => n.toString().padStart(2, "0");
-
 function relativeTime(iso: string | null): string {
   if (!iso) return "";
   const diff = Date.now() - new Date(iso).getTime();
@@ -36,14 +24,8 @@ function relativeTime(iso: string | null): string {
 
 export default function FoundersClient({ initialStats }: { initialStats: Stats }) {
   const [stats, setStats] = useState<Stats>(initialStats);
-  const [now, setNow] = useState(Date.now());
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const t = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(t);
-  }, []);
 
   useEffect(() => {
     const poll = async () => {
@@ -76,9 +58,6 @@ export default function FoundersClient({ initialStats }: { initialStats: Stats }
     }
   }, []);
 
-  const diff = LAUNCH_DATE - now;
-  const launched = diff <= 0;
-  const { days, hours, minutes, seconds } = format(Math.max(0, diff));
   const progress = (stats.soldCount / stats.saleTotal) * 100;
   const soldOut = stats.remainingForSale <= 0;
 
@@ -132,16 +111,7 @@ export default function FoundersClient({ initialStats }: { initialStats: Stats }
           }}
         />
         <span style={{ fontSize: 12, fontWeight: 600, color: "#9CA3AF", letterSpacing: "0.04em" }}>
-          {launched ? (
-            <>LIVE NOW</>
-          ) : (
-            <>
-              LAUNCHING IN{" "}
-              <span style={{ color: "#F9FAFB", fontVariantNumeric: "tabular-nums" }}>
-                {days}d {pad(hours)}h {pad(minutes)}m {pad(seconds)}s
-              </span>
-            </>
-          )}
+          LIVE NOW
         </span>
       </div>
 

@@ -4,40 +4,20 @@ import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 
-const LAUNCH_DATE = new Date("2026-06-02T00:00:00+02:00").getTime();
 const STORAGE_KEY = "tj-founder-banner-dismissed";
-
-function format(ms: number) {
-  const days = Math.floor(ms / 86_400_000);
-  const hours = Math.floor((ms % 86_400_000) / 3_600_000);
-  const minutes = Math.floor((ms % 3_600_000) / 60_000);
-  const seconds = Math.floor((ms % 60_000) / 1_000);
-  return { days, hours, minutes, seconds };
-}
-
-const pad = (n: number) => n.toString().padStart(2, "0");
 
 export default function FounderLaunchBanner() {
   const pathname = usePathname();
   const [visible, setVisible] = useState(false);
-  const [now, setNow] = useState(0);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(STORAGE_KEY) === "1") return;
-    setNow(Date.now());
     setVisible(true);
-    const t = setInterval(() => setNow(Date.now()), 1_000);
-    return () => clearInterval(t);
   }, []);
 
   if (pathname?.startsWith("/dashboard")) return null;
   if (!visible) return null;
-
-  const diff = LAUNCH_DATE - now;
-  if (diff <= 0) return null;
-
-  const { days, hours, minutes, seconds } = format(diff);
 
   const handleDismiss = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -49,13 +29,6 @@ export default function FounderLaunchBanner() {
     }
     setVisible(false);
   };
-
-  const digits = [
-    { label: "DAYS", val: days },
-    { label: "HRS", val: hours },
-    { label: "MIN", val: minutes },
-    { label: "SEC", val: seconds },
-  ];
 
   return (
     <>
@@ -77,19 +50,7 @@ export default function FounderLaunchBanner() {
           50% { background-position: 100% 50%; }
           100% { background-position: 0% 50%; }
         }
-        @keyframes tj-flip {
-          0% { transform: translateY(-100%); opacity: 0; }
-          100% { transform: translateY(0); opacity: 1; }
-        }
         .tj-banner-link:hover .tj-banner-arrow { transform: translateX(6px); }
-        .tj-banner-link:hover .tj-digit-box {
-          border-color: rgba(255,255,255,0.4);
-          background-color: rgba(0,0,0,0.5);
-        }
-        .tj-digit-flip {
-          display: inline-block;
-          animation: tj-flip 0.4s ease-out;
-        }
       `}</style>
 
       <div
@@ -248,52 +209,6 @@ export default function FounderLaunchBanner() {
               </span>{" "}
               to win
             </span>
-          </div>
-
-          {/* Countdown */}
-          <div style={{ display: "flex", gap: 6 }}>
-            {digits.map(({ label, val }) => (
-              <div
-                key={label}
-                className="tj-digit-box"
-                style={{
-                  minWidth: 46,
-                  padding: "5px 8px 4px",
-                  borderRadius: 10,
-                  backgroundColor: "rgba(0,0,0,0.4)",
-                  border: "1px solid rgba(255,255,255,0.18)",
-                  textAlign: "center",
-                  backdropFilter: "blur(6px)",
-                  transition: "border-color 0.25s, background-color 0.25s",
-                }}
-              >
-                <div
-                  key={val} /* re-mount each tick → flip animation */
-                  className="tj-digit-flip"
-                  style={{
-                    fontSize: 18,
-                    fontWeight: 700,
-                    fontVariantNumeric: "tabular-nums",
-                    color: "#F9FAFB",
-                    lineHeight: 1.05,
-                    fontFeatureSettings: '"tnum"',
-                  }}
-                >
-                  {pad(val)}
-                </div>
-                <div
-                  style={{
-                    fontSize: 8,
-                    color: "#A78BFA",
-                    letterSpacing: "0.12em",
-                    marginTop: 3,
-                    fontWeight: 700,
-                  }}
-                >
-                  {label}
-                </div>
-              </div>
-            ))}
           </div>
 
           {/* CTA */}
