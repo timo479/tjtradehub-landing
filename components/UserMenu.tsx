@@ -158,6 +158,28 @@ export default function UserMenu({ name, email, subscriptionStatus }: { name?: s
               {/* Divider */}
               {isSubscribed && <div style={{ height: "1px", backgroundColor: "#1F2937", margin: "0 16px" }} />}
 
+              {/* Settings */}
+              <a
+                href="/dashboard/settings"
+                style={{
+                  display: "flex", alignItems: "center", gap: "10px",
+                  padding: "11px 16px", textDecoration: "none",
+                  color: "#9CA3AF", fontSize: "14px",
+                }}
+                onMouseEnter={e => (e.currentTarget.style.backgroundColor = "#1F2937")}
+                onMouseLeave={e => (e.currentTarget.style.backgroundColor = "transparent")}
+              >
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none">
+                  <circle cx="12" cy="12" r="3" stroke="#9CA3AF" strokeWidth="2"/>
+                  <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09a1.65 1.65 0 00-1-1.51 1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09a1.65 1.65 0 001.51-1 1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33h.01a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82v.01a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z"
+                    stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Settings
+              </a>
+
+              {/* Divider */}
+              <div style={{ height: "1px", backgroundColor: "#1F2937", margin: "0 16px" }} />
+
               {/* Sign Out */}
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}

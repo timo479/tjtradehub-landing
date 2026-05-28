@@ -1,6 +1,60 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+
+const patchSchema = z.object({
+  newsletter_opt_in: z.boolean().optional(),
+});
+
+export async function GET() {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data, error } = await db
+    .from("users")
+    .select("newsletter_opt_in")
+    .eq("id", session.user.id)
+    .single();
+
+  if (error || !data) {
+    return NextResponse.json({ error: "Failed to load account" }, { status: 500 });
+  }
+
+  return NextResponse.json({ newsletter_opt_in: data.newsletter_opt_in ?? false });
+}
+
+export async function PATCH(request: NextRequest) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const body = await request.json().catch(() => null);
+  const parsed = patchSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: parsed.error.issues[0].message }, { status: 400 });
+  }
+
+  const updates = parsed.data;
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: "No fields to update" }, { status: 400 });
+  }
+
+  const { error } = await db
+    .from("users")
+    .update(updates)
+    .eq("id", session.user.id);
+
+  if (error) {
+    console.error("Account update error:", error);
+    return NextResponse.json({ error: "Failed to update account" }, { status: 500 });
+  }
+
+  return NextResponse.json({ success: true });
+}
 
 export async function DELETE() {
   const session = await auth();

@@ -16,6 +16,7 @@ const registerSchema = z.object({
     .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
     .regex(/[0-9]/, "Password must contain at least one number"),
   ref: z.string().trim().min(1).max(64).optional(),
+  newsletter_opt_in: z.boolean().optional().default(false),
 });
 
 export async function POST(request: NextRequest) {
@@ -40,7 +41,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, email, password, ref } = result.data;
+    const { name, email, password, ref, newsletter_opt_in } = result.data;
 
     // Check if user exists
     const { data: existing } = await db
@@ -88,6 +89,7 @@ export async function POST(request: NextRequest) {
         subscription_status: "basic",
         referral_code: referralCode,
         referred_by_user_id: referredByUserId,
+        newsletter_opt_in,
       })
       .select("id")
       .single();

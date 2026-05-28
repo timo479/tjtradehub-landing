@@ -6,6 +6,7 @@ import Link from "next/link";
 
 export default function RegisterForm() {
   const [form, setForm] = useState({ name: "", email: "", password: "" });
+  const [newsletterOptIn, setNewsletterOptIn] = useState(false);
   const [ref, setRef] = useState<string | null>(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -24,10 +25,12 @@ export default function RegisterForm() {
     setLoading(true);
 
     try {
+      const payload: Record<string, unknown> = { ...form, newsletter_opt_in: newsletterOptIn };
+      if (ref) payload.ref = ref;
       const res = await fetch("/api/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(ref ? { ...form, ref } : form),
+        body: JSON.stringify(payload),
       });
 
       const data = await res.json();
@@ -163,6 +166,22 @@ export default function RegisterForm() {
           onBlur={(e) => (e.target.style.borderColor = "#1F2937")}
         />
       </div>
+
+      <label
+        className="flex items-start gap-2.5 cursor-pointer select-none mt-1"
+        style={{ color: "#9CA3AF", fontSize: "13px", lineHeight: 1.5 }}
+      >
+        <input
+          type="checkbox"
+          checked={newsletterOptIn}
+          onChange={(e) => setNewsletterOptIn(e.target.checked)}
+          className="mt-0.5"
+          style={{ accentColor: "#8B5CF6", cursor: "pointer", width: "15px", height: "15px", flexShrink: 0 }}
+        />
+        <span>
+          Send me the weekly <span style={{ color: "#F9FAFB" }}>TJ TradeHub newsletter</span> — market recap, community stats &amp; product updates. Unsubscribe anytime.
+        </span>
+      </label>
 
       <button
         type="submit"

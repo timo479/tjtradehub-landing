@@ -1,7 +1,8 @@
 import { auth } from "@/lib/auth";
 import { redirect } from "next/navigation";
-import { canAccessDashboard } from "@/lib/trial";
+import { canAccessDashboard, getPlanTier } from "@/lib/trial";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
+import FounderUpgradeModal from "@/components/FounderUpgradeModal";
 
 export default async function DashboardLayout({
   children,
@@ -14,14 +15,16 @@ export default async function DashboardLayout({
     redirect("/login");
   }
 
-  const canAccess = canAccessDashboard({
+  const userPlan = {
     subscription_status: session.user.subscriptionStatus,
     current_period_end: session.user.currentPeriodEnd,
-  });
+  };
 
-  if (!canAccess) {
+  if (!canAccessDashboard(userPlan)) {
     redirect("/billing");
   }
+
+  const tier = getPlanTier(userPlan);
 
   return (
     <>
@@ -29,6 +32,7 @@ export default async function DashboardLayout({
         <ImpersonationBanner email={session.user.email ?? ""} />
       )}
       {children}
+      {tier === "basic" && <FounderUpgradeModal />}
     </>
   );
 }
