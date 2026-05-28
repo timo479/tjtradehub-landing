@@ -233,6 +233,17 @@ export default function AdminPage() {
           >
             <span>✦</span> Founder Slots
           </a>
+          <a
+            href="/dashboard/admin/newsletter"
+            className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
+            style={{
+              background: "linear-gradient(135deg, rgba(168,85,247,0.15) 0%, rgba(168,85,247,0.05) 100%)",
+              borderColor: "rgba(168,85,247,0.4)",
+              color: "#A78BFA",
+            }}
+          >
+            <span>✉</span> Newsletter
+          </a>
           <a href="/dashboard" className="text-sm text-zinc-400 hover:text-white transition-colors">← Dashboard</a>
         </div>
       </div>
