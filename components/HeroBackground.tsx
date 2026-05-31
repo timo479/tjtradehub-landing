@@ -22,6 +22,10 @@ export default function HeroBackground() {
     let stars: Star[] = [];
     let t = 0;
 
+    interface Shoot { x:number;y:number;vx:number;vy:number;life:number;maxLife:number }
+    let shoots: Shoot[] = [];
+    let nextShoot = 120 + Math.random() * 300;
+
     function resize() {
       W = canvas!.offsetWidth;
       H = canvas!.offsetHeight;
@@ -83,6 +87,44 @@ export default function HeroBackground() {
       }
     }
 
+    function drawShoots() {
+      if (t > nextShoot && shoots.length < 2) {
+        const angle = (Math.random() * 25 + 15) * Math.PI / 180;
+        shoots.push({
+          x: Math.random() * W * 0.75, y: Math.random() * H * 0.45,
+          vx: Math.cos(angle) * 9, vy: Math.sin(angle) * 9,
+          life: 0, maxLife: 50 + Math.random() * 20,
+        });
+        nextShoot = t + 250 + Math.random() * 500;
+      }
+      shoots = shoots.filter(s => s.life < s.maxLife);
+      for (const s of shoots) {
+        const prog = s.life / s.maxLife;
+        const alpha = prog < 0.2 ? prog / 0.2 : 1 - (prog - 0.2) / 0.8;
+        const tailLen = 70;
+        const grd = ctx!.createLinearGradient(
+          s.x - s.vx * (tailLen / 9), s.y - s.vy * (tailLen / 9),
+          s.x, s.y
+        );
+        grd.addColorStop(0, `rgba(220,210,255,0)`);
+        grd.addColorStop(1, `rgba(220,210,255,${alpha * 0.75})`);
+        ctx!.save();
+        ctx!.strokeStyle = grd;
+        ctx!.lineWidth = 1.1;
+        ctx!.beginPath();
+        ctx!.moveTo(s.x - s.vx * (tailLen / 9), s.y - s.vy * (tailLen / 9));
+        ctx!.lineTo(s.x, s.y);
+        ctx!.stroke();
+        ctx!.globalAlpha = alpha * 0.9;
+        ctx!.fillStyle = "#F0ECFF";
+        ctx!.beginPath();
+        ctx!.arc(s.x, s.y, 1.3, 0, Math.PI * 2);
+        ctx!.fill();
+        ctx!.restore();
+        s.x += s.vx; s.y += s.vy; s.life++;
+      }
+    }
+
     function drawVignette() {
       const g = ctx!.createRadialGradient(W * .5, H * .45, H * .05, W * .5, H * .45, W * .85);
       g.addColorStop(0,   "rgba(0,0,0,0)");
@@ -97,6 +139,7 @@ export default function HeroBackground() {
       ctx!.clearRect(0, 0, W, H);
       drawBeams();
       drawStars();
+      drawShoots();
       drawVignette();
       rafRef.current = requestAnimationFrame(tick);
     }
