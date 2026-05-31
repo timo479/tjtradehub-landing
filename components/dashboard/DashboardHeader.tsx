@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
@@ -29,6 +29,26 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean 
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
 
+function SoonBadge() {
+  return (
+    <span
+      style={{
+        fontSize: 9,
+        background: "linear-gradient(135deg, #8B5CF6, #6366F1)",
+        color: "#fff",
+        borderRadius: 5,
+        padding: "1px 6px",
+        fontWeight: 800,
+        letterSpacing: "0.05em",
+        boxShadow: "0 0 12px rgba(139,92,246,0.5)",
+        animation: "soonPulse 2.4s ease-in-out infinite",
+      }}
+    >
+      SOON
+    </span>
+  );
+}
+
 export default function DashboardHeader({
   activePage,
   name,
@@ -39,22 +59,62 @@ export default function DashboardHeader({
 }: Props) {
   const [open, setOpen] = useState(false);
 
+  const navRef = useRef<HTMLElement>(null);
+  const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
+  const [hoverIdx, setHoverIdx] = useState<number | null>(null);
+  const [indicator, setIndicator] = useState({ left: 0, width: 0, opacity: 0 });
+
+  const activeIdx = NAV_LINKS.findIndex((l) => l.key === activePage);
+
+  const updateIndicator = useCallback(() => {
+    const idx = hoverIdx ?? activeIdx;
+    const el = itemRefs.current[idx];
+    if (el) {
+      setIndicator({ left: el.offsetLeft, width: el.offsetWidth, opacity: 1 });
+    } else {
+      setIndicator((i) => ({ ...i, opacity: 0 }));
+    }
+  }, [hoverIdx, activeIdx]);
+
+  useEffect(() => {
+    updateIndicator();
+    window.addEventListener("resize", updateIndicator);
+    return () => window.removeEventListener("resize", updateIndicator);
+  }, [updateIndicator]);
+
   const defaultStyle: React.CSSProperties = {
     borderBottom: "1px solid rgba(255,255,255,0.06)",
-    backgroundColor: "rgba(0,0,0,0.7)",
-    backdropFilter: "blur(12px)",
+    background: "linear-gradient(180deg, rgba(10,8,18,0.85) 0%, rgba(0,0,0,0.7) 100%)",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
     position: "sticky",
     top: 0,
     zIndex: 100,
   };
 
   return (
-    <header style={headerStyle ?? defaultStyle} className="px-6 py-5">
+    <header style={headerStyle ?? defaultStyle} className="px-6 py-4">
+      {/* Animated gradient glow line at bottom edge */}
+      <div
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: 1,
+          background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.6) 20%, rgba(99,102,241,0.6) 50%, rgba(139,92,246,0.6) 80%, transparent)",
+          backgroundSize: "200% 100%",
+          animation: "glowLine 6s linear infinite",
+          opacity: 0.7,
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Main row */}
       <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
         {/* Logo + Desktop Nav */}
-        <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-          <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "28px" }}>
+          <Link href="/" className="logo-link" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
             <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
               {Array.from({ length: 16 }).map((_, i) => (
                 <Image
@@ -68,40 +128,71 @@ export default function DashboardHeader({
                 />
               ))}
             </div>
-            <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif" }}>
+            <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif", letterSpacing: "-0.01em" }}>
               TJ TradeHub
             </span>
           </Link>
 
           {/* Desktop nav – hidden on mobile */}
-          <nav className="hidden md:flex" style={{ gap: "24px" }}>
-            {NAV_LINKS.map(({ href, label, key, soon }) => (
-              <Link
-                key={key}
-                href={href}
-                style={{
-                  color: activePage === key ? "#8B5CF6" : "#9CA3AF",
-                  fontSize: "14px",
-                  fontWeight: activePage === key ? 600 : 400,
-                  textDecoration: "none",
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "5px",
-                }}
-              >
-                {label}
-                {key === "checklist" && !checklistEnabled && (
-                  <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
-                    SOON
-                  </span>
-                )}
-                {soon && (
-                  <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
-                    SOON
-                  </span>
-                )}
-              </Link>
-            ))}
+          <nav
+            ref={navRef}
+            className="hidden md:flex"
+            style={{ gap: "2px", position: "relative" }}
+            onMouseLeave={() => setHoverIdx(null)}
+          >
+            {/* Sliding magic indicator pill */}
+            <span
+              aria-hidden
+              style={{
+                position: "absolute",
+                top: "50%",
+                left: indicator.left,
+                width: indicator.width,
+                height: 34,
+                transform: "translateY(-50%)",
+                borderRadius: 10,
+                background: "rgba(139,92,246,0.14)",
+                border: "1px solid rgba(139,92,246,0.3)",
+                boxShadow: "0 0 18px rgba(139,92,246,0.18), inset 0 0 12px rgba(139,92,246,0.08)",
+                opacity: indicator.opacity,
+                transition: "left 0.32s cubic-bezier(0.4,0,0.2,1), width 0.32s cubic-bezier(0.4,0,0.2,1), opacity 0.2s ease",
+                pointerEvents: "none",
+                zIndex: 0,
+              }}
+            />
+
+            {NAV_LINKS.map(({ href, label, key, soon }, i) => {
+              const isActive = activePage === key;
+              return (
+                <Link
+                  key={key}
+                  href={href}
+                  ref={(el) => { itemRefs.current[i] = el; }}
+                  onMouseEnter={() => setHoverIdx(i)}
+                  style={{
+                    position: "relative",
+                    zIndex: 1,
+                    color: isActive ? "#C4B5FD" : "#9CA3AF",
+                    fontSize: "13.5px",
+                    fontWeight: isActive ? 600 : 500,
+                    textDecoration: "none",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    padding: "8px 13px",
+                    borderRadius: 10,
+                    whiteSpace: "nowrap",
+                    transition: "color 0.2s ease",
+                  }}
+                  onMouseOver={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#F9FAFB"; }}
+                  onMouseOut={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#9CA3AF"; }}
+                >
+                  {label}
+                  {key === "checklist" && !checklistEnabled && <SoonBadge />}
+                  {soon && <SoonBadge />}
+                </Link>
+              );
+            })}
           </nav>
         </div>
 
@@ -147,38 +238,49 @@ export default function DashboardHeader({
       {/* Mobile dropdown nav */}
       {open && (
         <div className="md:hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "16px", paddingTop: "8px" }}>
-          {NAV_LINKS.map(({ href, label, key, soon }) => (
-            <Link
-              key={key}
-              href={href}
-              onClick={() => setOpen(false)}
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "6px",
-                padding: "12px 4px",
-                color: activePage === key ? "#8B5CF6" : "#9CA3AF",
-                fontSize: "15px",
-                fontWeight: activePage === key ? 600 : 400,
-                textDecoration: "none",
-                borderBottom: "1px solid rgba(255,255,255,0.04)",
-              }}
-            >
-              {label}
-              {key === "checklist" && !checklistEnabled && (
-                <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
-                  SOON
-                </span>
-              )}
-              {soon && (
-                <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
-                  SOON
-                </span>
-              )}
-            </Link>
-          ))}
+          {NAV_LINKS.map(({ href, label, key, soon }) => {
+            const isActive = activePage === key;
+            return (
+              <Link
+                key={key}
+                href={href}
+                onClick={() => setOpen(false)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  padding: "12px 12px",
+                  margin: "2px 0",
+                  borderRadius: 10,
+                  color: isActive ? "#C4B5FD" : "#9CA3AF",
+                  background: isActive ? "rgba(139,92,246,0.12)" : "transparent",
+                  border: isActive ? "1px solid rgba(139,92,246,0.25)" : "1px solid transparent",
+                  fontSize: "15px",
+                  fontWeight: isActive ? 600 : 500,
+                  textDecoration: "none",
+                }}
+              >
+                {label}
+                {key === "checklist" && !checklistEnabled && <SoonBadge />}
+                {soon && <SoonBadge />}
+              </Link>
+            );
+          })}
         </div>
       )}
+
+      <style>{`
+        @keyframes soonPulse {
+          0%, 100% { box-shadow: 0 0 10px rgba(139,92,246,0.4); }
+          50% { box-shadow: 0 0 18px rgba(139,92,246,0.75); }
+        }
+        @keyframes glowLine {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .logo-link span { transition: text-shadow 0.3s ease; }
+        .logo-link:hover span { text-shadow: 0 0 18px rgba(139,92,246,0.6); }
+      `}</style>
     </header>
   );
 }
