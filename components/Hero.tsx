@@ -33,11 +33,123 @@ export default function Hero() {
         minHeight: "85vh",
         paddingTop: "80px",
         backgroundColor: "#000000",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
+      {/* ── Neon Grid Background ── */}
+      {/* Diamond grid lines */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M36 0 L72 36 L36 72 L0 36 Z' fill='none' stroke='%238B5CF6' stroke-width='0.5' stroke-opacity='0.18'/%3E%3C/svg%3E")`,
+          backgroundSize: "72px 72px",
+          backgroundRepeat: "repeat",
+          zIndex: 0,
+        }}
+      />
+      {/* Secondary smaller grid for depth */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%236366F1' stroke-width='0.3' stroke-opacity='0.1'/%3E%3C/svg%3E")`,
+          backgroundSize: "36px 36px",
+          backgroundRepeat: "repeat",
+          zIndex: 0,
+        }}
+      />
+      {/* Radial vignette — fades grid at edges */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          inset: 0,
+          background: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(0,0,0,0.75) 70%, #000 100%)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Top fade — blends into header */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          height: "120px",
+          background: "linear-gradient(to bottom, #000 0%, transparent 100%)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Bottom fade — blends into next section */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          bottom: 0,
+          left: 0,
+          right: 0,
+          height: "160px",
+          background: "linear-gradient(to top, #000 0%, transparent 100%)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Central violet glow */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "40%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          width: "700px",
+          height: "400px",
+          background: "radial-gradient(ellipse at center, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.06) 40%, transparent 70%)",
+          filter: "blur(40px)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Left edge glow streak */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "20%",
+          left: "-100px",
+          width: "300px",
+          height: "60%",
+          background: "radial-gradient(ellipse at center, rgba(139,92,246,0.08) 0%, transparent 70%)",
+          filter: "blur(50px)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
+      {/* Right edge glow streak */}
+      <div
+        aria-hidden
+        style={{
+          position: "absolute",
+          top: "30%",
+          right: "-100px",
+          width: "300px",
+          height: "50%",
+          background: "radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 70%)",
+          filter: "blur(50px)",
+          zIndex: 1,
+          pointerEvents: "none",
+        }}
+      />
       <div
         className="mx-auto w-full px-6"
-        style={{ maxWidth: "1200px" }}
+        style={{ maxWidth: "1200px", position: "relative", zIndex: 2 }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
           {/* Left: Copy */}
