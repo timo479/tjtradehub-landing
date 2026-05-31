@@ -16,7 +16,7 @@ interface Props {
   headerStyle?: React.CSSProperties;
 }
 
-const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
+const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean }[] = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/dashboard/journal", label: "Journal", key: "journal" },
   { href: "/dashboard/calendar", label: "Calendar", key: "calendar" },
@@ -24,7 +24,7 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
   { href: "/dashboard/checklist", label: "Checklist", key: "checklist" },
   { href: "/dashboard/lottery", label: "Lottery", key: "lottery" },
-  { href: "/dashboard/feed", label: "Market Insights", key: "feed" },
+  { href: "/dashboard/feed", label: "Market Insights", key: "feed", soon: true },
 ];
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
@@ -75,7 +75,7 @@ export default function DashboardHeader({
 
           {/* Desktop nav – hidden on mobile */}
           <nav className="hidden md:flex" style={{ gap: "24px" }}>
-            {NAV_LINKS.map(({ href, label, key }) => (
+            {NAV_LINKS.map(({ href, label, key, soon }) => (
               <Link
                 key={key}
                 href={href}
@@ -91,6 +91,11 @@ export default function DashboardHeader({
               >
                 {label}
                 {key === "checklist" && !checklistEnabled && (
+                  <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
+                    SOON
+                  </span>
+                )}
+                {soon && (
                   <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
                     SOON
                   </span>
@@ -142,7 +147,7 @@ export default function DashboardHeader({
       {/* Mobile dropdown nav */}
       {open && (
         <div className="md:hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "16px", paddingTop: "8px" }}>
-          {NAV_LINKS.map(({ href, label, key }) => (
+          {NAV_LINKS.map(({ href, label, key, soon }) => (
             <Link
               key={key}
               href={href}
@@ -161,6 +166,11 @@ export default function DashboardHeader({
             >
               {label}
               {key === "checklist" && !checklistEnabled && (
+                <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
+                  SOON
+                </span>
+              )}
+              {soon && (
                 <span style={{ fontSize: 9, background: "#8B5CF6", color: "#fff", borderRadius: 4, padding: "1px 5px", fontWeight: 700, letterSpacing: "0.03em" }}>
                   SOON
                 </span>

@@ -21,6 +21,10 @@ export default async function FeedPage() {
 
   if (!canAccess) redirect("/billing");
 
+  // Coming soon — only admins can access for now
+  const isAdmin = (session.user as { role?: string }).role === "admin";
+  if (!isAdmin) redirect("/dashboard");
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
