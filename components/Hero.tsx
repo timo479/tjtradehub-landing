@@ -37,116 +37,80 @@ export default function Hero() {
         overflow: "hidden",
       }}
     >
-      {/* ── Neon Grid Background ── */}
-      {/* Diamond grid lines */}
+      {/* ── Abstract Neon Geo Background ── */}
+      <svg
+        aria-hidden
+        style={{ position: "absolute", inset: 0, width: "100%", height: "100%", zIndex: 0, pointerEvents: "none" }}
+        viewBox="0 0 1440 860"
+        preserveAspectRatio="xMidYMid slice"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <defs>
+          <filter id="glow">
+            <feGaussianBlur stdDeviation="2.5" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+          <filter id="glow-soft">
+            <feGaussianBlur stdDeviation="1.2" result="blur" />
+            <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+          </filter>
+        </defs>
+
+        {/* Large background polygon shapes — very subtle */}
+        <polygon points="0,0 420,0 280,320 -60,200"       fill="none" stroke="#8B5CF6" strokeWidth="0.6" strokeOpacity="0.12" />
+        <polygon points="1440,0 1100,0 1200,280 1480,180"  fill="none" stroke="#8B5CF6" strokeWidth="0.6" strokeOpacity="0.10" />
+        <polygon points="600,860 900,860 1020,580 480,540" fill="none" stroke="#6366F1" strokeWidth="0.5" strokeOpacity="0.10" />
+        <polygon points="0,860 200,860 340,600 -40,500"    fill="none" stroke="#8B5CF6" strokeWidth="0.5" strokeOpacity="0.09" />
+
+        {/* Mid-layer structural lines — varying angles */}
+        <line x1="0"    y1="180" x2="380" y2="0"   stroke="#8B5CF6" strokeWidth="0.7" strokeOpacity="0.18" filter="url(#glow-soft)" />
+        <line x1="0"    y1="420" x2="460" y2="120" stroke="#6366F1" strokeWidth="0.5" strokeOpacity="0.14" />
+        <line x1="120"  y1="860" x2="520" y2="300" stroke="#8B5CF6" strokeWidth="0.6" strokeOpacity="0.15" filter="url(#glow-soft)" />
+        <line x1="340"  y1="860" x2="680" y2="400" stroke="#6366F1" strokeWidth="0.4" strokeOpacity="0.11" />
+        <line x1="1440" y1="220" x2="1060" y2="0"  stroke="#8B5CF6" strokeWidth="0.7" strokeOpacity="0.18" filter="url(#glow-soft)" />
+        <line x1="1440" y1="480" x2="980"  y2="100" stroke="#6366F1" strokeWidth="0.5" strokeOpacity="0.13" />
+        <line x1="1320" y1="860" x2="920"  y2="320" stroke="#8B5CF6" strokeWidth="0.6" strokeOpacity="0.15" filter="url(#glow-soft)" />
+        <line x1="1100" y1="860" x2="760"  y2="440" stroke="#6366F1" strokeWidth="0.4" strokeOpacity="0.10" />
+
+        {/* Center convergence lines — subtle */}
+        <line x1="480"  y1="0"   x2="660" y2="860" stroke="#8B5CF6" strokeWidth="0.5" strokeOpacity="0.10" />
+        <line x1="760"  y1="0"   x2="580" y2="860" stroke="#6366F1" strokeWidth="0.4" strokeOpacity="0.09" />
+        <line x1="1020" y1="0"   x2="820" y2="860" stroke="#8B5CF6" strokeWidth="0.5" strokeOpacity="0.10" />
+
+        {/* Accent intersection nodes — tiny glowing dots */}
+        <circle cx="320"  cy="148" r="1.8" fill="#8B5CF6" fillOpacity="0.55" filter="url(#glow)" />
+        <circle cx="1120" cy="195" r="1.8" fill="#8B5CF6" fillOpacity="0.55" filter="url(#glow)" />
+        <circle cx="200"  cy="580" r="1.4" fill="#6366F1" fillOpacity="0.45" filter="url(#glow)" />
+        <circle cx="1260" cy="520" r="1.4" fill="#6366F1" fillOpacity="0.45" filter="url(#glow)" />
+        <circle cx="620"  cy="340" r="1.2" fill="#A78BFA" fillOpacity="0.40" filter="url(#glow)" />
+        <circle cx="900"  cy="280" r="1.2" fill="#A78BFA" fillOpacity="0.40" filter="url(#glow)" />
+        <circle cx="480"  cy="680" r="1.0" fill="#8B5CF6" fillOpacity="0.35" filter="url(#glow)" />
+        <circle cx="1000" cy="640" r="1.0" fill="#8B5CF6" fillOpacity="0.35" filter="url(#glow)" />
+
+        {/* Bright accent lines — the "neon streak" feel */}
+        <line x1="0"   y1="260" x2="200" y2="180" stroke="#A78BFA" strokeWidth="1.0" strokeOpacity="0.28" filter="url(#glow)" />
+        <line x1="1440" y1="300" x2="1240" y2="220" stroke="#A78BFA" strokeWidth="1.0" strokeOpacity="0.28" filter="url(#glow)" />
+        <line x1="160"  y1="860" x2="360" y2="700" stroke="#A78BFA" strokeWidth="0.8" strokeOpacity="0.22" filter="url(#glow)" />
+        <line x1="1280" y1="860" x2="1080" y2="700" stroke="#A78BFA" strokeWidth="0.8" strokeOpacity="0.22" filter="url(#glow)" />
+      </svg>
+
+      {/* Radial vignette — fades geo at edges */}
       <div
         aria-hidden
         style={{
           position: "absolute",
           inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Cpath d='M36 0 L72 36 L36 72 L0 36 Z' fill='none' stroke='%238B5CF6' stroke-width='0.5' stroke-opacity='0.18'/%3E%3C/svg%3E")`,
-          backgroundSize: "72px 72px",
-          backgroundRepeat: "repeat",
-          zIndex: 0,
-        }}
-      />
-      {/* Secondary smaller grid for depth */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='36' height='36'%3E%3Cpath d='M18 0 L36 18 L18 36 L0 18 Z' fill='none' stroke='%236366F1' stroke-width='0.3' stroke-opacity='0.1'/%3E%3C/svg%3E")`,
-          backgroundSize: "36px 36px",
-          backgroundRepeat: "repeat",
-          zIndex: 0,
-        }}
-      />
-      {/* Radial vignette — fades grid at edges */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          inset: 0,
-          background: "radial-gradient(ellipse 80% 70% at 50% 50%, transparent 30%, rgba(0,0,0,0.75) 70%, #000 100%)",
+          background: "radial-gradient(ellipse 85% 75% at 50% 48%, transparent 25%, rgba(0,0,0,0.6) 65%, #000 100%)",
           zIndex: 1,
           pointerEvents: "none",
         }}
       />
-      {/* Top fade — blends into header */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          height: "120px",
-          background: "linear-gradient(to bottom, #000 0%, transparent 100%)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
-      {/* Bottom fade — blends into next section */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: "160px",
-          background: "linear-gradient(to top, #000 0%, transparent 100%)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
+      {/* Top fade */}
+      <div aria-hidden style={{ position: "absolute", top: 0, left: 0, right: 0, height: "100px", background: "linear-gradient(to bottom, #000 0%, transparent 100%)", zIndex: 1, pointerEvents: "none" }} />
+      {/* Bottom fade */}
+      <div aria-hidden style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "140px", background: "linear-gradient(to top, #000 0%, transparent 100%)", zIndex: 1, pointerEvents: "none" }} />
       {/* Central violet glow */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "40%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          width: "700px",
-          height: "400px",
-          background: "radial-gradient(ellipse at center, rgba(139,92,246,0.12) 0%, rgba(99,102,241,0.06) 40%, transparent 70%)",
-          filter: "blur(40px)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
-      {/* Left edge glow streak */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "20%",
-          left: "-100px",
-          width: "300px",
-          height: "60%",
-          background: "radial-gradient(ellipse at center, rgba(139,92,246,0.08) 0%, transparent 70%)",
-          filter: "blur(50px)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
-      {/* Right edge glow streak */}
-      <div
-        aria-hidden
-        style={{
-          position: "absolute",
-          top: "30%",
-          right: "-100px",
-          width: "300px",
-          height: "50%",
-          background: "radial-gradient(ellipse at center, rgba(99,102,241,0.08) 0%, transparent 70%)",
-          filter: "blur(50px)",
-          zIndex: 1,
-          pointerEvents: "none",
-        }}
-      />
+      <div aria-hidden style={{ position: "absolute", top: "38%", left: "50%", transform: "translate(-50%,-50%)", width: "800px", height: "420px", background: "radial-gradient(ellipse at center, rgba(139,92,246,0.11) 0%, rgba(99,102,241,0.05) 45%, transparent 70%)", filter: "blur(50px)", zIndex: 1, pointerEvents: "none" }} />
       <div
         className="mx-auto w-full px-6"
         style={{ maxWidth: "1200px", position: "relative", zIndex: 2 }}
