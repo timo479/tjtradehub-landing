@@ -24,7 +24,7 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean 
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
   { href: "/dashboard/checklist", label: "Checklist", key: "checklist" },
   { href: "/dashboard/lottery", label: "Lottery", key: "lottery" },
-  { href: "/dashboard/feed", label: "Market Insights", key: "feed", soon: true },
+  { href: "/dashboard/feed", label: "AI Market Insights", key: "feed", soon: true },
 ];
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
