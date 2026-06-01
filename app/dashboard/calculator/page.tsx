@@ -7,12 +7,14 @@ export const metadata = { title: "Risk Calculator – TJ TradeHub" };
 export default async function CalculatorPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
+  const isAdmin = (session!.user as { role?: string }).role === "admin";
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
       {/* Header */}
       <DashboardHeader
         activePage="calculator"
+        isAdmin={isAdmin}
         name={name}
         email={session!.user.email}
         subscriptionStatus={subscriptionStatus}

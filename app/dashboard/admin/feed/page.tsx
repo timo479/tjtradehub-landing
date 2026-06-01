@@ -17,7 +17,8 @@ export default async function FeedAdminPage() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
-        activePage="dashboard"
+        activePage="admin-feed"
+        isAdmin={true}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

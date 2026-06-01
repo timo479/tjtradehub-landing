@@ -19,11 +19,13 @@ export default async function SettingsPage() {
     .single();
 
   const newsletterOptIn = userRow?.newsletter_opt_in ?? false;
+  const isAdmin = (session.user as { role?: string }).role === "admin";
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
         activePage="dashboard"
+        isAdmin={isAdmin}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

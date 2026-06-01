@@ -45,7 +45,8 @@ export default async function NewsletterAdminPage() {
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
-        activePage="dashboard"
+        activePage="admin-newsletter"
+        isAdmin={true}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

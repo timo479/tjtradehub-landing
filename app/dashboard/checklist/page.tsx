@@ -13,11 +13,13 @@ export default async function ChecklistPage() {
   if (!canAccessDashboard({ subscription_status: session.user.subscriptionStatus, current_period_end: session.user.currentPeriodEnd })) redirect("/billing");
 
   const enabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
+  const isAdmin = (session.user as { role?: string }).role === "admin";
 
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
       <DashboardHeader
         activePage="checklist"
+        isAdmin={isAdmin}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

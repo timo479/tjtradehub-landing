@@ -19,6 +19,7 @@ export default async function DashboardPage() {
   if (!session?.user) redirect("/login");
 
   const { name, subscriptionStatus } = session.user;
+  const isAdmin = (session.user as { role?: string }).role === "admin";
   const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
 
   // Fetch entries from JournalV2
@@ -120,6 +121,7 @@ export default async function DashboardPage() {
       {/* Header */}
       <DashboardHeader
         activePage="dashboard"
+        isAdmin={isAdmin}
         name={name}
         email={session.user.email}
         subscriptionStatus={subscriptionStatus}

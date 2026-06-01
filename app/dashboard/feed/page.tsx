@@ -32,6 +32,7 @@ export default async function FeedPage() {
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
         activePage="feed"
+        isAdmin={isAdmin}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

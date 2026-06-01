@@ -5,13 +5,14 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed";
+type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter";
 
 interface Props {
   activePage: ActivePage;
   name?: string | null;
   email?: string | null;
   subscriptionStatus?: string;
+  isAdmin?: boolean;
   extraButtons?: React.ReactNode;
   headerStyle?: React.CSSProperties;
 }
@@ -49,11 +50,17 @@ function SoonBadge() {
   );
 }
 
+const ADMIN_LINKS: { href: string; label: string; key: ActivePage }[] = [
+  { href: "/dashboard/admin/feed", label: "KI Feed", key: "admin-feed" },
+  { href: "/dashboard/admin/newsletter", label: "Newsletter", key: "admin-newsletter" },
+];
+
 export default function DashboardHeader({
   activePage,
   name,
   email,
   subscriptionStatus,
+  isAdmin,
   extraButtons,
   headerStyle,
 }: Props) {
@@ -193,6 +200,42 @@ export default function DashboardHeader({
                 </Link>
               );
             })}
+
+            {/* Admin links */}
+            {isAdmin && (
+              <>
+                <span style={{ width: 1, height: 20, background: "rgba(255,255,255,0.1)", margin: "0 4px", alignSelf: "center" }} />
+                {ADMIN_LINKS.map(({ href, label, key }) => {
+                  const isActive = activePage === key;
+                  return (
+                    <Link
+                      key={key}
+                      href={href}
+                      style={{
+                        position: "relative",
+                        zIndex: 1,
+                        color: isActive ? "#F59E0B" : "#78716C",
+                        fontSize: "13.5px",
+                        fontWeight: isActive ? 600 : 500,
+                        textDecoration: "none",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "5px",
+                        padding: "8px 13px",
+                        borderRadius: 10,
+                        whiteSpace: "nowrap",
+                        transition: "color 0.2s ease",
+                        background: isActive ? "rgba(245,158,11,0.1)" : "transparent",
+                      }}
+                      onMouseOver={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#F59E0B"; }}
+                      onMouseOut={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#78716C"; }}
+                    >
+                      ⚙ {label}
+                    </Link>
+                  );
+                })}
+              </>
+            )}
           </nav>
         </div>
 
@@ -266,6 +309,37 @@ export default function DashboardHeader({
               </Link>
             );
           })}
+          {isAdmin && (
+            <>
+              <div style={{ height: 1, background: "rgba(255,255,255,0.06)", margin: "8px 0" }} />
+              {ADMIN_LINKS.map(({ href, label, key }) => {
+                const isActive = activePage === key;
+                return (
+                  <Link
+                    key={key}
+                    href={href}
+                    onClick={() => setOpen(false)}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "6px",
+                      padding: "12px 12px",
+                      margin: "2px 0",
+                      borderRadius: 10,
+                      color: isActive ? "#F59E0B" : "#78716C",
+                      background: isActive ? "rgba(245,158,11,0.1)" : "transparent",
+                      border: isActive ? "1px solid rgba(245,158,11,0.25)" : "1px solid transparent",
+                      fontSize: "15px",
+                      fontWeight: isActive ? 600 : 500,
+                      textDecoration: "none",
+                    }}
+                  >
+                    ⚙ {label}
+                  </Link>
+                );
+              })}
+            </>
+          )}
         </div>
       )}
 

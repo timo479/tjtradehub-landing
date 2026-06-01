@@ -8,6 +8,7 @@ export const metadata = { title: "Charts – TJ TradeHub" };
 export default async function ChartsPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
+  const isAdmin = (session!.user as { role?: string }).role === "admin";
 
   const { data: userRow } = await db
     .from("users")
@@ -21,6 +22,7 @@ export default async function ChartsPage() {
       {/* Header */}
       <DashboardHeader
         activePage="charts"
+        isAdmin={isAdmin}
         name={name}
         email={session!.user.email}
         subscriptionStatus={subscriptionStatus}
