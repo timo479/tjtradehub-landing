@@ -11,7 +11,6 @@ interface Props {
 export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props) {
   const [active, setActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({
     position: "fixed", top: "50%", left: "50%", transform: "translate(-50%, -50%)",
   });
@@ -117,19 +116,18 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
     } catch {}
   }, [tour]);
 
-  const close = useCallback(async (save: boolean) => {
+  const close = useCallback(async () => {
     clearHighlight();
-    if (save) await saveDismiss();
+    await saveDismiss();
     setActive(false);
     setCurrentStep(0);
-    setDontShowAgain(false);
   }, [clearHighlight, saveDismiss]);
 
   const handleNext = () => {
     if (currentStep < steps.length - 1) {
       setCurrentStep(s => s + 1);
     } else {
-      close(dontShowAgain);
+      close();
     }
   };
 
@@ -151,7 +149,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
           backgroundColor: "rgba(0,0,0,0.72)",
           pointerEvents: "auto",
         }}
-        onClick={() => close(dontShowAgain)}
+        onClick={() => close()}
       />
 
       {/* Tooltip card */}
@@ -191,7 +189,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
               </span>
             </div>
             <button
-              onClick={() => close(dontShowAgain)}
+              onClick={() => close()}
               style={{
                 display: "flex", alignItems: "center", justifyContent: "center",
                 width: "26px", height: "26px", borderRadius: "8px",
@@ -205,6 +203,7 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
             >
               ✕
             </button>
+
           </div>
 
           {/* Title */}
@@ -221,58 +220,34 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
           <div style={{ height: "1px", backgroundColor: "#1F2937", marginBottom: "16px" }} />
 
           {/* Bottom row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-            {/* Don't show again */}
-            <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer", flexShrink: 0 }}>
-              <div
-                onClick={() => setDontShowAgain(v => !v)}
-                style={{
-                  width: "16px", height: "16px", borderRadius: "4px", flexShrink: 0,
-                  border: `1.5px solid ${dontShowAgain ? "#8B5CF6" : "#374151"}`,
-                  backgroundColor: dontShowAgain ? "#8B5CF6" : "transparent",
-                  display: "flex", alignItems: "center", justifyContent: "center",
-                  cursor: "pointer", transition: "all 0.15s",
-                }}
-              >
-                {dontShowAgain && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <span style={{ color: "#6B7280", fontSize: "12px", userSelect: "none" }}>Don&apos;t show again</span>
-            </label>
-
-            {/* Nav */}
-            <div style={{ display: "flex", gap: "8px" }}>
-              {currentStep > 0 && (
-                <button
-                  onClick={handleBack}
-                  style={{
-                    padding: "7px 15px", borderRadius: "8px",
-                    border: "1px solid #2d2f3e", backgroundColor: "transparent",
-                    color: "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: 500,
-                  }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#F9FAFB"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#9CA3AF"; }}
-                >
-                  ← Back
-                </button>
-              )}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+            {currentStep > 0 && (
               <button
-                onClick={handleNext}
+                onClick={handleBack}
                 style={{
-                  padding: "7px 18px", borderRadius: "8px", border: "none",
-                  background: "linear-gradient(135deg,#7C3AED,#8B5CF6)",
-                  color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px",
-                  boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
+                  padding: "7px 15px", borderRadius: "8px",
+                  border: "1px solid #2d2f3e", backgroundColor: "transparent",
+                  color: "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: 500,
                 }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.9"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
+                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.color = "#F9FAFB"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.color = "#9CA3AF"; }}
               >
-                {isLast ? "Finish ✓" : "Next →"}
+                ← Back
               </button>
-            </div>
+            )}
+            <button
+              onClick={handleNext}
+              style={{
+                padding: "7px 18px", borderRadius: "8px", border: "none",
+                background: "linear-gradient(135deg,#7C3AED,#8B5CF6)",
+                color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px",
+                boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "0.9"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.opacity = "1"; }}
+            >
+              {isLast ? "Finish ✓" : "Next →"}
+            </button>
           </div>
         </div>
       </div>

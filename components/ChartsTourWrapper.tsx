@@ -69,12 +69,12 @@ function toggleNewsPanel(open: boolean) {
 export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyCompleted: boolean }) {
   const [active, setActive] = useState(false);
   const [step, setStep] = useState(0);
-  const [dontShow, setDontShow] = useState(false);
 
   useEffect(() => {
+    if (alreadyCompleted) return;
     const t = setTimeout(() => setActive(true), 700);
     return () => clearTimeout(t);
-  }, []);
+  }, [alreadyCompleted]);
 
   // Auto open/close news panel
   useEffect(() => {
@@ -97,17 +97,16 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
     } catch {}
   }, []);
 
-  const close = useCallback(async (save: boolean) => {
+  const close = useCallback(async () => {
     toggleNewsPanel(false);
-    if (save) await saveDismiss();
+    await saveDismiss();
     setActive(false);
     setStep(0);
-    setDontShow(false);
   }, [saveDismiss]);
 
   const handleNext = () => {
     if (step < STEPS.length - 1) setStep(s => s + 1);
-    else close(dontShow);
+    else close();
   };
 
   const handleBack = () => { if (step > 0) setStep(s => s - 1); };
@@ -138,18 +137,18 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
       {region ? (
         <>
           {/* Top dim */}
-          <div onClick={() => close(dontShow)} style={{
+          <div onClick={() => close()} style={{
             position: "fixed", top: 0, left: 0, right: 0, height: region.top,
             backgroundColor: DIM, zIndex: 10000,
           }} />
           {/* Bottom dim */}
-          <div onClick={() => close(dontShow)} style={{
+          <div onClick={() => close()} style={{
             position: "fixed", top: region.top + region.height, left: 0, right: 0, bottom: 0,
             backgroundColor: DIM, zIndex: 10000,
           }} />
           {/* Left dim (for partial-width) */}
           {region.rightFrom && (
-            <div onClick={() => close(dontShow)} style={{
+            <div onClick={() => close()} style={{
               position: "fixed", top: region.top, left: 0, width: leftEdge, height: region.height,
               backgroundColor: DIM, zIndex: 10000,
             }} />
@@ -167,7 +166,7 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
           }} />
         </>
       ) : (
-        <div onClick={() => close(dontShow)} style={{
+        <div onClick={() => close()} style={{
           position: "fixed", inset: 0, backgroundColor: DIM, zIndex: 10000,
         }} />
       )}
@@ -212,7 +211,7 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
                 {step + 1} / {STEPS.length}
               </span>
             </div>
-            <button onClick={() => close(dontShow)} style={{
+            <button onClick={() => close()} style={{
               display: "flex", alignItems: "center", justifyContent: "center",
               width: "26px", height: "26px", borderRadius: "8px",
               background: "rgba(255,255,255,0.05)", border: "1px solid #2d2f3e",
@@ -229,41 +228,22 @@ export default function ChartsTourWrapper({ alreadyCompleted }: { alreadyComplet
 
           <div style={{ height: "1px", backgroundColor: "#1F2937", marginBottom: "16px" }} />
 
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px" }}>
-            <label style={{ display: "flex", alignItems: "center", gap: "7px", cursor: "pointer" }}>
-              <div onClick={() => setDontShow(v => !v)} style={{
-                width: "16px", height: "16px", borderRadius: "4px",
-                border: `1.5px solid ${dontShow ? "#8B5CF6" : "#374151"}`,
-                backgroundColor: dontShow ? "#8B5CF6" : "transparent",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                cursor: "pointer", transition: "all 0.15s", flexShrink: 0,
-              }}>
-                {dontShow && (
-                  <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                    <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-              <span style={{ color: "#6B7280", fontSize: "12px", userSelect: "none" }}>Don&apos;t show again</span>
-            </label>
-
-            <div style={{ display: "flex", gap: "8px" }}>
-              {step > 0 && (
-                <button onClick={handleBack} style={{
-                  padding: "7px 15px", borderRadius: "8px",
-                  border: "1px solid #2d2f3e", backgroundColor: "transparent",
-                  color: "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: 500,
-                }}>← Back</button>
-              )}
-              <button onClick={handleNext} style={{
-                padding: "7px 18px", borderRadius: "8px", border: "none",
-                background: "linear-gradient(135deg,#7C3AED,#8B5CF6)",
-                color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px",
-                boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
-              }}>
-                {isLast ? "Finish ✓" : "Next →"}
-              </button>
-            </div>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: "8px" }}>
+            {step > 0 && (
+              <button onClick={handleBack} style={{
+                padding: "7px 15px", borderRadius: "8px",
+                border: "1px solid #2d2f3e", backgroundColor: "transparent",
+                color: "#9CA3AF", cursor: "pointer", fontSize: "13px", fontWeight: 500,
+              }}>← Back</button>
+            )}
+            <button onClick={handleNext} style={{
+              padding: "7px 18px", borderRadius: "8px", border: "none",
+              background: "linear-gradient(135deg,#7C3AED,#8B5CF6)",
+              color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "13px",
+              boxShadow: "0 4px 12px rgba(139,92,246,0.35)",
+            }}>
+              {isLast ? "Finish ✓" : "Next →"}
+            </button>
           </div>
         </div>
       </div>
