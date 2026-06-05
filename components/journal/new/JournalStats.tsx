@@ -1039,15 +1039,26 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
           }
         }
       } catch {}
-      // Fallback: localStorage
-      try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
+      // Fallback: localStorage — and immediately sync to DB so other browsers pick it up
+      let localPrefs: string[] | null = null;
+      let localLayout: Layout[] | null = null;
+      try { const s = localStorage.getItem(STORAGE_KEY); if (s) { localPrefs = JSON.parse(s); setActive(localPrefs!); } } catch {}
       try {
         const l = localStorage.getItem(LAYOUT_KEY);
         if (l) {
           const saved = JSON.parse(l) as Layout[];
-          setLayout(DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; }));
+          const merged = DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; });
+          setLayout(merged);
+          localLayout = merged;
         }
       } catch {}
+      if (localLayout || localPrefs) {
+        fetch("/api/account/layout", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ widget_layout: localLayout, widget_prefs: localPrefs }),
+        }).catch(() => {});
+      }
       setLoaded(true);
     }
     loadLayout();
