@@ -22,8 +22,28 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
     if (alreadyCompleted) return;
     if (sessionStorage.getItem(storageKey)) return;
     sessionStorage.setItem(storageKey, "1");
-    const t = setTimeout(() => setActive(true), 700);
-    return () => clearTimeout(t);
+
+    let timer: ReturnType<typeof setTimeout> | null = null;
+    const start = () => { timer = setTimeout(() => setActive(true), 700); };
+
+    if (tour !== "dashboard") {
+      start();
+      return () => { if (timer) clearTimeout(timer); };
+    }
+
+    // Dashboard tour: wait until founder modal is done (closed or not shown)
+    try {
+      if (sessionStorage.getItem("tj-founder-done")) {
+        start();
+        return () => { if (timer) clearTimeout(timer); };
+      }
+    } catch { /* private mode */ }
+
+    window.addEventListener("founderDone", start, { once: true });
+    return () => {
+      window.removeEventListener("founderDone", start);
+      if (timer) clearTimeout(timer);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

@@ -13,6 +13,12 @@ type Stats = {
 const DISMISS_KEY = "tj-founder-modal-dismissed-until";
 const DISMISS_HOURS = 24;
 const SHOW_AFTER_MS = 2500;
+const SESSION_FOUNDER_DONE = "tj-founder-done";
+
+function fireFounderDone() {
+  try { sessionStorage.setItem(SESSION_FOUNDER_DONE, "1"); } catch { /* private mode */ }
+  window.dispatchEvent(new Event("founderDone"));
+}
 
 export default function FounderUpgradeModal() {
   const pathname = usePathname();
@@ -28,6 +34,7 @@ export default function FounderUpgradeModal() {
     } catch {
       /* private mode */
     }
+    fireFounderDone();
     setTimeout(() => {
       setVisible(false);
       setClosing(false);
@@ -40,7 +47,10 @@ export default function FounderUpgradeModal() {
 
     try {
       const until = Number(localStorage.getItem(DISMISS_KEY) || 0);
-      if (until && until > Date.now()) return;
+      if (until && until > Date.now()) {
+        fireFounderDone();
+        return;
+      }
     } catch {
       /* ignore */
     }
@@ -49,14 +59,20 @@ export default function FounderUpgradeModal() {
     const timer = setTimeout(async () => {
       try {
         const res = await fetch("/api/founders/status", { cache: "no-store" });
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (!cancelled) fireFounderDone();
+          return;
+        }
         const data: Stats = await res.json();
         if (cancelled) return;
-        if (data.remainingForSale <= 0) return;
+        if (data.remainingForSale <= 0) {
+          fireFounderDone();
+          return;
+        }
         setStats(data);
         setVisible(true);
       } catch {
-        /* ignore */
+        if (!cancelled) fireFounderDone();
       }
     }, SHOW_AFTER_MS);
 

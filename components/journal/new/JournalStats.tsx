@@ -1015,17 +1015,42 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
   const [loaded, setLoaded] = useState(false);
   const [gridWidth, setGridWidth] = useState(1200);
   const gridRef = useRef<HTMLDivElement>(null);
+  const dbSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  // Load from DB first, then fall back to localStorage, then DEFAULT_LAYOUT
   useEffect(() => {
-    try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
-    try {
-      const l = localStorage.getItem(LAYOUT_KEY);
-      if (l) {
-        const saved = JSON.parse(l) as Layout[];
-        setLayout(DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; }));
-      }
-    } catch {}
-    setLoaded(true);
+    async function loadLayout() {
+      try {
+        const res = await fetch("/api/account/layout");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.widget_prefs) {
+            setActive(data.widget_prefs);
+            try { localStorage.setItem(STORAGE_KEY, JSON.stringify(data.widget_prefs)); } catch {}
+          } else {
+            try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
+          }
+          if (data.widget_layout) {
+            const saved = data.widget_layout as Layout[];
+            setLayout(DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; }));
+            try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(saved)); } catch {}
+            setLoaded(true);
+            return;
+          }
+        }
+      } catch {}
+      // Fallback: localStorage
+      try { const s = localStorage.getItem(STORAGE_KEY); if (s) setActive(JSON.parse(s)); } catch {}
+      try {
+        const l = localStorage.getItem(LAYOUT_KEY);
+        if (l) {
+          const saved = JSON.parse(l) as Layout[];
+          setLayout(DEFAULT_LAYOUT.map(def => { const s = saved.find(x => x.i === def.i); return s ? { ...def, x: s.x, y: s.y, w: s.w, h: s.h } : def; }));
+        }
+      } catch {}
+      setLoaded(true);
+    }
+    loadLayout();
   }, []);
 
   // Measure grid container width — runs after loaded=true so gridRef is populated
@@ -1039,10 +1064,22 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
     return () => ro.disconnect();
   }, [loaded]);
 
+  const saveToDb = (layoutToSave: Layout[], prefsToSave: string[]) => {
+    if (dbSaveTimer.current) clearTimeout(dbSaveTimer.current);
+    dbSaveTimer.current = setTimeout(() => {
+      fetch("/api/account/layout", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ widget_layout: layoutToSave, widget_prefs: prefsToSave }),
+      }).catch(() => {});
+    }, 800);
+  };
+
   const handleLayoutChange = (newLayout: Layout[]) => {
     setLayout(prev => {
       const merged = prev.map(item => { const n = newLayout.find(x => x.i === item.i); return n ? { ...item, x: n.x, y: n.y, w: n.w, h: n.h } : item; });
       try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(merged)); } catch {}
+      saveToDb(merged, active);
       return merged;
     });
   };
@@ -1050,6 +1087,11 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
   const resetLayout = () => {
     setLayout(DEFAULT_LAYOUT);
     try { localStorage.removeItem(LAYOUT_KEY); } catch {}
+    fetch("/api/account/layout", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ widget_layout: null }),
+    }).catch(() => {});
   };
 
   // Full-width layout while statistics are active — matches HTML .main
@@ -1070,7 +1112,8 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
   const toggle = (id: string) => {
     setActive(prev => {
       const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch {}
+      saveToDb(layout, next);
       return next;
     });
   };
