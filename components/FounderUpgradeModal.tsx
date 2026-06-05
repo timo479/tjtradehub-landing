@@ -12,7 +12,7 @@ type Stats = {
 
 const DISMISS_KEY = "tj-founder-modal-dismissed-until";
 const DISMISS_HOURS = 24;
-const SHOW_AFTER_MS = 2500;
+const SHOW_AFTER_MS = 500;
 const SESSION_FOUNDER_DONE = "tj-founder-done";
 
 function fireFounderDone() {
