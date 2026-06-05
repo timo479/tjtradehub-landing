@@ -12,8 +12,9 @@ type Stats = {
 
 const DISMISS_KEY = "tj-founder-modal-dismissed-until";
 const DISMISS_HOURS = 24;
-const SHOW_AFTER_MS = 500;
+const SHOW_AFTER_MS = 800;
 const SESSION_FOUNDER_DONE = "tj-founder-done";
+const SESSION_WELCOME_DONE = "tj-welcome-done";
 
 function fireFounderDone() {
   try { sessionStorage.setItem(SESSION_FOUNDER_DONE, "1"); } catch { /* private mode */ }
@@ -45,40 +46,50 @@ export default function FounderUpgradeModal() {
   useEffect(() => {
     if (pathname !== "/dashboard") return;
 
+    // Already dismissed → skip modal, unblock tour
     try {
       const until = Number(localStorage.getItem(DISMISS_KEY) || 0);
       if (until && until > Date.now()) {
         fireFounderDone();
         return;
       }
-    } catch {
-      /* ignore */
-    }
+    } catch {}
 
+    let timer: ReturnType<typeof setTimeout> | null = null;
     let cancelled = false;
-    const timer = setTimeout(async () => {
-      try {
-        const res = await fetch("/api/founders/status", { cache: "no-store" });
-        if (!res.ok) {
+
+    const startModal = () => {
+      if (cancelled) return;
+      timer = setTimeout(async () => {
+        try {
+          const res = await fetch("/api/founders/status", { cache: "no-store" });
+          if (!res.ok) { if (!cancelled) fireFounderDone(); return; }
+          const data: Stats = await res.json();
+          if (cancelled) return;
+          if (data.remainingForSale <= 0) { fireFounderDone(); return; }
+          setStats(data);
+          setVisible(true);
+        } catch {
           if (!cancelled) fireFounderDone();
-          return;
         }
-        const data: Stats = await res.json();
-        if (cancelled) return;
-        if (data.remainingForSale <= 0) {
-          fireFounderDone();
-          return;
-        }
-        setStats(data);
-        setVisible(true);
-      } catch {
-        if (!cancelled) fireFounderDone();
+      }, SHOW_AFTER_MS);
+    };
+
+    // Wait for welcome screen to finish first (or fire immediately if already done)
+    try {
+      if (sessionStorage.getItem(SESSION_WELCOME_DONE)) {
+        startModal();
+      } else {
+        window.addEventListener("welcomeDone", startModal, { once: true });
       }
-    }, SHOW_AFTER_MS);
+    } catch {
+      startModal(); // sessionStorage unavailable — start directly
+    }
 
     return () => {
       cancelled = true;
-      clearTimeout(timer);
+      window.removeEventListener("welcomeDone", startModal);
+      if (timer) clearTimeout(timer);
     };
   }, [pathname]);
 

@@ -87,6 +87,7 @@ export async function POST(request: NextRequest) {
         verification_token_expires,
         trial_ends_at: null,
         subscription_status: "basic",
+        welcome_shown: false,
         referral_code: referralCode,
         referred_by_user_id: referredByUserId,
         newsletter_opt_in,
