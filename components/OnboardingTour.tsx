@@ -39,9 +39,18 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
       }
     } catch { /* private mode */ }
 
-    window.addEventListener("founderDone", start, { once: true });
+    // Fallback: start tour after 6s even if founderDone never fires
+    // (covers pro/lifetime users where modal is not rendered, or any edge case)
+    let fallback: ReturnType<typeof setTimeout> | null = null;
+    const startOnce = () => {
+      if (fallback) clearTimeout(fallback);
+      start();
+    };
+    fallback = setTimeout(startOnce, 6000);
+    window.addEventListener("founderDone", startOnce, { once: true });
     return () => {
-      window.removeEventListener("founderDone", start);
+      window.removeEventListener("founderDone", startOnce);
+      if (fallback) clearTimeout(fallback);
       if (timer) clearTimeout(timer);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
