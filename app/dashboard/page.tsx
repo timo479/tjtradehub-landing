@@ -212,7 +212,7 @@ export default async function DashboardPage() {
         </div>
       </main>
 
-      <DashboardTourWrapper alreadyCompleted={onboardingCompleted} />
+      <DashboardTourWrapper alreadyCompleted={onboardingCompleted} waitForFounder={!isSubscribed} />
     </div>
   );
 }

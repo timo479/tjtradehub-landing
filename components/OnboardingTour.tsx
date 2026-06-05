@@ -6,9 +6,10 @@ interface Props {
   tour: "dashboard" | "journal" | "charts";
   steps: TourStep[];
   alreadyCompleted: boolean;
+  waitForFounder?: boolean;
 }
 
-export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props) {
+export default function OnboardingTour({ tour, steps, alreadyCompleted, waitForFounder }: Props) {
   const [active, setActive] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
   const [tooltipStyle, setTooltipStyle] = useState<React.CSSProperties>({
@@ -24,31 +25,45 @@ export default function OnboardingTour({ tour, steps, alreadyCompleted }: Props)
     sessionStorage.setItem(storageKey, "1");
 
     let timer: ReturnType<typeof setTimeout> | null = null;
-    const start = () => { timer = setTimeout(() => setActive(true), 700); };
+    let fallback: ReturnType<typeof setTimeout> | null = null;
+    let started = false;
+
+    const startOnce = () => {
+      if (started) return;
+      started = true;
+      window.removeEventListener("founderDone", startOnce);
+      if (fallback) clearTimeout(fallback);
+      timer = setTimeout(() => setActive(true), 700);
+    };
+
+    const onWelcomeDone = () => {
+      if (tour !== "dashboard" || !waitForFounder) {
+        startOnce();
+        return;
+      }
+      // Wait for founder modal to close — with 10s safety net from when welcome ended
+      fallback = setTimeout(startOnce, 10000);
+      window.addEventListener("founderDone", startOnce, { once: true });
+    };
 
     if (tour !== "dashboard") {
-      start();
+      startOnce();
       return () => { if (timer) clearTimeout(timer); };
     }
 
-    // Dashboard tour: wait until founder modal is done (closed or not shown)
+    // Dashboard: chain Welcome → (Founder) → Tour
     try {
-      if (sessionStorage.getItem("tj-founder-done")) {
-        start();
-        return () => { if (timer) clearTimeout(timer); };
+      if (sessionStorage.getItem("tj-welcome-done")) {
+        onWelcomeDone();
+      } else {
+        window.addEventListener("welcomeDone", onWelcomeDone, { once: true });
       }
-    } catch { /* private mode */ }
+    } catch {
+      startOnce(); // sessionStorage unavailable
+    }
 
-    // Fallback: start tour after 6s even if founderDone never fires
-    // (covers pro/lifetime users where modal is not rendered, or any edge case)
-    let fallback: ReturnType<typeof setTimeout> | null = null;
-    const startOnce = () => {
-      if (fallback) clearTimeout(fallback);
-      start();
-    };
-    fallback = setTimeout(startOnce, 6000);
-    window.addEventListener("founderDone", startOnce, { once: true });
     return () => {
+      window.removeEventListener("welcomeDone", onWelcomeDone);
       window.removeEventListener("founderDone", startOnce);
       if (fallback) clearTimeout(fallback);
       if (timer) clearTimeout(timer);
