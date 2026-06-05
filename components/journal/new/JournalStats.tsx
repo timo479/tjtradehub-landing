@@ -1087,12 +1087,10 @@ function JournalStatsInner({ entries, journal, metaAccountBalance }: Props) {
   };
 
   const handleLayoutChange = (newLayout: Layout[]) => {
-    setLayout(prev => {
-      const merged = prev.map(item => { const n = newLayout.find(x => x.i === item.i); return n ? { ...item, x: n.x, y: n.y, w: n.w, h: n.h } : item; });
-      try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(merged)); } catch {}
-      saveToDb(merged, active);
-      return merged;
-    });
+    const merged = layout.map(item => { const n = newLayout.find(x => x.i === item.i); return n ? { ...item, x: n.x, y: n.y, w: n.w, h: n.h } : item; });
+    try { localStorage.setItem(LAYOUT_KEY, JSON.stringify(merged)); } catch {}
+    setLayout(merged);
+    saveToDb(merged, active);
   };
 
   const resetLayout = () => {
