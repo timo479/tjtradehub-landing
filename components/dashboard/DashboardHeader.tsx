@@ -5,7 +5,7 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter";
+type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-panel";
 
 interface Props {
   activePage: ActivePage;
@@ -51,6 +51,7 @@ function SoonBadge() {
 }
 
 const ADMIN_LINKS: { href: string; label: string; key: ActivePage }[] = [
+  { href: "/admin", label: "Admin Panel", key: "admin-panel" },
   { href: "/dashboard/admin/feed", label: "KI Feed", key: "admin-feed" },
   { href: "/dashboard/admin/newsletter", label: "Newsletter", key: "admin-newsletter" },
 ];
