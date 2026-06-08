@@ -1,9 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
-import Link from "next/link";
-import Image from "next/image";
-import UserMenu from "@/components/UserMenu";
-import HelpButton from "@/components/HelpButton";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import JournalNew from "./JournalNew";
 
 interface Props {
@@ -36,7 +33,6 @@ function MoonIcon() {
 export default function JournalLayoutClient({ name, email, subscriptionStatus, journalTourCompleted }: Props) {
   const [darkMode, setDarkMode] = useState(true);
   const [mounted, setMounted] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
     try { const s = localStorage.getItem("tj-journal-theme"); if (s !== null) setDarkMode(s === "dark"); } catch {}
@@ -59,95 +55,41 @@ export default function JournalLayoutClient({ name, email, subscriptionStatus, j
   });
 
   const dk = darkMode;
-  const pageBg     = dk ? "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" : "#f0f2f5";
-  const headerBg   = dk ? "rgba(0,0,0,0.7)" : "rgba(255,255,255,0.92)";
-  const headerBord = dk ? "1px solid #1F2937" : "1px solid rgba(0,0,0,0.1)";
-  const logoClr    = dk ? "#F9FAFB" : "#111827";
-  const navActive  = "#8B5CF6";
-  const navInact   = dk ? "#9CA3AF" : "#4B5563";
-  const btnBorder  = dk ? "#374151" : "#D1D5DB";
-  const btnClr     = dk ? "#9CA3AF" : "#4B5563";
+  const pageBg = dk ? "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" : "#f0f2f5";
+  const btnBorder = dk ? "#374151" : "#D1D5DB";
+  const btnClr = dk ? "#9CA3AF" : "#4B5563";
+
+  const lightHeaderStyle: React.CSSProperties = {
+    borderBottom: "1px solid rgba(0,0,0,0.1)",
+    background: "rgba(255,255,255,0.92)",
+    backdropFilter: "blur(16px)",
+    WebkitBackdropFilter: "blur(16px)",
+    position: "sticky",
+    top: 0,
+    zIndex: 100,
+  };
 
   return (
     <div className="min-h-screen" style={{ background: pageBg, transition: "background 0.3s ease" }}>
-      {/* Header */}
-      <header style={{ borderBottom: headerBord, backgroundColor: headerBg, backdropFilter: "blur(12px)", position: "sticky", top: 0, zIndex: 100, transition: "background-color 0.3s ease, border-color 0.3s ease" }} className="px-6 py-5">
-        <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "32px" }}>
-            <Link href="/" style={{ display: "flex", alignItems: "center", gap: "10px", textDecoration: "none" }}>
-              <div className="logo-rotate" style={{ width: 36, height: 36, position: "relative" }}>
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <Image key={i} src="/logo-tj-transparent.png" alt={i === 0 ? "TJ TradeHub" : ""} width={36} height={36} className="logo-layer object-contain" style={{ transform: `translateZ(${i * 0.5}px)`, opacity: i === 15 ? 1 : 0.6 }} />
-                ))}
-              </div>
-              <span style={{ color: logoClr, fontWeight: 600, fontSize: "16px", fontFamily: "'Space Grotesk', sans-serif", transition: "color 0.3s ease" }}>
-                TJ TradeHub
-              </span>
-            </Link>
-            {/* Desktop nav – hidden on mobile */}
-            <nav className="hidden md:flex" style={{ gap: "24px" }}>
-              <Link href="/dashboard" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Dashboard</Link>
-              <Link href="/dashboard/journal" style={{ color: navActive, fontSize: "14px", fontWeight: 600, textDecoration: "none" }}>Journal</Link>
-              <Link href="/dashboard/calendar" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Calendar</Link>
-              <Link href="/dashboard/charts" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Charts</Link>
-              <Link href="/dashboard/calculator" style={{ color: navInact, fontSize: "14px", textDecoration: "none", transition: "color 0.3s ease" }}>Calculator</Link>
-            </nav>
-          </div>
-          <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-            {mounted && (
-              <button
-                onClick={toggleTheme}
-                title={dk ? "Switch to light mode" : "Switch to dark mode"}
-                style={{ padding: "7px 10px", borderRadius: "8px", border: `1px solid ${btnBorder}`, backgroundColor: "transparent", color: btnClr, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s ease" }}
-              >
-                {dk ? <SunIcon /> : <MoonIcon />}
-              </button>
-            )}
-            <HelpButton />
-            <UserMenu name={name} email={email} subscriptionStatus={subscriptionStatus} />
-            {/* Hamburger – mobile only */}
+      <DashboardHeader
+        activePage="journal"
+        name={name}
+        email={email}
+        subscriptionStatus={subscriptionStatus}
+        headerStyle={dk ? undefined : lightHeaderStyle}
+        extraButtons={
+          mounted ? (
             <button
-              className="flex md:hidden"
-              onClick={() => setMenuOpen((o) => !o)}
-              aria-label="Toggle navigation menu"
-              style={{ padding: "8px", background: "transparent", border: `1px solid ${btnBorder}`, borderRadius: "8px", color: btnClr, cursor: "pointer", lineHeight: 1, alignItems: "center", justifyContent: "center" }}
+              onClick={toggleTheme}
+              title={dk ? "Switch to light mode" : "Switch to dark mode"}
+              style={{ padding: "7px 10px", borderRadius: "8px", border: `1px solid ${btnBorder}`, backgroundColor: "transparent", color: btnClr, cursor: "pointer", lineHeight: 1, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.2s ease" }}
             >
-              {menuOpen ? (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              ) : (
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-                </svg>
-              )}
+              {dk ? <SunIcon /> : <MoonIcon />}
             </button>
-          </div>
-        </div>
-        {/* Mobile dropdown nav */}
-        {menuOpen && (
-          <div className="md:hidden" style={{ borderTop: headerBord, marginTop: "16px", paddingTop: "8px" }}>
-            {[
-              { href: "/dashboard", label: "Dashboard", active: false },
-              { href: "/dashboard/journal", label: "Journal", active: true },
-              { href: "/dashboard/calendar", label: "Calendar", active: false },
-              { href: "/dashboard/charts", label: "Charts", active: false },
-              { href: "/dashboard/calculator", label: "Calculator", active: false },
-            ].map(({ href, label, active }) => (
-              <Link
-                key={href}
-                href={href}
-                onClick={() => setMenuOpen(false)}
-                style={{ display: "block", padding: "12px 4px", color: active ? navActive : navInact, fontSize: "15px", fontWeight: active ? 600 : 400, textDecoration: "none", borderBottom: `1px solid ${dk ? "rgba(255,255,255,0.04)" : "rgba(0,0,0,0.04)"}`, transition: "color 0.3s ease" }}
-              >
-                {label}
-              </Link>
-            ))}
-          </div>
-        )}
-      </header>
+          ) : null
+        }
+      />
 
-      {/* Content */}
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
         <JournalNew journalTourCompleted={journalTourCompleted} darkMode={darkMode} toggleTheme={toggleTheme} />
       </main>
