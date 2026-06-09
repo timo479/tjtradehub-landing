@@ -374,28 +374,6 @@ export default function FeedComingSoon() {
         </div>
       </div>
 
-      {/* ── PRO PLAN BANNER ── */}
-      <div style={{ position: "relative", zIndex: 1, maxWidth: "700px", margin: "0 auto 88px", padding: "0 20px", textAlign: "center" }}>
-        <div style={{
-          padding: "48px 40px",
-          background: "linear-gradient(135deg, rgba(139,92,246,0.12), rgba(124,58,237,0.05), rgba(139,92,246,0.08))",
-          border: "1px solid rgba(139,92,246,0.32)",
-          borderRadius: "24px",
-          boxShadow: "0 0 80px rgba(139,92,246,0.14), inset 0 1px 0 rgba(255,255,255,0.06)",
-        }}>
-          <div style={{ fontSize: "36px", marginBottom: "20px" }}>🔮</div>
-          <h3 style={{
-            color: "#F9FAFB", fontSize: "clamp(22px, 3vw, 28px)", fontWeight: 800,
-            marginBottom: "12px", letterSpacing: "-0.02em",
-          }}>
-            Available with Pro Plan
-          </h3>
-          <p style={{ color: "#9CA3AF", fontSize: "15px", lineHeight: 1.65, margin: "0 auto", maxWidth: "420px" }}>
-            Market Insights is part of the upcoming Pro upgrade — launching soon with live AI-curated analysis directly in your dashboard.
-          </p>
-        </div>
-      </div>
-
       <style>{`
         @keyframes shimmer {
           0%   { background-position: 0% 50%; }
