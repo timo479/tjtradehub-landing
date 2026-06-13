@@ -112,6 +112,8 @@ export default function AdminPage() {
   const [error, setError] = useState<string | null>(null);
   const [editingNote, setEditingNote] = useState<{ id: string; value: string } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [promoState, setPromoState] = useState<"idle" | "confirming" | "sending" | "done" | "error">("idle");
+  const [promoResult, setPromoResult] = useState<{ count?: number; sent?: number; recipients?: string[] } | null>(null);
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -183,6 +185,27 @@ export default function AdminPage() {
     finally { setActionLoading(null); }
   }
 
+  async function sendPromo() {
+    if (promoState === "confirming") {
+      setPromoState("sending");
+      try {
+        const res = await fetch("/api/admin/send-promo", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({}) });
+        const d = await res.json();
+        if (!res.ok) { setPromoState("error"); setError(d.error ?? "Send failed"); return; }
+        setPromoResult(d);
+        setPromoState("done");
+      } catch { setPromoState("error"); setError("Network error"); }
+    } else {
+      // dry-run first
+      setPromoState("confirming");
+      try {
+        const res = await fetch("/api/admin/send-promo");
+        const d = await res.json();
+        setPromoResult(d);
+      } catch { /* ignore */ }
+    }
+  }
+
   function copyId(id: string) {
     navigator.clipboard.writeText(id);
     setCopiedId(id);
@@ -222,6 +245,40 @@ export default function AdminPage() {
           <span className="text-zinc-400 font-medium">Admin Panel</span>
         </div>
         <div className="flex items-center gap-3">
+          {/* Founder Promo Send Button */}
+          {promoState === "idle" && (
+            <button
+              onClick={sendPromo}
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
+              style={{ background: "linear-gradient(135deg,rgba(251,191,36,0.15),rgba(251,191,36,0.05))", borderColor: "rgba(251,191,36,0.4)", color: "#FCD34D" }}
+            >
+              <span>📨</span> Send Founder Promo
+            </button>
+          )}
+          {promoState === "confirming" && (
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border" style={{ borderColor: "rgba(251,191,36,0.5)", background: "rgba(251,191,36,0.08)" }}>
+              <span className="text-yellow-300 font-semibold">
+                {promoResult?.count != null ? `Send to ${promoResult.count} users?` : "Loading..."}
+              </span>
+              <button onClick={sendPromo} className="px-2 py-0.5 bg-yellow-400 text-black text-xs font-bold rounded hover:bg-yellow-300 transition-colors">Yes, send!</button>
+              <button onClick={() => { setPromoState("idle"); setPromoResult(null); }} className="px-2 py-0.5 bg-zinc-700 text-zinc-300 text-xs font-bold rounded hover:bg-zinc-600 transition-colors">Cancel</button>
+            </div>
+          )}
+          {promoState === "sending" && (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 text-sm text-yellow-400 animate-pulse">⏳ Sending...</span>
+          )}
+          {promoState === "done" && (
+            <span className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border text-green-400" style={{ borderColor: "rgba(34,197,94,0.4)", background: "rgba(34,197,94,0.08)" }}>
+              ✅ Sent to {promoResult?.sent} users
+              <button onClick={() => { setPromoState("idle"); setPromoResult(null); }} className="text-zinc-500 hover:text-white ml-1">×</button>
+            </span>
+          )}
+          {promoState === "error" && (
+            <button onClick={() => { setPromoState("idle"); setPromoResult(null); }} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm border text-red-400" style={{ borderColor: "rgba(239,68,68,0.4)", background: "rgba(239,68,68,0.08)" }}>
+              ❌ Failed — click to reset
+            </button>
+          )}
+
           <a
             href="/admin/founders"
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
