@@ -114,6 +114,7 @@ export default function AdminPage() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [promoState, setPromoState] = useState<"idle" | "confirming" | "sending" | "done" | "error">("idle");
   const [promoResult, setPromoResult] = useState<{ count?: number; sent?: number; recipients?: string[] } | null>(null);
+  const [mlpmoState, setMlpmoState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   const fetchUsers = useCallback(async () => {
     setLoading(true);
@@ -206,6 +207,15 @@ export default function AdminPage() {
     }
   }
 
+  async function sendMlpmoRequest() {
+    setMlpmoState("sending");
+    try {
+      const res = await fetch("/api/admin/send-mlpmo-request", { method: "POST" });
+      if (!res.ok) { setMlpmoState("error"); return; }
+      setMlpmoState("done");
+    } catch { setMlpmoState("error"); }
+  }
+
   function copyId(id: string) {
     navigator.clipboard.writeText(id);
     setCopiedId(id);
@@ -290,6 +300,15 @@ export default function AdminPage() {
           >
             <span>✦</span> Founder Slots
           </a>
+          {mlpmoState === "idle" && (
+            <button onClick={sendMlpmoRequest} className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors" style={{ background: "rgba(168,85,247,0.1)", borderColor: "rgba(168,85,247,0.3)", color: "#A78BFA" }}>
+              ✉ MLP Mo anfragen
+            </button>
+          )}
+          {mlpmoState === "sending" && <span className="text-sm text-purple-400 animate-pulse">Sende...</span>}
+          {mlpmoState === "done" && <span className="text-sm text-green-400">✅ Gesendet</span>}
+          {mlpmoState === "error" && <button onClick={() => setMlpmoState("idle")} className="text-sm text-red-400">❌ Fehler – retry</button>}
+
           <a
             href="/dashboard/admin/newsletter"
             className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-semibold border transition-colors"
