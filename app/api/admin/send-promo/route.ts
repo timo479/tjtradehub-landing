@@ -15,10 +15,10 @@ function buildFounderPromoHtml(): string {
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 </head>
-<body style="margin:0;padding:0;background-color:#080808;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#080808;padding:56px 0;">
-  <tr><td align="center">
-    <table width="580" cellpadding="0" cellspacing="0" style="background-color:#0c0c0c;border:1px solid #222222;border-radius:20px;overflow:hidden;max-width:580px;">
+<body bgcolor="#080808" style="margin:0;padding:0;background-color:#080808;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" bgcolor="#080808" style="background-color:#080808;padding:56px 0;">
+  <tr><td align="center" bgcolor="#080808" style="background-color:#080808;">
+    <table width="580" cellpadding="0" cellspacing="0" bgcolor="#0c0c0c" style="background-color:#0c0c0c;border:1px solid #222222;border-radius:20px;overflow:hidden;max-width:580px;">
 
       <!-- BADGE -->
       <tr>
@@ -161,20 +161,6 @@ function buildFounderPromoHtml(): string {
             Claim your Founder spot &#8594;
           </a>
           <p style="margin:14px 0 0;font-size:12px;color:#4B5563;">Secure checkout via Stripe &nbsp;&#183;&nbsp; Instant access</p>
-        </td>
-      </tr>
-
-      <!-- TESTIMONIAL -->
-      <tr>
-        <td style="padding:40px 48px 0;">
-          <table width="100%" cellpadding="0" cellspacing="0" style="background:#0f0f0f;border-left:3px solid #a855f7;border-radius:0 12px 12px 0;">
-            <tr><td style="padding:20px 24px;">
-              <p style="margin:0;font-size:14px;color:#9CA3AF;line-height:1.7;font-style:italic;">
-                &ldquo;Finally a trading journal that actually connects to my broker. Set it up in minutes, and the auto-sync just works. Worth every cent.&rdquo;
-              </p>
-              <div style="margin-top:12px;font-size:12px;font-weight:600;color:#6B7280;">&#8212; MLP Mo &nbsp;<span style="color:#a855f7;">&#183; Founder #001</span></div>
-            </td></tr>
-          </table>
         </td>
       </tr>
 
