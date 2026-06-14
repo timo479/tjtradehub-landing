@@ -324,7 +324,7 @@ export default function AIMarketInsightsTeaser() {
             transition: "opacity .75s ease .24s, transform .75s ease .24s",
           }}>
             <p style={{ fontSize: "18px", lineHeight: 1.7, color: "#9CA3AF", margin: 0 }}>
-              Reuters, Bloomberg & 6 more sources — rewritten by AI into{" "}
+              Reuters & 6 more sources — rewritten by AI into{" "}
               <strong style={{ color: "#C4B5FD", fontWeight: 600 }}>clear if/then scenarios</strong>{" "}
               so you know exactly what every headline means for your open positions.
             </p>
@@ -341,7 +341,7 @@ export default function AIMarketInsightsTeaser() {
               <div style={{ position:"absolute",right:0,top:0,bottom:0,width:"80px",zIndex:2,background:"linear-gradient(to left,#000,transparent)",pointerEvents:"none" }} />
               <div style={{ display:"flex", gap:"9px", animation:"aiMarquee 20s linear infinite", width:"max-content" }}>
                 {[...Array(2)].flatMap(() =>
-                  ["ForexLive","FXStreet","DailyFX","Reuters","Bloomberg","ForexFactory","Investing.com","Finnhub"].map((src, i) => (
+                  ["ForexLive","FXStreet","DailyFX","Reuters","ForexFactory","Investing.com","Finnhub","MarketWatch"].map((src, i) => (
                     <span key={src + i} style={{
                       fontSize: "11.5px", fontWeight: 600, padding: "5px 15px", borderRadius: "999px",
                       background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)",
