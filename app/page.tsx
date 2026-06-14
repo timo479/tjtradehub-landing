@@ -43,6 +43,7 @@ import ProblemSection from "@/components/ProblemSection";
 import DifferentiatorSection from "@/components/DifferentiatorSection";
 import BuiltForSection from "@/components/BuiltForSection";
 import TestimonialsSection from "@/components/TestimonialsSection";
+import AIMarketInsightsTeaser from "@/components/AIMarketInsightsTeaser";
 import PricingSection from "@/components/PricingSection";
 import AboutSection from "@/components/AboutSection";
 import FinalCTA from "@/components/FinalCTA";
@@ -74,6 +75,7 @@ export default function Home() {
         <ScrollReveal><DifferentiatorSection /></ScrollReveal>
         <ScrollReveal><BuiltForSection /></ScrollReveal>
         <ScrollReveal><TestimonialsSection /></ScrollReveal>
+        <ScrollReveal><AIMarketInsightsTeaser /></ScrollReveal>
         <ScrollReveal><PricingSection /></ScrollReveal>
         <ScrollReveal><AboutSection /></ScrollReveal>
         <ScrollReveal><SEOLinksSection /></ScrollReveal>
