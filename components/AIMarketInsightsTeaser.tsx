@@ -219,6 +219,7 @@ export default function AIMarketInsightsTeaser() {
 
       <section
         ref={sectionRef}
+        id="ai-insights"
         style={{ backgroundColor: "#000000", padding: "148px 0 172px", position: "relative", overflow: "hidden" }}
       >
         {/* Background layers */}

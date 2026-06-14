@@ -36,6 +36,7 @@ const TOOLS = [
 export default function CalculatorsSection() {
   return (
     <section
+      id="calculator"
       className="py-16 md:py-[120px] relative overflow-hidden"
       style={{ backgroundColor: "#050507" }}
     >

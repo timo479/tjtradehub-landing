@@ -138,7 +138,7 @@ export default function ScreenshotCarousel() {
 
   return (
     <>
-      <section style={{ position: "relative", backgroundColor: "#050507", padding: "96px 0 112px", overflow: "hidden" }}>
+      <section id="journal" style={{ position: "relative", backgroundColor: "#050507", padding: "96px 0 112px", overflow: "hidden" }}>
 
         {/* Ambient glow */}
         <div

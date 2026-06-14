@@ -48,6 +48,7 @@ export default function ChartsVideoSection() {
   return (
     <>
       <section
+        id="charts"
         className="py-16 md:py-[120px] relative overflow-hidden"
         style={{ backgroundColor: "#000000" }}
       >
