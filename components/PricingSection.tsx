@@ -25,19 +25,24 @@ const PLANS = [
   {
     id: "pro",
     name: "Pro",
-    tagline: "For serious traders who want automation",
+    tagline: "Stop logging manually. Let your broker do it.",
     price: 29,
     priceLabel: "$29",
     period: "/ month",
     cta: "Upgrade to Pro",
     href: "/register",
     popular: true,
+    timeSaved: "Saves ~3h / week of manual entry",
     features: [
       "Everything in Basic",
-      "MT4 / MT5 auto-sync",
-      "Multi-account support",
-      "Advanced execution analytics",
-      "Cancel anytime",
+      "MT4 & MT5 auto-sync — zero manual entry",
+      "Real-time trade import from your broker",
+      "Multi-account dashboard",
+      "Execution quality & slippage analytics",
+      "Entry & exit timing breakdown",
+      "Advanced drawdown & risk tracking",
+      "Weekly AI-generated market digest",
+      "Cancel anytime — no questions asked",
     ],
   },
   {
@@ -550,6 +555,28 @@ function PlanCard({
             >
               Founder rate · locked in for life
             </p>
+          )}
+          {"timeSaved" in plan && plan.timeSaved && (
+            <div
+              style={{
+                marginTop: 14,
+                display: "inline-flex",
+                alignItems: "center",
+                gap: 7,
+                padding: "5px 12px",
+                borderRadius: 999,
+                backgroundColor: "rgba(139,92,246,0.1)",
+                border: "1px solid rgba(139,92,246,0.2)",
+              }}
+            >
+              <svg width="12" height="12" viewBox="0 0 14 14" fill="none">
+                <circle cx="7" cy="7" r="6" stroke="#A78BFA" strokeWidth="1.4" />
+                <path d="M7 4v3.5l2 1.5" stroke="#A78BFA" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              </svg>
+              <span style={{ fontSize: 11.5, color: "#A78BFA", fontWeight: 600 }}>
+                {plan.timeSaved}
+              </span>
+            </div>
           )}
           {!isPro && !isFounder && (
             <p
