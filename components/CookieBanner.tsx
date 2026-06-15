@@ -11,11 +11,13 @@ export default function CookieBanner() {
 
   const accept = () => {
     localStorage.setItem("cookie-consent", "accepted");
+    if (typeof window !== "undefined" && window.ttq) window.ttq.grantConsent();
     setVisible(false);
   };
 
   const decline = () => {
     localStorage.setItem("cookie-consent", "declined");
+    if (typeof window !== "undefined" && window.ttq) window.ttq.revokeConsent();
     setVisible(false);
   };
 

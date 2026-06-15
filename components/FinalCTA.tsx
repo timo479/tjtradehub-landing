@@ -77,14 +77,12 @@ export default function FinalCTA() {
         {/* Footer note */}
         <p
           className="mt-8 text-sm"
-          style={{ color: "#9CA3AF" }}
+          style={{ color: "#6B7280" }}
         >
-          Founder rate:{" "}
-          <span style={{ color: "#6B7280", textDecoration: "line-through" }}>
-            $45
-          </span>{" "}
-          <span style={{ color: "#F9FAFB", fontWeight: 600 }}>$29/month</span>{" "}
-          &nbsp;·&nbsp; Full access &nbsp;·&nbsp; Cancel anytime
+          Pro: <span style={{ color: "#F9FAFB", fontWeight: 600 }}>$29/mo</span>
+          &nbsp;·&nbsp;
+          Founder: <span style={{ color: "#F9FAFB", fontWeight: 600 }}>$149 once</span>
+          &nbsp;·&nbsp; Cancel anytime
         </p>
 
         {/* Disclaimer */}

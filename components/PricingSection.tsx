@@ -55,7 +55,7 @@ const PLANS = [
     cta: "Claim a seat",
     href: "/founders",
     founder: true,
-    note: "27 / 100 left",
+    note: "... / 100 left",
     features: [
       "Everything in Pro · forever",
       "No recurring billing, ever",
@@ -67,6 +67,19 @@ const PLANS = [
 ] as const;
 
 export default function PricingSection() {
+  const [founderNote, setFounderNote] = useState<string>("... / 100 left");
+
+  useEffect(() => {
+    fetch("/api/founders/status", { cache: "no-store" })
+      .then((r) => r.ok ? r.json() : null)
+      .then((data) => {
+        if (data?.remainingForSale != null) {
+          setFounderNote(`${data.remainingForSale} / 100 left`);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
   return (
     <section
       id="pricing"
@@ -189,7 +202,12 @@ export default function PricingSection() {
           }}
         >
           {PLANS.map((plan, i) => (
-            <PlanCard key={plan.id} plan={plan} index={i} />
+            <PlanCard
+              key={plan.id}
+              plan={plan}
+              index={i}
+              liveNote={plan.id === "founder" ? founderNote : undefined}
+            />
           ))}
         </div>
 
@@ -269,9 +287,11 @@ export default function PricingSection() {
 function PlanCard({
   plan,
   index,
+  liveNote,
 }: {
   plan: (typeof PLANS)[number];
   index: number;
+  liveNote?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const mouseX = useMotionValue(0);
@@ -454,7 +474,7 @@ function PlanCard({
           </motion.div>
         )}
 
-        {isFounder && "note" in plan && plan.note && (
+        {isFounder && (liveNote ?? ("note" in plan && plan.note)) && (
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -487,7 +507,7 @@ function PlanCard({
                 animation: "pulse 1.6s infinite",
               }}
             />
-            {plan.note}
+            {liveNote ?? ("note" in plan ? plan.note : "")}
           </motion.div>
         )}
 
@@ -553,7 +573,7 @@ function PlanCard({
                 fontWeight: 500,
               }}
             >
-              Founder rate · locked in for life
+              Billed monthly · cancel anytime
             </p>
           )}
           {"timeSaved" in plan && plan.timeSaved && (
