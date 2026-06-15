@@ -196,7 +196,7 @@ export default function FounderLaunchBanner() {
               >
                 100
               </span>{" "}
-              Lifetime spots ·{" "}
+              Lifetime spots · $149 once ·{" "}
               <span
                 style={{
                   background: "linear-gradient(90deg, #FCD34D 0%, #FBBF24 100%)",

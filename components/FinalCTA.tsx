@@ -62,7 +62,7 @@ export default function FinalCTA() {
             Start Free — Keep Forever
           </a>
           <a
-            href="#features"
+            href="/founders"
             className="btn-outline inline-flex items-center justify-center px-8 py-4 text-base font-semibold transition-all duration-200"
             style={{
               color: "#9CA3AF",
@@ -70,7 +70,7 @@ export default function FinalCTA() {
               borderRadius: "14px",
             }}
           >
-            See All Features
+            See Founder Pricing
           </a>
         </div>
 
