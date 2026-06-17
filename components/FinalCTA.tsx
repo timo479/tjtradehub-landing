@@ -9,6 +9,28 @@ export default function FinalCTA() {
         overflow: "hidden",
       }}
     >
+      {/* Background photo — real desk setup running TJ TradeHub */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          backgroundImage: "url('/mt5-bg-2560.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          pointerEvents: "none",
+        }}
+      />
+      {/* Tinted overlay — brand gradient with alpha so the photo glows through */}
+      <div
+        style={{
+          position: "absolute",
+          inset: 0,
+          background:
+            "linear-gradient(135deg, rgba(0,0,0,0.93) 0%, rgba(26,16,64,0.82) 40%, rgba(13,26,46,0.80) 70%, rgba(0,0,0,0.93) 100%)",
+          pointerEvents: "none",
+        }}
+      />
+
       {/* Background accent */}
       <div
         style={{

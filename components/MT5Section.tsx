@@ -21,12 +21,32 @@ export default function MT5Section() {
   return (
     <section
       id="features"
-      className="py-16 md:py-[120px]"
+      className="relative overflow-hidden py-16 md:py-[120px]"
       style={{ backgroundColor: "#111827" }}
     >
+      {/* Background photo */}
       <div
-        className="mx-auto px-6"
-        style={{ maxWidth: "1200px" }}
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          backgroundImage: "url('/mt5-bg-2560.webp')",
+          backgroundSize: "cover",
+          backgroundPosition: "center right",
+          zIndex: 0,
+        }}
+      />
+      {/* Dark overlay — keeps text readable, lets the screens glow through */}
+      <div
+        className="absolute inset-0 pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(90deg, rgba(17,24,39,0.94) 0%, rgba(17,24,39,0.80) 45%, rgba(17,24,39,0.70) 100%)",
+          zIndex: 0,
+        }}
+      />
+
+      <div
+        className="relative mx-auto px-6"
+        style={{ maxWidth: "1200px", zIndex: 1 }}
       >
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           {/* Left: Text */}
