@@ -72,6 +72,18 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         return token;
       }
 
+      // Bann-Check bei JEDEM Token-Read (schlanker PK-Lookup auf nur is_banned),
+      // bewusst ENTKOPPELT vom 5-Minuten-Subscription-Refresh unten. Ohne diesen Check
+      // behielte ein frisch gebannter User bis zu 5 Min Zugang, bis sein Token regulär
+      // refresht. Mechanismus (return null) ist identisch zum Refresh-Fall unten —
+      // nur das Timing wird auf "nächster Server-Request" verkürzt.
+      const { data: banRow } = await db
+        .from("users")
+        .select("is_banned")
+        .eq("id", token.id as string)
+        .single();
+      if (banRow?.is_banned) return null;
+
       // DB alle 5 Minuten abfragen um subscription_status aktuell zu halten
       const now = Math.floor(Date.now() / 1000);
       const lastRefresh = (token.refreshedAt as number) ?? 0;
