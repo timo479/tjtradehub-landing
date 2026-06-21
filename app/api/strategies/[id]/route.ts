@@ -9,6 +9,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const { id } = await params;
   const { name, description, rules } = await req.json();
 
+  // Ownership-Gate: Strategie muss dem eingeloggten User gehören, sonst 404.
+  // Das strategy_rules-Replace unten (delete+insert) läuft auf der rohen URL-id —
+  // ohne diesen Check könnte ein fremder User die Regeln einer beliebigen Strategie
+  // löschen/überschreiben (Service-Role umgeht RLS; das gescopte UPDATE schlägt bei
+  // fremder id nicht fehl, es trifft nur 0 Zeilen).
+  const { data: owned } = await db
+    .from("strategies")
+    .select("id")
+    .eq("id", id)
+    .eq("user_id", session.user.id)
+    .single();
+
+  if (!owned) return NextResponse.json({ error: "Not found" }, { status: 404 });
+
   const { error } = await db
     .from("strategies")
     .update({ name, description })

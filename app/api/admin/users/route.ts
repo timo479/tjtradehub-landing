@@ -8,9 +8,14 @@ export async function GET() {
   const role = (session.user as { role?: string }).role;
   if (role !== "admin") return NextResponse.json({ error: "Forbidden" }, { status: 403 });
 
+  // Explizite Spaltenliste statt select("*"): der Service-Role-Client umgeht RLS,
+  // sonst landen password_hash, mt_password und alle Reset/Verify/Impersonate-Tokens
+  // im Netzwerk-Payload des Admin-Clients (Token-Diebstahl bei Session-Kompromittierung).
   const { data: users, error } = await db
     .from("users")
-    .select("*")
+    .select(
+      "id, email, name, created_at, subscription_status, current_period_end, trial_ends_at, stripe_customer_id, subscription_id, is_banned, role, meta_last_active, last_login_at, admin_note"
+    )
     .order("created_at", { ascending: false });
 
   if (error) return NextResponse.json({ error: "DB error" }, { status: 500 });

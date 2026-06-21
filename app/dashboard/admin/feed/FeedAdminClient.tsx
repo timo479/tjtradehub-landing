@@ -73,9 +73,10 @@ export default function FeedAdminClient() {
     const tabs: Array<"draft" | "published" | "rejected"> = ["draft", "published", "rejected"];
     const results = await Promise.all(
       tabs.map(s =>
-        fetch(`/api/admin/feed/drafts?status=${s}&limit=1`, {
-          headers: { Authorization: `Bearer ${process.env.NEXT_PUBLIC_FEED_API_TOKEN ?? ""}` },
-        }).then(r => r.json())
+        // Auth läuft über die Admin-Session (checkFeedAuth akzeptiert role==="admin").
+        // KEIN Bearer-Token im Client: NEXT_PUBLIC_* würde das Server-Secret
+        // FEED_API_TOKEN ins öffentliche Bundle leaken → jeder könnte die Feed-Admin-API ansteuern.
+        fetch(`/api/admin/feed/drafts?status=${s}&limit=1`).then(r => r.json())
       )
     );
     setCounts({

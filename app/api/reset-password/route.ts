@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const schema = z.object({
@@ -13,6 +14,16 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  // Rate-Limit: schützt den teuren bcrypt.hash (cost 12) vor unlimitiertem Spam.
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rl = rateLimit(ip, "reset-password", 5, 15 * 60 * 1000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: `Too many attempts. Try again in ${rl.retryAfter} seconds.` },
+      { status: 429 }
+    );
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch {
     return NextResponse.json({ error: "Invalid request" }, { status: 400 });
