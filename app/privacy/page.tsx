@@ -70,6 +70,8 @@ export default function PrivacyPage() {
                 { name: "MetaAPI.cloud (MetaQuotes Software Corp.)", role: "MetaTrader account synchronization. Broker credentials are transmitted to MetaAPI for read-only trade data access.", link: "https://metaapi.cloud/privacy-policy" },
                 { name: "Resend / Amazon SES (AWS, USA)", role: "Transactional email delivery (verification, password reset, billing).", link: "https://resend.com/privacy" },
                 { name: "Vercel Inc. (USA)", role: "Web hosting and application delivery.", link: "https://vercel.com/legal/privacy-policy" },
+                { name: "Meta Platforms Ireland Ltd. (USA / EU)", role: "Meta Pixel for advertising measurement and remarketing. Loaded only after you accept cookies. Hashed identifiers (e.g. email) may be shared via advanced matching to attribute conversions.", link: "https://www.facebook.com/privacy/policy" },
+                { name: "TikTok Technology Ltd. (Ireland / USA)", role: "TikTok Pixel for advertising measurement and remarketing. Loaded only after you accept cookies.", link: "https://www.tiktok.com/legal/privacy-policy" },
               ].map((p) => (
                 <div key={p.name} className="p-4 rounded-xl" style={{ backgroundColor: "#0D1117", border: "1px solid #1F2937" }}>
                   <p style={{ color: "#F9FAFB", fontWeight: 500 }}>{p.name}</p>
@@ -101,8 +103,9 @@ export default function PrivacyPage() {
             <ul className="mt-3 flex flex-col gap-2" style={{ paddingLeft: "20px", listStyleType: "disc" }}>
               <li><span style={{ color: "#F9FAFB" }}>Authentication cookies:</span> Strictly necessary session tokens to keep you logged in. These cannot be disabled without breaking core functionality</li>
               <li><span style={{ color: "#F9FAFB" }}>Cookie consent preference:</span> Stored in localStorage to remember your cookie choice</li>
+              <li><span style={{ color: "#F9FAFB" }}>Advertising pixels (Meta Pixel &amp; TikTok Pixel):</span> Used to measure advertising performance and enable remarketing. These are <strong>only activated after you click &quot;Accept&quot;</strong> in the cookie banner (legal basis: consent). If you decline, no advertising pixel fires. You can withdraw consent at any time by clearing your browser storage.</li>
             </ul>
-            <p className="mt-3">We do not use third-party tracking cookies, advertising pixels, or Google Analytics.</p>
+            <p className="mt-3">We do not use Google Analytics. Advertising pixels are loaded exclusively with your consent and never before you accept cookies.</p>
           </section>
 
           <section>
