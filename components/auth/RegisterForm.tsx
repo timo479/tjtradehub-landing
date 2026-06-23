@@ -41,6 +41,10 @@ export default function RegisterForm() {
         return;
       }
 
+      if (typeof window !== "undefined" && window.fbq) {
+        window.fbq("track", "CompleteRegistration");
+      }
+
       setSuccess(true);
       setLoading(false);
     } catch {

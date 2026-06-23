@@ -8,6 +8,7 @@ import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetaConnect from "@/components/meta/MetaConnect";
 import DashboardTourWrapper from "@/components/DashboardTourWrapper";
 import TikTokConversion from "@/components/TikTokConversion";
+import MetaConversion from "@/components/MetaConversion";
 import WelcomeWrapper from "@/components/WelcomeWrapper";
 import LotteryWidget from "@/components/lottery/LotteryWidget";
 
@@ -106,6 +107,7 @@ export default async function DashboardPage() {
   return (
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.22) 0%, transparent 60%), #000" }}>
       <TikTokConversion />
+      <MetaConversion />
       <WelcomeWrapper userName={name ?? "Trader"} show={!welcomeShown} />
       {/* Basic Plan Banner – upsell to MT5 Sync */}
       {!isSubscribed && (
