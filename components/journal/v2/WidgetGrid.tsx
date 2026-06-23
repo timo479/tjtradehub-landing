@@ -18,7 +18,7 @@ export interface Entry {
   id: string;
   trade_date: string;
   template_id: string;
-  journal_templates: { id: string; name: string; version: number };
+  journal_templates: { id: string; name: string; version: number; time_from?: string | null; time_to?: string | null; risk_per_trade?: number | null; starting_balance?: number | null };
   trade_field_values: FieldValue[];
 }
 
@@ -631,7 +631,7 @@ function WDisciplineScore({ entries }: { entries: Entry[] }) {
   const score = useMemo(() => {
     if (!entries.length) return null;
 
-    // Rules compliance
+    // Rules compliance (40%)
     let rulesScore: number | null = null;
     { let tot = 0, fol = 0;
       entries.forEach(e => {
@@ -645,7 +645,21 @@ function WDisciplineScore({ entries }: { entries: Entry[] }) {
       if (tot > 0) rulesScore = (fol / tot) * 100;
     }
 
-    // Emotion control
+    // Trading hours (20%) — each trade checked against its OWN journal's window
+    let hoursScore: number | null = null;
+    { let tot = 0, ins = 0;
+      entries.forEach(e => {
+        const j = e.journal_templates;
+        if (!j?.time_from || !j?.time_to) return;
+        const d = new Date(e.trade_date);
+        const hh = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+        tot++;
+        if (hh >= j.time_from && hh <= j.time_to) ins++;
+      });
+      if (tot > 0) hoursScore = (ins / tot) * 100;
+    }
+
+    // Emotion control (20%)
     const NEG = new Set(["FOMO", "Greedy", "Fearful", "Nervous", "Frustrated"]);
     let emoScore: number | null = null;
     { let tot = 0, ctrl = 0;
@@ -660,7 +674,32 @@ function WDisciplineScore({ entries }: { entries: Entry[] }) {
       if (tot > 0) emoScore = (ctrl / tot) * 100;
     }
 
-    const factors = [{ s: rulesScore, w: 60 }, { s: emoScore, w: 40 }];
+    // Risk per trade (20%) — running balance per journal, from each journal's starting_balance
+    let riskScore: number | null = null;
+    { const byJournal = new Map<string, Entry[]>();
+      entries.forEach(e => {
+        const arr = byJournal.get(e.template_id) ?? [];
+        arr.push(e); byJournal.set(e.template_id, arr);
+      });
+      let tot = 0, ok = 0;
+      byJournal.forEach(list => {
+        const j = list[0]?.journal_templates;
+        if (!j?.risk_per_trade) return;
+        let bal = j.starting_balance ?? 0;
+        for (const e of [...list].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())) {
+          const ra = getField(e, "risk amount");
+          const p = getPnl(e);
+          if (ra && bal > 0) {
+            const n = parseFloat(ra);
+            if (!isNaN(n) && n > 0) { tot++; if ((n / bal) * 100 <= j.risk_per_trade + 0.5) ok++; }
+          }
+          if (p !== null) bal += p;
+        }
+      });
+      if (tot > 0) riskScore = (ok / tot) * 100;
+    }
+
+    const factors = [{ s: rulesScore, w: 40 }, { s: hoursScore, w: 20 }, { s: emoScore, w: 20 }, { s: riskScore, w: 20 }];
     const avail = factors.filter(f => f.s !== null);
     if (!avail.length) return null;
     const tw = avail.reduce((a, f) => a + f.w, 0);
@@ -719,10 +758,36 @@ function WDisciplineScore({ entries }: { entries: Entry[] }) {
             try { const arr: string[] = JSON.parse(raw); if (arr.length > 0) { acc.tot++; if (!arr.some(x => ["FOMO","Greedy","Fearful","Nervous","Frustrated"].includes(x))) acc.ctrl++; } } catch { /* skip */ }
             return acc;
           }, { tot: 0, ctrl: 0 });
+          const raw_hours = entries.reduce((acc, e) => {
+            const j = e.journal_templates;
+            if (!j?.time_from || !j?.time_to) return acc;
+            const d = new Date(e.trade_date);
+            const hh = `${String(d.getUTCHours()).padStart(2, "0")}:${String(d.getUTCMinutes()).padStart(2, "0")}`;
+            acc.tot++; if (hh >= j.time_from && hh <= j.time_to) acc.ins++;
+            return acc;
+          }, { tot: 0, ins: 0 });
+          const raw_risk = (() => {
+            const byJournal = new Map<string, Entry[]>();
+            entries.forEach(e => { const arr = byJournal.get(e.template_id) ?? []; arr.push(e); byJournal.set(e.template_id, arr); });
+            let tot = 0, ok = 0;
+            byJournal.forEach(list => {
+              const j = list[0]?.journal_templates;
+              if (!j?.risk_per_trade) return;
+              let bal = j.starting_balance ?? 0;
+              for (const e of [...list].sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime())) {
+                const ra = getField(e, "risk amount"); const p = getPnl(e);
+                if (ra && bal > 0) { const n = parseFloat(ra); if (!isNaN(n) && n > 0) { tot++; if ((n / bal) * 100 <= j.risk_per_trade + 0.5) ok++; } }
+                if (p !== null) bal += p;
+              }
+            });
+            return { tot, ok };
+          })();
 
           const bars = [
             { label: "Rules Followed", pct: raw_rules.tot > 0 ? Math.round((raw_rules.fol / raw_rules.tot) * 100) : null, color: "#22c55e" },
+            { label: "Trading Hours", pct: raw_hours.tot > 0 ? Math.round((raw_hours.ins / raw_hours.tot) * 100) : null, color: "#06b6d4" },
             { label: "Emotion Control", pct: raw_emo.tot > 0 ? Math.round((raw_emo.ctrl / raw_emo.tot) * 100) : null, color: "#8B5CF6" },
+            { label: "Risk Mgmt", pct: raw_risk.tot > 0 ? Math.round((raw_risk.ok / raw_risk.tot) * 100) : null, color: "#F59E0B" },
           ];
 
           return bars.map(b => (
@@ -858,7 +923,7 @@ const WIDGETS: WidgetDef[] = [
   { id: "calendar",      name: "Trade Calendar",       desc: "Heatmap of the last 3 months by daily P&L",          icon: "🗓️", dotColor: "#f59e0b",  defaultOn: true,  component: WCalendar },
   { id: "instrument",    name: "Instrument Breakdown", desc: "Which markets you trade most frequently",             icon: "🔍", dotColor: "#60a5fa",  defaultOn: true,  component: WInstrument },
   { id: "profit-factor", name: "Profit Factor",        desc: "Profit Factor, Gross Profit/Loss, Expectancy",       icon: "⚡", dotColor: "#8B5CF6",  defaultOn: true,  component: WProfitFactor },
-  { id: "discipline-score", name: "Discipline Score",   desc: "Rules compliance and emotion control score",         icon: "🎯", dotColor: "#06b6d4",  defaultOn: true,  component: WDisciplineScore },
+  { id: "discipline-score", name: "Discipline Score",   desc: "Rules, trading hours, emotion control & risk score",   icon: "🎯", dotColor: "#06b6d4",  defaultOn: true,  component: WDisciplineScore },
   { id: "histogram",     name: "P&L Distribution",     desc: "Frequency distribution of your trade results",       icon: "📉", dotColor: "#ef4444",  defaultOn: false, component: WHistogram },
 ];
 
