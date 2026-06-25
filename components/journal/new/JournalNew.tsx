@@ -42,6 +42,14 @@ function getEmotions(trade: Trade): string[] {
 function pnlNum(trade: Trade): number | null {
   const v = getField(trade, "P&L"); return v ? parseFloat(v) : null;
 }
+function riskAmt(trade: Trade): number | null {
+  const v = getField(trade, "Risk Amount"); const n = v ? parseFloat(v) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+function rMultiple(trade: Trade): number | null {
+  const p = pnlNum(trade); const r = riskAmt(trade);
+  return p !== null && r ? p / r : null;
+}
 function isWin(trade: Trade): boolean | null {
   const p = pnlNum(trade); return p === null ? null : p > 0;
 }
@@ -72,6 +80,78 @@ function EquityCurve({ trades }: { trades: Trade[] }) {
   return (
     <svg width={W} height={H} style={{ display: "block" }}>
       <polyline points={coords} fill="none" stroke={clr} strokeWidth={2} strokeLinejoin="round" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+// ─── Mini Sparkline (per-journal cumulative P&L) ──────────────────────────────
+function MiniSparkline({ trades, gradId }: { trades: Trade[]; gradId: string }) {
+  const sorted = [...trades].filter(t => pnlNum(t) !== null).sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
+  const W = 260, H = 46;
+  if (sorted.length < 2) {
+    return <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center", color: "#4B5563", fontSize: "11px", border: "1px dashed rgba(255,255,255,0.06)", borderRadius: "8px" }}>Not enough data yet</div>;
+  }
+  let cum = 0; const pts = sorted.map(t => { cum += pnlNum(t)!; return cum; });
+  const min = Math.min(0, ...pts), max = Math.max(0, ...pts), range = max - min || 1;
+  const sx = (i: number) => (i / (pts.length - 1)) * W;
+  const sy = (v: number) => H - ((v - min) / range) * (H - 8) - 4;
+  const z = sy(0);
+  const line = pts.map((v, i) => `${i === 0 ? "M" : "L"}${sx(i).toFixed(1)},${sy(v).toFixed(1)}`).join(" ");
+  const fill = `${line} L${W},${z.toFixed(1)} L0,${z.toFixed(1)} Z`;
+  const pos = pts[pts.length - 1] >= 0; const clr = pos ? "#22c55e" : "#ef4444";
+  const id = `spark-${gradId}`;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height={H} style={{ display: "block" }}>
+      <defs><linearGradient id={id} x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={clr} stopOpacity="0.28" /><stop offset="100%" stopColor={clr} stopOpacity="0" /></linearGradient></defs>
+      <line x1="0" y1={z} x2={W} y2={z} stroke="rgba(255,255,255,0.07)" strokeWidth="1" strokeDasharray="3,3" />
+      <path d={fill} fill={`url(#${id})`} />
+      <path d={line} fill="none" stroke={clr} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ filter: `drop-shadow(0 0 4px ${clr}55)` }} />
+    </svg>
+  );
+}
+
+// ─── Premium Equity Hero chart (smooth, glowing, last 7 days) ─────────────────
+function smoothPath(pts: { x: number; y: number }[]): string {
+  if (pts.length < 2) return "";
+  let d = `M${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    const c1x = p1.x + (p2.x - p0.x) / 6, c1y = p1.y + (p2.y - p0.y) / 6;
+    const c2x = p2.x - (p3.x - p1.x) / 6, c2y = p2.y - (p3.y - p1.y) / 6;
+    d += ` C${c1x.toFixed(1)},${c1y.toFixed(1)} ${c2x.toFixed(1)},${c2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+  }
+  return d;
+}
+function EquityHero({ trades }: { trades: Trade[] }) {
+  const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 7);
+  const recent = [...trades].filter(t => new Date(t.trade_date) >= cutoff && pnlNum(t) !== null)
+    .sort((a, b) => new Date(a.trade_date).getTime() - new Date(b.trade_date).getTime());
+  const W = 560, H = 158, PL = 6, PR = 14, PT = 14, PB = 12;
+  const cW = W - PL - PR, cH = H - PT - PB;
+  if (recent.length < 2) return <div style={{ height: H, display: "flex", alignItems: "center", justifyContent: "center", color: "#4B5563", fontSize: "13px" }}>Not enough data this week</div>;
+  let cum = 0; const vals = [0, ...recent.map(t => { cum += pnlNum(t)!; return cum; })];
+  const min = Math.min(...vals), max = Math.max(...vals), range = max - min || 1;
+  const sx = (i: number) => PL + (i / (vals.length - 1)) * cW;
+  const sy = (v: number) => PT + cH - ((v - min) / range) * cH;
+  const z = sy(0);
+  const pts = vals.map((v, i) => ({ x: sx(i), y: sy(v) }));
+  const line = smoothPath(pts);
+  const fill = `${line} L${pts[pts.length - 1].x.toFixed(1)},${z.toFixed(1)} L${pts[0].x.toFixed(1)},${z.toFixed(1)} Z`;
+  const last = vals[vals.length - 1], pos = last >= 0;
+  const c1 = pos ? "#34d399" : "#f87171", c2 = pos ? "#16a34a" : "#dc2626";
+  const lx = pts[pts.length - 1].x, ly = pts[pts.length - 1].y;
+  return (
+    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height={H} style={{ display: "block", overflow: "visible" }}>
+      <defs>
+        <linearGradient id="eqhero-stroke" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor={c2} /><stop offset="100%" stopColor={c1} /></linearGradient>
+        <linearGradient id="eqhero-fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor={c1} stopOpacity="0.3" /><stop offset="100%" stopColor={c1} stopOpacity="0" /></linearGradient>
+      </defs>
+      {[0.25, 0.5, 0.75].map(f => <line key={f} x1={PL} y1={PT + cH * f} x2={W - PR} y2={PT + cH * f} stroke="rgba(148,163,184,0.1)" strokeWidth="1" strokeDasharray="3,4" />)}
+      <line x1={PL} y1={z} x2={W - PR} y2={z} stroke="rgba(148,163,184,0.22)" strokeWidth="1" />
+      <path d={fill} fill="url(#eqhero-fill)" style={{ animation: "tjHeroFade 1s ease 0.35s both" }} />
+      <path d={line} fill="none" stroke="url(#eqhero-stroke)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" pathLength={1} strokeDasharray={1} style={{ animation: "tjEqDraw 1.15s cubic-bezier(.6,0,.2,1) both", filter: `drop-shadow(0 2px 8px ${c1}66)` }} />
+      <circle cx={lx} cy={ly} r="9" fill={c1} style={{ animation: "tjHalo 2.4s ease-in-out infinite" }} />
+      <circle cx={lx} cy={ly} r="4" fill="#fff" stroke={c1} strokeWidth="2.5" style={{ filter: `drop-shadow(0 0 6px ${c1})`, animation: "tjHeroFade 0.3s ease 1.2s both" }} />
     </svg>
   );
 }
@@ -266,6 +346,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   const sevenDayWins = sevenDayTrades.filter(t => (pnlNum(t) ?? 0) > 0).length;
   const sevenDayWinRate = sevenDayTrades.length ? Math.round((sevenDayWins / sevenDayTrades.length) * 100) : null;
   const sevenDayPnl = sevenDayTrades.reduce((s, t) => s + (pnlNum(t) ?? 0), 0);
+  const anySevenDay = allEntries.some(e => new Date(e.trade_date) >= sevenDayCutoff && journals.some(j => j.id === e.template_id));
 
   // Filtered + sorted trade list
   const filteredTrades = useMemo(() => {
@@ -295,6 +376,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
       else if (sortCol === "direction") cmp = (getField(a, "Direction") ?? "").localeCompare(getField(b, "Direction") ?? "");
       else if (sortCol === "setup") cmp = (getField(a, "Setup") ?? "").localeCompare(getField(b, "Setup") ?? "");
       else if (sortCol === "pnl") cmp = (pnlNum(a) ?? 0) - (pnlNum(b) ?? 0);
+      else if (sortCol === "r") cmp = (rMultiple(a) ?? -Infinity) - (rMultiple(b) ?? -Infinity);
       return sortDir === "asc" ? cmp : -cmp;
     });
   }, [journalTrades, filter, search, sortCol, sortDir, today]);
@@ -395,33 +477,105 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
       )}
 
       {/* Hero Banner (show if active journal has 7-day data) */}
-      {activeJournal && sevenDayTrades.length > 0 && (
-        <div data-tour="equity-hero" style={{ background: T.bgCard, border: `1px solid ${T.borderSoft}`, borderRadius: "16px", boxShadow: T.shadow, padding: "24px 28px", display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
-          <div style={{ flex: 1, minWidth: "180px" }}>
-            <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", color: T.text4, marginBottom: "8px" }}>7-Day Equity</p>
-            <EquityCurve trades={journalTrades} />
-          </div>
-          <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
-            {[
-              { label: "P&L (7 days)", value: `${sevenDayPnl >= 0 ? "+" : ""}${sevenDayPnl.toFixed(2)}`, color: sevenDayPnl >= 0 ? "#22c55e" : "#ef4444" },
-              { label: "7-Day Win Rate", value: sevenDayWinRate !== null ? `${sevenDayWinRate}%` : "—", color: T.text1 },
-              { label: "Streak", value: calcStreak(journalTrades), color: "#A78BFA" },
-            ].map(({ label, value, color }) => (
-              <div key={label}>
-                <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", color: T.text4, marginBottom: "4px" }}>{label}</p>
-                <p style={{ fontSize: "26px", fontWeight: 700, color }}>{value}</p>
+      {activeJournal && anySevenDay && (() => {
+        const pos = sevenDayPnl >= 0;
+        const streak = calcStreak(journalTrades);
+        const streakUp = streak.startsWith("+");
+        const pct = activeJournal.starting_balance ? (sevenDayPnl / activeJournal.starting_balance) * 100 : null;
+        const wr = sevenDayWinRate;
+        const R = 24, CX = 28, CY = 28, sw = 6, circ = 2 * Math.PI * R, frac = (wr ?? 0) / 100;
+        const wrColor = (wr ?? 0) >= 50 ? "#22c55e" : "#ef4444";
+        return (
+          <div data-tour="equity-hero" style={{ position: "relative", overflow: "hidden", background: darkMode ? "linear-gradient(135deg, #0e0a1a, #080808)" : T.bgCard, border: "1px solid rgba(139,92,246,0.22)", borderRadius: "20px", boxShadow: `${T.shadow}, inset 0 1px 0 rgba(255,255,255,0.05)`, padding: "22px 26px", display: "flex", gap: "26px", alignItems: "stretch", flexWrap: "wrap" }}>
+            {/* ambient glow */}
+            <div style={{ position: "absolute", top: "-55%", left: "10%", width: "460px", height: "280px", background: `radial-gradient(ellipse, ${pos ? "rgba(34,197,94,0.10)" : "rgba(239,68,68,0.10)"}, transparent 70%)`, pointerEvents: "none" }} />
+
+            {/* Left: title + chart */}
+            <div style={{ flex: "2 1 340px", minWidth: "290px", display: "flex", flexDirection: "column", position: "relative", zIndex: 1 }}>
+              <div style={{ marginBottom: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", flexWrap: "wrap", marginBottom: journals.length > 1 ? "9px" : 0 }}>
+                  <span style={{ color: T.text4, fontSize: "11px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em" }}>7-Day Performance</span>
+                  {journals.length <= 1 && <>
+                    <span style={{ color: T.text1, fontSize: "13px", fontWeight: 700 }}>{activeJournal.name}</span>
+                    <span style={{ padding: "2px 9px", borderRadius: "20px", fontSize: "10px", fontWeight: 600, backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>{activeJournal.instrument_type}</span>
+                  </>}
+                </div>
+                {journals.length > 1 && (
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    {journals.map(j => {
+                      const sel = activeJournal.id === j.id;
+                      return (
+                        <button key={j.id} onClick={() => setActiveJournal(j)}
+                          style={{ padding: "4px 12px", borderRadius: "20px", border: `1px solid ${sel ? "#8B5CF6" : T.border2}`, background: sel ? "rgba(139,92,246,0.18)" : "transparent", color: sel ? "#c4b5fd" : T.text4, fontSize: "12px", fontWeight: sel ? 700 : 500, cursor: "pointer", transition: "all .15s", whiteSpace: "nowrap" }}
+                          onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLButtonElement).style.borderColor = "rgba(139,92,246,0.4)"; }}
+                          onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLButtonElement).style.borderColor = T.border2; }}>
+                          {j.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            ))}
+              <div style={{ flex: 1, display: "flex", alignItems: "center", minHeight: "150px" }}>
+                <div style={{ width: "100%" }}><EquityHero key={activeJournal.id} trades={journalTrades} /></div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <div className="tj-hero-div" style={{ width: "1px", background: T.borderSoft, alignSelf: "stretch" }} />
+
+            {/* Right: stats */}
+            <div style={{ flex: "1 1 230px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", textAlign: "center", gap: "20px", position: "relative", zIndex: 1 }}>
+              {/* P&L hero */}
+              <div>
+                <p style={{ color: T.text4, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "6px" }}>Net P&amp;L · 7 days</p>
+                <div style={{ display: "flex", alignItems: "baseline", justifyContent: "center", gap: "9px", flexWrap: "wrap" }}>
+                  <span style={{ fontWeight: 800, fontSize: "34px", lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", background: pos ? "linear-gradient(135deg, #86efac, #22c55e)" : "linear-gradient(135deg, #fca5a5, #ef4444)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>{pos ? "+" : ""}{sevenDayPnl.toFixed(2)}</span>
+                  {pct !== null && (
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: "2px", padding: "2px 7px", borderRadius: "20px", background: pos ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)", border: `1px solid ${pos ? "rgba(34,197,94,0.3)" : "rgba(239,68,68,0.3)"}`, color: pos ? "#22c55e" : "#ef4444", fontSize: "10px", fontWeight: 700 }}>{pos ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%</span>
+                  )}
+                </div>
+              </div>
+
+              {/* Win ring + Streak */}
+              <div style={{ display: "flex", gap: "24px", alignItems: "center", justifyContent: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
+                  <div style={{ position: "relative", width: "56px", height: "56px", flexShrink: 0 }}>
+                    <svg width="56" height="56" viewBox="0 0 56 56">
+                      <circle cx={CX} cy={CY} r={R} fill="none" stroke="rgba(148,163,184,0.18)" strokeWidth={sw} />
+                      <circle cx={CX} cy={CY} r={R} fill="none" stroke={wrColor} strokeWidth={sw} strokeLinecap="round" strokeDasharray={`${(circ * frac).toFixed(1)} ${(circ * (1 - frac)).toFixed(1)}`} transform={`rotate(-90 ${CX} ${CY})`} style={{ filter: `drop-shadow(0 0 4px ${wrColor}66)` }} />
+                    </svg>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      <span style={{ color: T.text1, fontWeight: 800, fontSize: "14px", fontVariantNumeric: "tabular-nums" }}>{wr !== null ? `${wr}%` : "—"}</span>
+                    </div>
+                  </div>
+                  <span style={{ color: T.text4, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", lineHeight: 1.3 }}>Win<br />Rate</span>
+                </div>
+                <div>
+                  <p style={{ color: T.text4, fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: "4px" }}>Streak</p>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: "5px", color: streakUp ? "#22c55e" : streak.startsWith("-") ? "#ef4444" : T.text4, fontWeight: 800, fontSize: "24px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+                    {streakUp && <svg width="16" height="16" viewBox="0 0 24 24" fill="#f59e0b" stroke="none"><path d="M12 2c1 3-1 4-1 6a3 3 0 0 0 6 0c0-1 0-2-1-3 2 1 4 4 4 8a8 8 0 1 1-16 0c0-3 2-6 4-7 0 2 1 3 2 3 1 0 1-1 1-2 0-3-3-4-2-8z" /></svg>}
+                    {streak}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
-        </div>
-      )}
+        );
+      })()}
 
       {/* Section Header */}
       <div data-tour="journal-header" style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "12px" }}>
-        <h2 style={{ color: T.text1, fontWeight: 600, fontSize: "20px" }}>My Journals</h2>
+        <div>
+          <h2 style={{ color: T.text1, fontWeight: 800, fontSize: "26px", letterSpacing: "-0.02em", lineHeight: 1.1 }}>My Journals</h2>
+          {journals.length > 0 && <p style={{ color: T.text4, fontSize: "13px", marginTop: "3px" }}>{journals.length} journal{journals.length !== 1 ? "s" : ""} · {allEntries.filter(e => journals.some(j => j.id === e.template_id)).length} trades logged</p>}
+        </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {ThemeToggle}
-          <button onClick={() => setShowCreateJournal(true)} style={{ padding: "9px 18px", borderRadius: "8px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>+ New Journal</button>
+          <button onClick={() => setShowCreateJournal(true)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #8B5CF6, #7c3aed)", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: "14px", boxShadow: "0 4px 16px rgba(139,92,246,0.35)" }}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+            New Journal
+          </button>
         </div>
       </div>
 
@@ -429,45 +583,70 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
       <div data-tour="journal-grid">
       {journals.length === 0 ? (
         <div style={{ background: T.bgCard, border: `1px solid ${T.borderSoft}`, borderRadius: "16px", boxShadow: T.shadow, padding: "60px 40px", textAlign: "center" }}>
-          <p style={{ fontSize: "40px", marginBottom: "16px" }}>📓</p>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "56px", height: "56px", borderRadius: "16px", background: "rgba(139,92,246,0.1)", border: "1px solid rgba(139,92,246,0.25)", marginBottom: "18px" }}>
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>
+          </div>
           <h2 style={{ color: T.text1, fontWeight: 700, fontSize: "18px", marginBottom: "8px" }}>Create your first journal</h2>
           <p style={{ color: T.text4, fontSize: "14px", marginBottom: "24px" }}>Define your trading rules and start logging trades.</p>
           <button onClick={() => setShowCreateJournal(true)} style={{ padding: "12px 28px", borderRadius: "12px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "15px" }}>Create Journal</button>
         </div>
       ) : (
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(260px,1fr))", gap: "16px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(300px,1fr))", gap: "18px" }}>
           {journals.map(j => {
             const jTrades = allEntries.filter(e => e.template_id === j.id);
             const jWins = jTrades.filter(t => (pnlNum(t) ?? 0) > 0).length;
             const jWr = jTrades.length ? Math.round((jWins / jTrades.length) * 100) : null;
             const jPnl = jTrades.reduce((s, t) => s + (pnlNum(t) ?? 0), 0);
             const isActive = activeJournal?.id === j.id;
+            const baseShadow = isActive ? `0 0 0 1px #8B5CF6, 0 0 30px rgba(139,92,246,0.18), ${T.shadow}` : T.shadow;
+            const metaIcon = (path: React.ReactNode) => <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>{path}</svg>;
             return (
               <div key={j.id} onClick={() => openJournal(j)}
-                style={{ background: T.bgCard, border: `1px solid ${isActive ? "#8B5CF6" : T.borderSoft}`, borderRadius: "16px", padding: "20px", cursor: "pointer", transition: "border-color 0.2s", position: "relative", boxShadow: isActive ? `0 0 0 1px #8B5CF6, ${T.shadow}` : T.shadow }}
-                onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(139,92,246,0.25)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.borderColor = isActive ? "#8B5CF6" : T.borderSoft; }}>
+                style={{ background: T.bgCard, border: `1px solid ${isActive ? "#8B5CF6" : T.borderSoft}`, borderRadius: "18px", padding: "18px 20px", cursor: "pointer", transition: "transform .2s ease, border-color .2s ease, box-shadow .2s ease", position: "relative", overflow: "hidden", boxShadow: baseShadow }}
+                onMouseEnter={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = "translateY(-3px)"; el.style.borderColor = "rgba(139,92,246,0.45)"; el.style.boxShadow = `0 0 0 1px rgba(139,92,246,0.45), 0 12px 44px rgba(0,0,0,0.5)`; }}
+                onMouseLeave={e => { const el = e.currentTarget as HTMLDivElement; el.style.transform = "translateY(0)"; el.style.borderColor = isActive ? "#8B5CF6" : T.borderSoft; el.style.boxShadow = baseShadow; }}>
 
-                {/* Edit + Delete buttons (appear on hover via CSS-in-JS workaround via group) */}
-                <div style={{ display: "flex", gap: "6px", position: "absolute", top: "12px", right: "12px" }} onClick={e => e.stopPropagation()}>
-                  <button onClick={() => setEditJournal(j)} style={{ padding: "4px 8px", borderRadius: "6px", border: `1px solid ${T.border2}`, backgroundColor: "transparent", color: T.text3, cursor: "pointer", fontSize: "11px" }}>✎</button>
-                  <button onClick={() => deleteJournal(j)} style={{ padding: "4px 8px", borderRadius: "6px", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "11px" }}>✕</button>
+                {/* ambient glow (active) */}
+                {isActive && <div style={{ position: "absolute", top: "-40%", right: "-15%", width: "200px", height: "140px", background: "radial-gradient(ellipse, rgba(139,92,246,0.16), transparent 70%)", pointerEvents: "none" }} />}
+
+                {/* Top: badges + actions */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "8px", marginBottom: "12px", position: "relative", zIndex: 1 }}>
+                  <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                    <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>{j.instrument_type}</span>
+                    {j.rules.length > 0 && <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 600, backgroundColor: "rgba(34,197,94,0.12)", color: "#22c55e" }}>{j.rules.length} rules</span>}
+                    {isActive && <span style={{ padding: "3px 10px", borderRadius: "20px", fontSize: "11px", fontWeight: 700, backgroundColor: "rgba(139,92,246,0.2)", color: "#c4b5fd" }}>● Active</span>}
+                  </div>
+                  <div style={{ display: "flex", gap: "6px", flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+                    <button title="Edit" onClick={() => setEditJournal(j)} style={{ padding: "4px 8px", borderRadius: "7px", border: `1px solid ${T.border2}`, backgroundColor: "transparent", color: T.text3, cursor: "pointer", fontSize: "11px" }}>✎</button>
+                    <button title="Delete" onClick={() => deleteJournal(j)} style={{ padding: "4px 8px", borderRadius: "7px", border: "1px solid rgba(239,68,68,0.3)", backgroundColor: "transparent", color: "#ef4444", cursor: "pointer", fontSize: "11px" }}>✕</button>
+                  </div>
                 </div>
 
-                <div style={{ display: "flex", gap: "8px", marginBottom: "10px" }}>
-                  <span style={{ padding: "2px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 500, backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA" }}>{j.instrument_type}</span>
-                  {j.rules.length > 0 && <span style={{ padding: "2px 10px", borderRadius: "20px", fontSize: "12px", fontWeight: 500, backgroundColor: "rgba(34,197,94,0.12)", color: "#22c55e" }}>{j.rules.length} rules</span>}
+                {/* Name */}
+                <h3 style={{ color: T.text1, fontWeight: 700, fontSize: "18px", marginBottom: "10px", letterSpacing: "-0.01em", position: "relative", zIndex: 1 }}>{j.name}</h3>
+
+                {/* Meta row */}
+                <div style={{ display: "flex", gap: "14px", fontSize: "12px", color: T.text4, flexWrap: "wrap", position: "relative", zIndex: 1 }}>
+                  {j.time_from && j.time_to && <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>{metaIcon(<><circle cx="12" cy="12" r="9" /><polyline points="12 7 12 12 15 14" /></>)}{j.time_from}–{j.time_to}</span>}
+                  {j.risk_per_trade != null && <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>{metaIcon(<polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />)}{j.risk_per_trade}% risk</span>}
+                  {j.max_trades_per_day != null && <span style={{ display: "flex", alignItems: "center", gap: "5px" }}>{metaIcon(<><line x1="6" y1="20" x2="6" y2="12" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="18" y1="20" x2="18" y2="14" /></>)}max {j.max_trades_per_day}/day</span>}
                 </div>
-                <h3 style={{ color: T.text1, fontWeight: 600, fontSize: "17px", marginBottom: "8px", paddingRight: "60px" }}>{j.name}</h3>
-                <div style={{ display: "flex", gap: "16px", fontSize: "13px", color: T.text4, marginBottom: "8px" }}>
-                  {j.time_from && j.time_to && <span>🕐 {j.time_from}–{j.time_to}</span>}
-                  {j.risk_per_trade && <span>⚡ {j.risk_per_trade}% risk</span>}
-                  {j.max_trades_per_day && <span>📊 max {j.max_trades_per_day}/day</span>}
+
+                {/* Sparkline */}
+                <div style={{ margin: "14px 0 12px", position: "relative", zIndex: 1 }}>
+                  <MiniSparkline trades={jTrades} gradId={j.id} />
                 </div>
-                <div style={{ display: "flex", gap: "16px", fontSize: "13px", borderTop: `1px solid ${T.borderSoft}`, paddingTop: "10px", marginTop: "4px" }}>
-                  <span style={{ color: T.text3 }}>{jTrades.length} trades</span>
-                  {jWr !== null && <span style={{ color: T.text3 }}>Win {jWr}%</span>}
-                  {jTrades.length > 0 && <span style={{ color: jPnl >= 0 ? "#22c55e" : "#ef4444", fontWeight: 600 }}>{jPnl >= 0 ? "+" : ""}{jPnl.toFixed(2)}</span>}
+
+                {/* Footer: Net P&L hero + win/trades */}
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", borderTop: `1px solid ${T.borderSoft}`, paddingTop: "12px", position: "relative", zIndex: 1 }}>
+                  <div>
+                    <p style={{ color: T.text4, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.07em", fontWeight: 700, marginBottom: "3px" }}>Net P&L</p>
+                    <p style={{ color: jTrades.length ? (jPnl >= 0 ? "#22c55e" : "#ef4444") : T.text5, fontWeight: 800, fontSize: "23px", lineHeight: 1, letterSpacing: "-0.02em", fontVariantNumeric: "tabular-nums" }}>{jTrades.length ? `${jPnl >= 0 ? "+" : ""}${jPnl.toFixed(2)}` : "—"}</p>
+                  </div>
+                  <div style={{ textAlign: "right", display: "flex", flexDirection: "column", gap: "3px" }}>
+                    {jWr !== null && <span style={{ fontSize: "12px" }}><span style={{ color: T.text4 }}>Win </span><span style={{ color: jWr >= 50 ? "#22c55e" : "#ef4444", fontWeight: 800, fontVariantNumeric: "tabular-nums" }}>{jWr}%</span></span>}
+                    <span style={{ color: T.text4, fontSize: "12px", fontVariantNumeric: "tabular-nums" }}>{jTrades.length} trade{jTrades.length !== 1 ? "s" : ""}</span>
+                  </div>
                 </div>
               </div>
             );
@@ -609,7 +788,9 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
       {/* Trade Table */}
       {filteredTrades.length === 0 ? (
         <div style={{ background: T.bgCard, border: `1px solid ${T.borderSoft}`, borderRadius: "16px", boxShadow: T.shadow, padding: "60px 40px", textAlign: "center" }}>
-          <p style={{ fontSize: "36px", marginBottom: "14px" }}>📈</p>
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "52px", height: "52px", borderRadius: "14px", background: T.bgInput, border: `1px solid ${T.border}`, marginBottom: "16px" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke={T.text4} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg>
+          </div>
           <p style={{ color: T.text4, fontSize: "14px", marginBottom: "20px" }}>{journalTrades.length === 0 ? "No trades yet." : "No trades match the current filter."}</p>
           {journalTrades.length === 0 && (
             <button onClick={() => setShowWizard(true)} style={{ padding: "10px 24px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#fff", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>Log your first trade</button>
@@ -623,7 +804,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
                 {[
                   { key: "date", label: "Date" }, { key: "symbol", label: "Symbol" },
                   { key: "direction", label: "Direction" }, { key: "setup", label: "Setup" },
-                  { key: "pnl", label: "P&L" }, { key: "emotions", label: "Emotions" },
+                  { key: "pnl", label: "P&L" }, { key: "r", label: "R" }, { key: "emotions", label: "Emotions" },
                   { key: "", label: "" },
                 ].map(({ key, label }) => (
                   <th key={label} onClick={key ? () => toggleSort(key) : undefined}
@@ -634,7 +815,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
               </tr>
             </thead>
             <tbody>
-              {filteredTrades.map(trade => {
+              {filteredTrades.map((trade, idx) => {
                 const sym = getField(trade, "Symbol");
                 const dir = getField(trade, "Direction");
                 const setup = getField(trade, "Setup");
@@ -648,10 +829,10 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
                 const outsideSession = !!(activeJournal?.time_from && activeJournal?.time_to && (tradeHHMM < activeJournal.time_from || tradeHHMM > activeJournal.time_to));
                 return (
                   <tr key={trade.id} onClick={() => setDetailTrade(trade)}
-                    style={{ borderBottom: `1px solid ${T.border}`, cursor: "pointer", transition: "background 0.15s" }}
+                    style={{ borderBottom: `1px solid ${T.border}`, cursor: "pointer", transition: "background 0.15s", animation: `tjRowIn 0.4s ease ${Math.min(idx, 18) * 28}ms both` }}
                     onMouseEnter={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = T.rowHover}
                     onMouseLeave={e => (e.currentTarget as HTMLTableRowElement).style.backgroundColor = ""}>
-                    <td style={{ padding: "12px 16px" }}>
+                    <td style={{ padding: "12px 16px", boxShadow: `inset 3px 0 0 ${p !== null ? (p >= 0 ? "rgba(34,197,94,0.6)" : "rgba(239,68,68,0.6)") : "transparent"}` }}>
                       <div style={{ color: T.text3, fontSize: "13px" }}>{dateStr}</div>
                       <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
                         <span style={{ color: outsideSession ? "#ef4444" : T.text5, fontSize: "11px" }}>{timeStr}</span>
@@ -669,7 +850,12 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
                     </td>
                     <td style={{ padding: "12px 16px", color: T.text3, fontSize: "13px" }}>{setup ?? <span style={{ color: T.text6 }}>—</span>}</td>
                     <td style={{ padding: "12px 16px" }}>
-                      {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: "15px" }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: T.text6 }}>—</span>}
+                      {p !== null ? <span style={{ color: p >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: "15px", fontVariantNumeric: "tabular-nums" }}>{p >= 0 ? "+" : ""}{p.toFixed(2)}</span> : <span style={{ color: T.text6 }}>—</span>}
+                    </td>
+                    <td style={{ padding: "12px 16px" }}>
+                      {(() => { const r = rMultiple(trade); return r !== null
+                        ? <span style={{ color: r >= 0 ? "#22c55e" : "#ef4444", fontWeight: 700, fontSize: "13px", fontVariantNumeric: "tabular-nums" }}>{r >= 0 ? "+" : ""}{r.toFixed(1)}R</span>
+                        : <span style={{ color: T.text6 }}>—</span>; })()}
                     </td>
                     <td style={{ padding: "12px 16px" }}>
                       <div style={{ display: "flex", gap: "4px", flexWrap: "wrap" }}>
@@ -790,7 +976,14 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       </> /* end trades view */}
 
-      <style>{`@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }`}</style>
+      <style>{`
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+        @keyframes tjRowIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes tjEqDraw { from { stroke-dashoffset: 1; } to { stroke-dashoffset: 0; } }
+        @keyframes tjHalo { 0%,100% { opacity: .45; } 50% { opacity: .08; } }
+        @keyframes tjHeroFade { from { opacity: 0; } to { opacity: 1; } }
+        @media (max-width: 760px) { .tj-hero-div { display: none !important; } }
+      `}</style>
     </div>
   );
 }
