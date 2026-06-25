@@ -91,7 +91,7 @@ export default function JournalLayoutClient({ name, email, subscriptionStatus, j
       />
 
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalNew journalTourCompleted={journalTourCompleted} darkMode={darkMode} toggleTheme={toggleTheme} />
+        <JournalNew journalTourCompleted={journalTourCompleted} darkMode={darkMode} toggleTheme={toggleTheme} userName={name} />
       </main>
     </div>
   );

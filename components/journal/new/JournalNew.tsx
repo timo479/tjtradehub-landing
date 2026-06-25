@@ -79,7 +79,7 @@ function EquityCurve({ trades }: { trades: Trade[] }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 type Filter = "all" | "today" | "week" | "month" | "review";
 
-export default function JournalNew({ journalTourCompleted = false, darkMode: darkModeProp, toggleTheme: toggleThemeProp }: { journalTourCompleted?: boolean; darkMode?: boolean; toggleTheme?: () => void }) {
+export default function JournalNew({ journalTourCompleted = false, darkMode: darkModeProp, toggleTheme: toggleThemeProp, userName }: { journalTourCompleted?: boolean; darkMode?: boolean; toggleTheme?: () => void; userName?: string | null }) {
   const [journals, setJournals] = useState<Journal[]>([]);
   const [allEntries, setAllEntries] = useState<Trade[]>([]);
   const [allTemplates, setAllTemplates] = useState<TemplateDef[]>([]);
@@ -135,6 +135,23 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Demo-Tour (?demo=1): auf Steuer-Events vom AppDemoTour-Overlay hören.
+  // Entkoppelt — die Tour-UI lebt in JournalLayoutClient, hier nur die Setter.
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const d = (e as CustomEvent).detail ?? {};
+      if (d.createModal !== undefined) setShowCreateJournal(!!d.createModal);
+      if (d.wizard !== undefined) setShowWizard(!!d.wizard);
+      if (d.openFirst) {
+        if (journals[0]) { setActiveJournal(journals[0]); setView("trades"); }
+      } else if (d.view) {
+        setView(d.view as "journals" | "trades" | "stats");
+      }
+    };
+    window.addEventListener("journal-demo:action", handler);
+    return () => window.removeEventListener("journal-demo:action", handler);
+  }, [journals]);
 
   useEffect(() => {
     fetch("/api/meta/settings")
@@ -379,7 +396,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Hero Banner (show if active journal has 7-day data) */}
       {activeJournal && sevenDayTrades.length > 0 && (
-        <div style={{ background: T.bgCard, border: `1px solid ${T.borderSoft}`, borderRadius: "16px", boxShadow: T.shadow, padding: "24px 28px", display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
+        <div data-tour="equity-hero" style={{ background: T.bgCard, border: `1px solid ${T.borderSoft}`, borderRadius: "16px", boxShadow: T.shadow, padding: "24px 28px", display: "flex", gap: "32px", alignItems: "center", flexWrap: "wrap" }}>
           <div style={{ flex: 1, minWidth: "180px" }}>
             <p style={{ fontSize: "11px", fontWeight: 600, textTransform: "uppercase", letterSpacing: ".06em", color: T.text4, marginBottom: "8px" }}>7-Day Equity</p>
             <EquityCurve trades={journalTrades} />
@@ -521,8 +538,9 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
             Trades
           </button>
           <button onClick={() => setView("stats")}
-            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "stats" ? T.bgInput : "transparent", color: view === "stats" ? "#A78BFA" : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "stats" ? 600 : 400 }}>
-            📊 Statistics
+            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "stats" ? T.bgInput : "transparent", color: view === "stats" ? "#A78BFA" : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "stats" ? 600 : 400, display: "flex", alignItems: "center", gap: "6px" }}>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            Statistics
           </button>
         </div>
         <div style={{ marginLeft: "auto", display: "flex", gap: "8px", flexWrap: "wrap", alignItems: "center" }}>
@@ -543,7 +561,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Statistics View */}
       {view === "stats" && activeJournal && (
-        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} metaAccountBalance={metaAccountBalance} />
+        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} metaAccountBalance={metaAccountBalance} userName={userName} />
       )}
 
       {/* Trades View */}
