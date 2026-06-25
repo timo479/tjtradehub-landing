@@ -271,25 +271,35 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
   };
 
   const card: React.CSSProperties = {
-    backgroundColor: "#111827", border: "1px solid #1F2937", borderRadius: "16px", padding: "20px 24px",
+    background: "linear-gradient(145deg, #110c1e, #080808)",
+    border: "1px solid rgba(255,255,255,0.06)",
+    borderRadius: "18px",
+    padding: "20px 24px",
+    boxShadow: "0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)",
+    position: "relative",
+    overflow: "hidden",
   };
+  const mtIcon = (color: string) => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" /><line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" /><polyline points="6 8 9.5 11.5 13 7 18 12" /></svg>
+  );
 
   // ── Upsell Card for Basic Plan Users ─────────────────────────────────────────
   if (!isSubscribed) {
     return (
       <div style={{ ...card, display: "flex", flexDirection: "column", gap: "16px" }}>
-        <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
+        <div style={{ position: "absolute", top: "-50%", right: "-10%", width: "300px", height: "180px", background: "radial-gradient(ellipse, rgba(139,92,246,0.1), transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "13px", position: "relative", zIndex: 1 }}>
+          <div style={{ width: "40px", height: "40px", borderRadius: "11px", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{mtIcon("#A78BFA")}</div>
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "#374151", flexShrink: 0 }} />
-              <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px" }}>MT4/MT5 Auto-Sync</span>
-              <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "5px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA", fontWeight: 600, letterSpacing: "0.04em" }}>PRO</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "3px" }}>
+              <span style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "15px" }}>MT4/MT5 Auto-Sync</span>
+              <span style={{ fontSize: "10px", padding: "2px 7px", borderRadius: "5px", backgroundColor: "rgba(139,92,246,0.15)", color: "#A78BFA", fontWeight: 700, letterSpacing: "0.04em" }}>PRO</span>
             </div>
             <p style={{ color: "#6B7280", fontSize: "12px" }}>Automatically import trades from MetaTrader into your journal</p>
           </div>
         </div>
 
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: "8px", position: "relative", zIndex: 1 }}>
           {[
             "Auto-sync every 15 minutes",
             "Full trade history import",
@@ -303,11 +313,11 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
           ))}
         </div>
 
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", paddingTop: "4px", borderTop: "1px solid #1F2937" }}>
-          <span style={{ color: "#4B5563", fontSize: "12px" }}>Available on Pro Plan · $29/mo</span>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)", position: "relative", zIndex: 1 }}>
+          <span style={{ color: "#6B7280", fontSize: "12px" }}>Available on Pro Plan · $29/mo</span>
           <button
             onClick={() => router.push("/billing")}
-            style={{ padding: "9px 20px", borderRadius: "10px", border: "none", backgroundColor: "#8B5CF6", color: "#F9FAFB", fontWeight: 600, cursor: "pointer", fontSize: "13px" }}>
+            style={{ padding: "10px 20px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #8B5CF6, #7c3aed)", color: "#F9FAFB", fontWeight: 700, cursor: "pointer", fontSize: "13px", boxShadow: "0 4px 16px rgba(139,92,246,0.35)" }}>
             Upgrade Plan →
           </button>
         </div>
@@ -328,11 +338,20 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
       <div style={card}>
         {/* Header Row */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", flexWrap: "wrap" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "8px", height: "8px", borderRadius: "50%", flexShrink: 0, backgroundColor: conn.state === "DEPLOYED" && conn.connectionStatus === "CONNECTED" ? "#22c55e" : conn.state === "DEPLOYING" ? "#F59E0B" : "#374151" }} />
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", position: "relative", zIndex: 1 }}>
+            {(() => {
+              const connected = conn.state === "DEPLOYED" && conn.connectionStatus === "CONNECTED";
+              const acc = connected ? "34,197,94" : conn.state === "DEPLOYING" ? "245,158,11" : "139,92,246";
+              return (
+                <div style={{ position: "relative", width: "38px", height: "38px", borderRadius: "11px", background: `rgba(${acc},0.12)`, border: `1px solid rgba(${acc},0.28)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                  {mtIcon(`rgb(${acc})`)}
+                  <div style={{ position: "absolute", bottom: "-3px", right: "-3px", width: "12px", height: "12px", borderRadius: "50%", background: connected ? "#22c55e" : conn.state === "DEPLOYING" ? "#F59E0B" : "#6B7280", border: "2px solid #0a0612", boxShadow: connected ? "0 0 8px #22c55e" : "none" }} />
+                </div>
+              );
+            })()}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "14px" }}>
+                <span style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "14px" }}>
                   {conn.connected ? `MT${conn.platform === "mt5" ? "5" : "4"} · ${conn.login} · ${conn.server}` : "MetaTrader · Not connected"}
                 </span>
                 <StateTag state={conn.state} connectionStatus={conn.connectionStatus} />
@@ -404,16 +423,17 @@ export default function MetaConnect({ isSubscribed }: { isSubscribed: boolean })
 
         {/* Account Stats */}
         {account && (
-          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(110px, 1fr))", gap: "10px" }}>
+          <div style={{ marginTop: "16px", display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))", gap: "10px", position: "relative", zIndex: 1 }}>
             {[
-              { label: "Balance",     value: `${account.balance.toFixed(2)} ${account.currency}`,     color: "#F9FAFB" },
-              { label: "Equity",      value: `${account.equity.toFixed(2)} ${account.currency}`,      color: account.equity >= account.balance ? "#22c55e" : "#ef4444" },
-              { label: "Margin",      value: `${account.margin.toFixed(2)} ${account.currency}`,      color: "#F59E0B" },
-              { label: "Free Margin", value: `${account.freeMargin.toFixed(2)} ${account.currency}`,  color: "#9CA3AF" },
+              { label: "Balance",     value: `${account.balance.toFixed(2)} ${account.currency}`,     color: "#F9FAFB", acc: "139,92,246" },
+              { label: "Equity",      value: `${account.equity.toFixed(2)} ${account.currency}`,      color: account.equity >= account.balance ? "#22c55e" : "#ef4444", acc: account.equity >= account.balance ? "34,197,94" : "239,68,68" },
+              { label: "Margin",      value: `${account.margin.toFixed(2)} ${account.currency}`,      color: "#F59E0B", acc: "245,158,11" },
+              { label: "Free Margin", value: `${account.freeMargin.toFixed(2)} ${account.currency}`,  color: "#9CA3AF", acc: "139,92,246" },
             ].map(s => (
-              <div key={s.label} style={{ backgroundColor: "#0d1117", border: "1px solid #1F2937", borderRadius: "10px", padding: "10px 12px" }}>
-                <p style={{ color: "#6B7280", fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: "4px" }}>{s.label}</p>
-                <p style={{ color: s.color, fontWeight: 700, fontSize: "14px" }}>{s.value}</p>
+              <div key={s.label} style={{ position: "relative", overflow: "hidden", background: "linear-gradient(145deg, #0f0f18, #090909)", border: "1px solid rgba(255,255,255,0.06)", borderRadius: "12px", padding: "11px 14px" }}>
+                <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "3px", background: `rgb(${s.acc})` }} />
+                <p style={{ color: "#6B7280", fontSize: "9.5px", textTransform: "uppercase", letterSpacing: "0.06em", fontWeight: 700, marginBottom: "5px" }}>{s.label}</p>
+                <p style={{ color: s.color, fontWeight: 800, fontSize: "16px", lineHeight: 1, letterSpacing: "-0.01em", fontVariantNumeric: "tabular-nums" }}>{s.value}</p>
               </div>
             ))}
           </div>
