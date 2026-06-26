@@ -19,6 +19,7 @@ const slides: Slide[] = [
     path: "/dashboard",
     description: "Performance overview — stats, equity curve, MT5 sync and more at a glance",
     image: "/screenshots/ss-dashboard-v2.png",
+    scrollable: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
         <rect x="3" y="3" width="7" height="9" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
@@ -34,6 +35,7 @@ const slides: Slide[] = [
     path: "/dashboard/journal",
     description: "Log every trade with setup, emotions, rules checklist and screenshots",
     image: "/screenshots/ss-journal.png",
+    scrollable: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
         <path d="M6 3h11a2 2 0 012 2v14a2 2 0 01-2 2H6a2 2 0 01-2-2V5a2 2 0 012-2z" stroke="currentColor" strokeWidth="2" strokeLinejoin="round"/>
@@ -55,28 +57,30 @@ const slides: Slide[] = [
     ),
   },
   {
-    id: "calculator",
-    label: "Risk Calculator",
-    path: "/dashboard/calculator",
-    description: "Calculate exact position size, risk amount and R:R ratio for any MT5 instrument",
-    image: "/screenshots/ss-calculator.png",
+    id: "calendar",
+    label: "Market Calendar",
+    path: "/dashboard/calendar",
+    description: "Market sessions, holidays and your trading days as a live P&L heatmap — one trading calendar",
+    image: "/screenshots/ss-calendar.png",
+    scrollable: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
-        <path d="M9 7h6M8 12h2M14 12h2M8 16h2M14 16h2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+        <rect x="3" y="4" width="18" height="18" rx="2" stroke="currentColor" strokeWidth="2"/>
+        <path d="M16 2v4M8 2v4M3 10h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
       </svg>
     ),
   },
   {
-    id: "drawdown",
-    label: "Drawdown Tool",
-    path: "/dashboard/drawdown",
-    description: "Know exactly how much you need to recover from any drawdown — and how long it takes",
-    image: "/screenshots/ss-drawdown.png",
+    id: "checklist",
+    label: "Trade Checklist",
+    path: "/dashboard/checklist",
+    description: "Your pre / during / post-trade routine — stay disciplined with a checklist for every trade",
+    image: "/screenshots/ss-checklist.png",
+    scrollable: true,
     icon: (
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-        <path d="M3 6l5 5 4-4 9 9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-        <path d="M21 16v4h-4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M9 11l3 3L22 4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
     ),
   },
