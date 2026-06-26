@@ -62,6 +62,8 @@ const features = [
   },
 ];
 
+import ScrollReveal from "@/components/ScrollReveal";
+
 export default function DifferentiatorSection() {
   return (
     <section
@@ -74,6 +76,7 @@ export default function DifferentiatorSection() {
         style={{ maxWidth: "1200px" }}
       >
         {/* Header */}
+        <ScrollReveal>
         <div className="text-center mb-16" style={{ maxWidth: "680px", margin: "0 auto 64px" }}>
           <div className="inline-flex items-center gap-3 mb-5">
             <span
@@ -113,16 +116,17 @@ export default function DifferentiatorSection() {
             No templates. No compromises. Just your rules, your setups, your data.
           </p>
         </div>
+        </ScrollReveal>
 
         {/* 2x2 Feature Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {features.map((f, i) => (
+            <ScrollReveal key={i} delay={i * 80}>
             <div
-              key={i}
               className="card-hover rounded-2xl p-8 flex flex-col gap-5 transition-all duration-200"
               style={{
                 backgroundColor: "#000000",
-                border: "1px solid #1F2937",
+                border: "1px solid rgba(139,92,246,0.15)",
               }}
             >
               <div
@@ -154,6 +158,7 @@ export default function DifferentiatorSection() {
                 </p>
               </div>
             </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

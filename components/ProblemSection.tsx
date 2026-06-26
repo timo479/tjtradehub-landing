@@ -61,6 +61,8 @@ const problems = [
   },
 ];
 
+import ScrollReveal from "@/components/ScrollReveal";
+
 export default function ProblemSection() {
   return (
     <section
@@ -72,6 +74,7 @@ export default function ProblemSection() {
         style={{ maxWidth: "1200px" }}
       >
         {/* Centered Headline */}
+        <ScrollReveal>
         <div className="text-center mb-16" style={{ maxWidth: "720px", margin: "0 auto 64px" }}>
           <div className="inline-flex items-center gap-3 mb-5">
             <span
@@ -111,16 +114,17 @@ export default function ProblemSection() {
             A generic journal records what happened. TJ TradeHub tracks whether it should have happened — based on your rules.
           </p>
         </div>
+        </ScrollReveal>
 
         {/* 4-Card Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {problems.map((p, i) => (
+            <ScrollReveal key={i} delay={i * 80}>
             <div
-              key={i}
               className="card-hover rounded-2xl p-6 flex flex-col gap-4 transition-all duration-200"
               style={{
                 backgroundColor: "#111827",
-                border: "1px solid #1F2937",
+                border: "1px solid rgba(139,92,246,0.15)",
               }}
             >
               <div
@@ -141,6 +145,7 @@ export default function ProblemSection() {
                 </p>
               </div>
             </div>
+            </ScrollReveal>
           ))}
         </div>
       </div>

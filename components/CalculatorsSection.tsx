@@ -91,12 +91,8 @@ export default function CalculatorsSection() {
           {TOOLS.map((tool) => (
             <div
               key={tool.id}
-              className="flex flex-col rounded-2xl overflow-hidden"
-              style={{
-                backgroundColor: "#0d0d14",
-                border: "1px solid rgba(139,92,246,0.2)",
-                boxShadow: "0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.05)",
-              }}
+              className="flex flex-col rounded-2xl overflow-hidden calc-card"
+              style={{ backgroundColor: "#0d0d14" }}
             >
               {/* Top accent */}
               <div style={{ height: "2px", background: "linear-gradient(90deg, #7C3AED, #A78BFA, #7C3AED)" }} />

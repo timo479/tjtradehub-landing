@@ -244,6 +244,8 @@ export default function ChartsVideoSection() {
                 borderRadius: "14px",
                 boxShadow: "0 8px 24px rgba(139,92,246,0.35)",
               }}
+              onMouseEnter={(e) => { const b = e.currentTarget; b.style.transform = "translateY(-2px) scale(1.02)"; b.style.boxShadow = "0 16px 50px rgba(139,92,246,0.65)"; }}
+              onMouseLeave={(e) => { const b = e.currentTarget; b.style.transform = "none"; b.style.boxShadow = "0 8px 24px rgba(139,92,246,0.35)"; }}
             >
               Start Free Forever
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">

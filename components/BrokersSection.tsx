@@ -26,12 +26,7 @@ export default function BrokersSection() {
 
   const Chip = ({ name }: { name: string }) => (
     <span
-      className="text-sm font-medium px-5 py-2.5 rounded-full whitespace-nowrap transition-colors duration-200"
-      style={{
-        backgroundColor: "rgba(255,255,255,0.02)",
-        border: "1px solid rgba(139,92,246,0.18)",
-        color: "#E5E7EB",
-      }}
+      className="text-sm font-medium px-5 py-2.5 rounded-full whitespace-nowrap brokers-chip"
     >
       {name}
     </span>

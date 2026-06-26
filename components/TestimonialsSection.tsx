@@ -28,6 +28,8 @@ const testimonials = [
   },
 ];
 
+import ScrollReveal from "@/components/ScrollReveal";
+
 export default function TestimonialsSection() {
   return (
     <section
@@ -36,6 +38,7 @@ export default function TestimonialsSection() {
     >
       <div className="mx-auto px-6" style={{ maxWidth: "1200px" }}>
         {/* Header */}
+        <ScrollReveal>
         <div
           className="text-center mb-16"
           style={{ maxWidth: "580px", margin: "0 auto 64px" }}
@@ -54,16 +57,17 @@ export default function TestimonialsSection() {
             <span style={{ color: "#8B5CF6" }}>Real Accountability.</span>
           </h2>
         </div>
+        </ScrollReveal>
 
         {/* Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
           {testimonials.map((t, i) => (
+            <ScrollReveal key={i} delay={i * 80}>
             <div
-              key={i}
               className="card-hover rounded-2xl p-8 flex flex-col gap-6 transition-all duration-200 hover:-translate-y-1.5"
               style={{
-                backgroundColor: "#111827",
-                border: "1px solid #1F2937",
+                backgroundColor: "#0a0a0a",
+                border: "1px solid rgba(139,92,246,0.15)",
               }}
             >
               {/* Stars */}
@@ -108,6 +112,7 @@ export default function TestimonialsSection() {
                 </div>
               </div>
             </div>
+            </ScrollReveal>
           ))}
         </div>
         <p className="text-center text-xs" style={{ color: "#4B5563" }}>

@@ -1,3 +1,5 @@
+import ScrollReveal from "@/components/ScrollReveal";
+
 export default function MT5Section() {
   const bullets = [
     {
@@ -22,7 +24,7 @@ export default function MT5Section() {
     <section
       id="features"
       className="relative overflow-hidden py-16 md:py-[120px]"
-      style={{ backgroundColor: "#111827" }}
+      style={{ backgroundColor: "#000000" }}
     >
       {/* Background photo */}
       <div
@@ -39,7 +41,7 @@ export default function MT5Section() {
         className="absolute inset-0 pointer-events-none"
         style={{
           background:
-            "linear-gradient(90deg, rgba(17,24,39,0.94) 0%, rgba(17,24,39,0.80) 45%, rgba(17,24,39,0.70) 100%)",
+            "linear-gradient(90deg, rgba(0,0,0,0.94) 0%, rgba(0,0,0,0.78) 45%, rgba(0,0,0,0.64) 100%)",
           zIndex: 0,
         }}
       />
@@ -51,6 +53,7 @@ export default function MT5Section() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-16 items-center">
           {/* Left: Text */}
           <div className="flex flex-col gap-8">
+            <ScrollReveal>
             <div>
               <p
                 className="text-sm font-semibold uppercase tracking-widest mb-4"
@@ -63,7 +66,7 @@ export default function MT5Section() {
                 style={{ color: "#F9FAFB" }}
               >
                 Connect Once.{" "}
-                <span style={{ color: "#8B5CF6" }}>Never Enter a Trade Manually Again.</span>
+                <span style={{ background: "linear-gradient(100deg, #8B5CF6, #C4B5FD 50%, #8B5CF6)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Never Enter a Trade Manually Again.</span>
               </h2>
               <p
                 className="mt-4 text-lg leading-relaxed"
@@ -72,10 +75,12 @@ export default function MT5Section() {
                 Link your MT4 or MT5 account and every trade lands in your journal automatically. All you do is review it — and decide if you followed your rules.
               </p>
             </div>
+            </ScrollReveal>
 
             <ul className="flex flex-col gap-6">
               {bullets.map((b, i) => (
-                <li key={i} className="flex gap-4">
+                <ScrollReveal key={i} delay={i * 80}>
+                <li className="flex gap-4">
                   <div
                     className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
                     style={{ backgroundColor: "rgba(139, 92, 246, 0.15)" }}
@@ -107,6 +112,7 @@ export default function MT5Section() {
                     </p>
                   </div>
                 </li>
+                </ScrollReveal>
               ))}
             </ul>
           </div>
@@ -126,6 +132,7 @@ export default function MT5Section() {
               />
 
               {/* MT5 Source Card */}
+              <ScrollReveal>
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
@@ -170,8 +177,10 @@ export default function MT5Section() {
                   </div>
                 </div>
               </div>
+              </ScrollReveal>
 
               {/* Sync Indicator */}
+              <ScrollReveal delay={250}>
               <div className="relative flex items-center justify-center py-3">
                 {/* Animated dots line */}
                 <div className="flex flex-col items-center gap-1.5">
@@ -192,8 +201,10 @@ export default function MT5Section() {
                   </span>
                 </div>
               </div>
+              </ScrollReveal>
 
               {/* TJ TradeHub Result Card */}
+              <ScrollReveal delay={500}>
               <div
                 className="relative rounded-2xl overflow-hidden"
                 style={{
@@ -242,6 +253,7 @@ export default function MT5Section() {
                   </div>
                 </div>
               </div>
+              </ScrollReveal>
             </div>
           </div>
         </div>

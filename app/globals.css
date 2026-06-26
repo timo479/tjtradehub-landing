@@ -483,6 +483,32 @@ html.dashboard-light .trial-banner {
   transform: translateY(0);
 }
 
+/* Brokers marquee chip — hover state */
+.brokers-chip {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(139,92,246,0.18);
+  color: #E5E7EB;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+.brokers-chip:hover {
+  border-color: rgba(139,92,246,0.5);
+  background: rgba(139,92,246,0.08);
+  color: #F9FAFB;
+  transform: translateY(-1px);
+}
+
+/* Calculator tool cards — hover state */
+.calc-card {
+  border: 1px solid rgba(139,92,246,0.2);
+  box-shadow: 0 24px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(139,92,246,0.05);
+  transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+}
+.calc-card:hover {
+  border-color: rgba(139,92,246,0.5);
+  box-shadow: 0 28px 70px rgba(0,0,0,0.6), 0 0 44px rgba(139,92,246,0.16);
+  transform: translateY(-4px);
+}
+
 @media (prefers-reduced-motion: reduce) {
   .scroll-reveal {
     opacity: 1;
