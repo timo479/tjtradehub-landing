@@ -102,21 +102,6 @@ export default function DashboardHeader({
 
   return (
     <header style={headerStyle ?? defaultStyle} className="px-6 py-4">
-      {/* Animated gradient glow line at bottom edge */}
-      <div
-        style={{
-          position: "absolute",
-          bottom: 0,
-          left: 0,
-          right: 0,
-          height: 1,
-          background: "linear-gradient(90deg, transparent, rgba(139,92,246,0.6) 20%, rgba(99,102,241,0.6) 50%, rgba(139,92,246,0.6) 80%, transparent)",
-          backgroundSize: "200% 100%",
-          animation: "glowLine 6s linear infinite",
-          opacity: 0.7,
-          pointerEvents: "none",
-        }}
-      />
 
       {/* Main row */}
       <div className="mx-auto flex items-center justify-between" style={{ maxWidth: "1200px" }}>
@@ -348,10 +333,6 @@ export default function DashboardHeader({
         @keyframes soonPulse {
           0%, 100% { box-shadow: 0 0 10px rgba(139,92,246,0.4); }
           50% { box-shadow: 0 0 18px rgba(139,92,246,0.75); }
-        }
-        @keyframes glowLine {
-          0% { background-position: 200% 0; }
-          100% { background-position: -200% 0; }
         }
         .logo-link span { transition: text-shadow 0.3s ease; }
         .logo-link:hover span { text-shadow: 0 0 18px rgba(139,92,246,0.6); }
