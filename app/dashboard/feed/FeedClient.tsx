@@ -14,24 +14,23 @@ const IMPACT_LABEL: Record<string, string> = {
   low: "LOW",
 };
 
-const SYMBOL_ICON: Record<string, string> = {
-  EURUSD: "🇪🇺/🇺🇸",
-  GBPUSD: "🇬🇧/🇺🇸",
-  USDJPY: "🇺🇸/🇯🇵",
-  USDCHF: "🇺🇸/🇨🇭",
-  USDCAD: "🇺🇸/🇨🇦",
-  AUDUSD: "🇦🇺/🇺🇸",
-  NZDUSD: "🇳🇿/🇺🇸",
-  XAUUSD: "🥇",
-  XAGUSD: "🥈",
-  USOIL: "🛢️",
-  BTCUSD: "₿",
-  ETHUSD: "Ξ",
-  DXY: "💵",
-  SPX: "📈",
-  NAS100: "💻",
-  US30: "🏛️",
+// Clean display labels (no emoji). FX pairs auto-format to EUR/USD.
+const SYMBOL_LABEL: Record<string, string> = {
+  XAUUSD: "Gold",
+  XAGUSD: "Silver",
+  USOIL: "Oil",
+  BTCUSD: "BTC",
+  ETHUSD: "ETH",
+  DXY: "DXY",
+  SPX: "S&P 500",
+  NAS100: "Nasdaq",
+  US30: "Dow",
 };
+function symLabel(s: string): string {
+  if (SYMBOL_LABEL[s]) return SYMBOL_LABEL[s];
+  if (/^[A-Z]{6}$/.test(s)) return `${s.slice(0, 3)}/${s.slice(3)}`;
+  return s;
+}
 
 const ALLOWED_SYMBOLS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
@@ -160,9 +159,20 @@ function HeroCard({ post, onClick }: { post: FeedPost; onClick: () => void }) {
       </h2>
 
       {/* Body */}
-      <p style={{ color: "#9CA3AF", fontSize: "14px", lineHeight: 1.72, margin: "0 0 22px", maxWidth: "740px" }}>
+      <p style={{ color: "#9CA3AF", fontSize: "14px", lineHeight: 1.72, margin: "0 0 16px", maxWidth: "740px" }}>
         {bodyPreview}
       </p>
+
+      {/* Scenario teaser — surfaces the AI value */}
+      {post.scenarios.length > 0 && (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: "11px", padding: "12px 14px", marginBottom: "20px", borderRadius: "12px", background: "rgba(139,92,246,0.06)", border: "1px solid rgba(139,92,246,0.18)", borderLeft: "3px solid rgba(139,92,246,0.7)" }}>
+          <span style={{ fontSize: "9px", fontWeight: 800, letterSpacing: "0.1em", color: "#A78BFA", background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)", borderRadius: "5px", padding: "3px 7px", flexShrink: 0, textTransform: "uppercase", marginTop: "1px" }}>Scenario</span>
+          <span style={{ color: "#C4B5FD", fontSize: "13px", lineHeight: 1.5, fontWeight: 500, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+            {post.scenarios[0].if}
+            {post.scenarios.length > 1 && <span style={{ color: "#6B7280", fontWeight: 400 }}>{"  ·  +"}{post.scenarios.length - 1} more</span>}
+          </span>
+        </div>
+      )}
 
       {/* Symbols + CTA */}
       <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
@@ -172,7 +182,7 @@ function HeroCard({ post, onClick }: { post: FeedPost; onClick: () => void }) {
             background: "rgba(255,255,255,0.05)", color: "#D1D5DB",
             border: "1px solid rgba(255,255,255,0.1)", fontWeight: 500,
           }}>
-            {SYMBOL_ICON[s] ?? ""} {s}
+            {symLabel(s)}
           </span>
         ))}
         <span style={{
@@ -243,7 +253,7 @@ function RegularCard({ post, onClick }: { post: FeedPost; onClick: () => void })
               background: "rgba(255,255,255,0.05)", color: "#9CA3AF",
               border: "1px solid rgba(255,255,255,0.08)",
             }}>
-              {SYMBOL_ICON[s] ? `${SYMBOL_ICON[s]} ` : ""}{s}
+              {symLabel(s)}
             </span>
           ))}
           {post.symbols.length > 4 && (
@@ -326,7 +336,7 @@ function DetailModal({ post, onClose }: { post: FeedPost; onClose: () => void })
             color, fontSize: "11px", fontWeight: 800, letterSpacing: "0.1em",
             marginBottom: "16px", boxShadow: `0 0 18px ${color}18`,
           }}>
-            {post.impact === "high" ? "🔴" : post.impact === "medium" ? "🟠" : "🟡"} {IMPACT_LABEL[post.impact]} IMPACT
+            <span style={{ width: "7px", height: "7px", borderRadius: "50%", background: color, boxShadow: `0 0 8px ${color}` }} /> {IMPACT_LABEL[post.impact]} IMPACT
           </div>
 
           {/* Title */}
@@ -346,7 +356,7 @@ function DetailModal({ post, onClose }: { post: FeedPost; onClose: () => void })
                 background: "rgba(255,255,255,0.06)", color: "#D1D5DB",
                 border: "1px solid rgba(255,255,255,0.1)",
               }}>
-                {SYMBOL_ICON[s] ? `${SYMBOL_ICON[s]} ` : ""}{s}
+                {symLabel(s)}
               </span>
             ))}
             <span style={{ fontSize: "12px", color: "#4B5563", marginLeft: "auto" }}>
@@ -410,8 +420,10 @@ function DetailModal({ post, onClose }: { post: FeedPost; onClose: () => void })
             padding: "12px 16px",
             background: "rgba(234,179,8,0.07)", border: "1px solid rgba(234,179,8,0.22)",
             borderRadius: "10px", color: "#CA8A04", fontSize: "12px", fontWeight: 600, letterSpacing: "0.01em",
+            display: "flex", alignItems: "flex-start", gap: "9px",
           }}>
-            ⚠️ {post.disclaimer}
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, marginTop: "1px" }}><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" /><line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" /></svg>
+            <span>{post.disclaimer}</span>
           </div>
         </div>
       </div>
@@ -555,7 +567,7 @@ export default function FeedClient() {
                 boxShadow: symbol ? "0 0 16px rgba(139,92,246,0.2)" : "none",
               }}
             >
-              <span>{symbol ? `${SYMBOL_ICON[symbol] ?? ""} ${symbol}` : "All Symbols"}</span>
+              <span>{symbol ? symLabel(symbol) : "All Symbols"}</span>
               <span style={{ fontSize: "9px", opacity: 0.5 }}>▾</span>
             </button>
 
@@ -602,8 +614,8 @@ export default function FeedClient() {
                     onMouseEnter={e => { if (symbol !== s) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.05)"; }}
                     onMouseLeave={e => { if (symbol !== s) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}
                   >
-                    <span style={{ fontSize: "14px" }}>{SYMBOL_ICON[s] ?? "·"}</span>
-                    <span>{s}</span>
+                    <span style={{ width: "5px", height: "5px", borderRadius: "50%", background: symbol === s ? "#A78BFA" : "rgba(255,255,255,0.2)", flexShrink: 0 }} />
+                    <span>{symLabel(s)}</span>
                   </button>
                 ))}
               </div>
@@ -613,9 +625,10 @@ export default function FeedClient() {
           <div style={{ flex: 1 }} />
 
           {/* Live indicator */}
-          <div style={{ display: "flex", alignItems: "center", gap: "6px", flexShrink: 0 }}>
-            <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block", animation: "pulsedot 2s infinite", boxShadow: "0 0 8px #22C55E" }} />
-            <span style={{ fontSize: "12px", color: "#374151", fontWeight: 500 }}>AI-curated · Live</span>
+          <div style={{ display: "flex", alignItems: "center", gap: "7px", flexShrink: 0, padding: "5px 12px", borderRadius: "20px", background: "rgba(34,197,94,0.1)", border: "1px solid rgba(34,197,94,0.28)" }}>
+            <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22C55E", display: "inline-block", animation: "pulsedot 2s infinite", boxShadow: "0 0 8px #22C55E" }} />
+            <span style={{ fontSize: "11px", color: "#22C55E", fontWeight: 800, letterSpacing: "0.08em" }}>LIVE</span>
+            <span style={{ fontSize: "11px", color: "#6B7280", fontWeight: 500 }}>· AI-curated</span>
           </div>
         </div>
       </div>
@@ -633,8 +646,10 @@ export default function FeedClient() {
           textAlign: "center", padding: "80px 0", color: "#4B5563", fontSize: "15px",
           border: "1px dashed rgba(255,255,255,0.07)", borderRadius: "18px",
         }}>
-          <div style={{ fontSize: "36px", marginBottom: "14px" }}>📭</div>
-          No insights for this filter. Check back later.
+          <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", width: "52px", height: "52px", borderRadius: "14px", background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.06)", marginBottom: "16px" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#4B5563" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22 6 12 13 2 6" /></svg>
+          </div>
+          <div>No insights for this filter. Check back later.</div>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
