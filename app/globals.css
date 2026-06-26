@@ -90,8 +90,8 @@ body {
 /* ── Scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar { width: 5px; height: 5px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: #8B5CF6; border-radius: 3px; }
-::-webkit-scrollbar-thumb:hover { background: #7C3AED; }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.65); }
 
 /* ── Dashboard Light Mode ──────────────────────────────── */
 html.dashboard-light body {
