@@ -265,45 +265,65 @@ export default function ChecklistClient({ userId }: { userId: string }) {
     );
   }
 
-  return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+  // ── Premium tokens ──
+  const cardBg = "linear-gradient(145deg, #110c1e, #080808)";
+  const cardBorder = "1px solid rgba(255,255,255,0.06)";
+  const cardShadow = "0 4px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.04)";
+  const accentOf = (c: string) => (c === "#8B5CF6" ? "139,92,246" : c === "#F59E0B" ? "245,158,11" : "16,185,129");
+  const done = progress === 100 && totalItems > 0;
+  const ringColor = done ? "#10B981" : "#8B5CF6";
+  const rSz = 78, rR = 32, rSw = 7, rCirc = 2 * Math.PI * rR, rOff = rCirc * (1 - progress / 100);
 
-      {/* ── Header ── */}
-      <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", flexWrap: "wrap", gap: "16px" }}>
-        <div>
-          <h1 style={{ fontSize: "24px", fontWeight: 700, color: "#F9FAFB", fontFamily: "'Space Grotesk', sans-serif", marginBottom: 4 }}>
-            Trade Checklist
-          </h1>
-          <p style={{ color: "#6B7280", fontSize: "14px" }}>
-            {checkedCount} of {totalItems} steps completed
-          </p>
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+      <style>{`
+        @keyframes clIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes clPop { 0% { transform: scale(0); } 60% { transform: scale(1.25); } 100% { transform: scale(1); } }
+        @keyframes clGrowX { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+        @keyframes clRing { from { stroke-dashoffset: ${rCirc}; } }
+        @keyframes clSpin { to { transform: rotate(360deg); } }
+        @media (prefers-reduced-motion: reduce) { [style*="animation"] { animation: none !important; } }
+      `}</style>
+
+      {/* ── Hero ── */}
+      <div style={{ position: "relative", overflow: "hidden", background: cardBg, border: done ? "1px solid rgba(16,185,129,0.25)" : "1px solid rgba(139,92,246,0.22)", borderRadius: "18px", boxShadow: cardShadow, padding: "22px 26px", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "20px", animation: "clIn 0.5s cubic-bezier(.22,1,.36,1) both" }}>
+        <div style={{ position: "absolute", top: "-50%", left: "8%", width: "380px", height: "220px", background: `radial-gradient(ellipse, rgba(${done ? "16,185,129" : "139,92,246"},0.1), transparent 70%)`, pointerEvents: "none" }} />
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", position: "relative", zIndex: 1 }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "13px", background: `rgba(${done ? "16,185,129" : "139,92,246"},0.12)`, border: `1px solid rgba(${done ? "16,185,129" : "139,92,246"},0.28)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={done ? "#34D399" : "#A78BFA"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4" /><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" /></svg>
+          </div>
+          <div>
+            <h1 style={{ fontSize: "24px", fontWeight: 800, color: "#F9FAFB", letterSpacing: "-0.02em", lineHeight: 1.1, margin: 0 }}>Trade Checklist</h1>
+            <p style={{ color: "#9CA3AF", fontSize: "13px", marginTop: "3px" }}>{done ? "All steps complete — trade with discipline." : `${checkedCount} of ${totalItems} steps completed`}</p>
+          </div>
         </div>
-        <button
-          onClick={reset}
-          style={{
-            padding: "8px 16px",
-            background: "rgba(255,255,255,0.04)",
-            border: "1px solid rgba(255,255,255,0.08)",
-            borderRadius: "8px",
-            color: "#9CA3AF",
-            fontSize: "13px",
-            cursor: "pointer",
-            fontFamily: "Inter, sans-serif",
-          }}
-        >
-          Reset Session
-        </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", position: "relative", zIndex: 1 }}>
+          {/* completion ring */}
+          <div style={{ position: "relative", width: rSz, height: rSz }}>
+            <svg width={rSz} height={rSz} viewBox={`0 0 ${rSz} ${rSz}`}>
+              <circle cx={rSz / 2} cy={rSz / 2} r={rR} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth={rSw} />
+              <circle cx={rSz / 2} cy={rSz / 2} r={rR} fill="none" stroke={ringColor} strokeWidth={rSw} strokeLinecap="round"
+                strokeDasharray={rCirc} strokeDashoffset={rOff} transform={`rotate(-90 ${rSz / 2} ${rSz / 2})`}
+                style={{ transition: "stroke-dashoffset 0.5s cubic-bezier(.22,1,.36,1), stroke 0.3s", filter: `drop-shadow(0 0 5px ${ringColor}88)` }} />
+            </svg>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ color: "#F9FAFB", fontWeight: 800, fontSize: "20px", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>{progress}%</span>
+            </div>
+          </div>
+          <button onClick={reset} style={{ padding: "9px 16px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", borderRadius: "10px", color: "#9CA3AF", fontSize: "13px", cursor: "pointer" }}>Reset</button>
+        </div>
       </div>
 
       {/* ── Progress bar ── */}
-      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 100, height: 6, overflow: "hidden" }}>
+      <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 100, height: 7, overflow: "hidden" }}>
         <div
           style={{
             height: "100%",
             width: `${progress}%`,
-            background: progress === 100 ? "linear-gradient(90deg, #10B981, #34D399)" : "linear-gradient(90deg, #8B5CF6, #A78BFA)",
+            background: done ? "linear-gradient(90deg, #10B981, #34D399)" : "linear-gradient(90deg, #8B5CF6, #A78BFA)",
             borderRadius: 100,
-            transition: "width 0.3s ease",
+            boxShadow: `0 0 12px ${done ? "rgba(16,185,129,0.6)" : "rgba(139,92,246,0.6)"}`,
+            transition: "width 0.4s cubic-bezier(.22,1,.36,1), background 0.3s",
           }}
         />
       </div>
@@ -391,28 +411,46 @@ export default function ChecklistClient({ userId }: { userId: string }) {
 
       {/* ── Phase cards ── */}
       <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-        {PHASES.map(({ key: phase, label, color, icon }) => {
+        {PHASES.map(({ key: phase, label, color, icon }, pi) => {
           const phaseItems = items.filter((i) => i.phase === phase).sort((a, b) => a.sort_order - b.sort_order);
           const phaseChecked = phaseItems.filter((i) => checked[i.id]).length;
+          const phasePct = phaseItems.length ? Math.round((phaseChecked / phaseItems.length) * 100) : 0;
+          const acc = accentOf(color);
+          const phaseDone = phaseItems.length > 0 && phaseChecked === phaseItems.length;
 
           return (
             <div
               key={phase}
               style={{
-                background: "rgba(255,255,255,0.02)",
-                border: "1px solid rgba(255,255,255,0.06)",
+                position: "relative",
+                overflow: "hidden",
+                background: cardBg,
+                border: cardBorder,
                 borderRadius: "16px",
-                padding: "24px",
+                boxShadow: cardShadow,
+                padding: "22px 24px",
+                animation: `clIn 0.5s cubic-bezier(.22,1,.36,1) ${pi * 80}ms both`,
               }}
             >
+              {/* accent edge */}
+              <div style={{ position: "absolute", left: 0, top: 0, bottom: 0, width: "3px", background: `linear-gradient(180deg, ${color}, ${color}33)` }} />
               {/* Phase header */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ color, display: "flex", alignItems: "center" }}>{icon}</div>
-                  <span style={{ color: "#F9FAFB", fontWeight: 600, fontSize: "15px" }}>{label}</span>
-                  <span style={{ fontSize: "12px", color: "#4B5563" }}>
-                    {phaseChecked}/{phaseItems.length}
-                  </span>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "12px", marginBottom: "18px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "11px" }}>
+                  <div style={{ width: "34px", height: "34px", borderRadius: "10px", background: `rgba(${acc},0.12)`, border: `1px solid rgba(${acc},0.28)`, color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{icon}</div>
+                  <div>
+                    <div style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "15px", lineHeight: 1.2 }}>{label}</div>
+                    <div style={{ color: "#6B7280", fontSize: "11px", marginTop: "1px" }}>{phaseChecked} / {phaseItems.length} done</div>
+                  </div>
+                </div>
+                {/* phase progress */}
+                <div style={{ display: "flex", alignItems: "center", gap: "9px", flexShrink: 0 }}>
+                  <div style={{ width: "70px", height: "5px", borderRadius: "3px", background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${phasePct}%`, background: color, borderRadius: "3px", transformOrigin: "left", animation: "clGrowX 0.7s cubic-bezier(.22,1,.36,1) both", boxShadow: `0 0 8px ${color}77` }} />
+                  </div>
+                  {phaseDone
+                    ? <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
+                    : <span style={{ color, fontSize: "12px", fontWeight: 800, fontVariantNumeric: "tabular-nums", width: "34px", textAlign: "right" }}>{phasePct}%</span>}
                 </div>
               </div>
 
@@ -421,39 +459,44 @@ export default function ChecklistClient({ userId }: { userId: string }) {
                 {phaseItems.length === 0 && (
                   <p style={{ color: "#4B5563", fontSize: "13px", fontStyle: "italic" }}>No items yet. Add your first rule below.</p>
                 )}
-                {phaseItems.map((item) => (
+                {phaseItems.map((item, ii) => (
                   <div
                     key={item.id}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = `rgba(${acc},0.35)`; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.borderColor = checked[item.id] ? `rgba(${acc},0.25)` : "rgba(255,255,255,0.05)"; }}
                     style={{
                       display: "flex",
                       alignItems: "center",
                       gap: "12px",
-                      padding: "10px 12px",
+                      padding: "11px 13px",
                       borderRadius: "10px",
-                      background: checked[item.id] ? "rgba(139,92,246,0.06)" : "rgba(255,255,255,0.02)",
-                      border: `1px solid ${checked[item.id] ? "rgba(139,92,246,0.2)" : "rgba(255,255,255,0.04)"}`,
-                      transition: "all 0.15s ease",
+                      background: checked[item.id] ? `rgba(${acc},0.07)` : "rgba(255,255,255,0.02)",
+                      border: `1px solid ${checked[item.id] ? `rgba(${acc},0.25)` : "rgba(255,255,255,0.05)"}`,
+                      boxShadow: checked[item.id] ? `inset 3px 0 0 ${color}` : "inset 3px 0 0 transparent",
+                      transition: "background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease",
+                      animation: `clIn 0.4s ease ${ii * 35}ms both`,
                     }}
                   >
                     {/* Checkbox */}
                     <button
                       onClick={() => toggleCheck(item.id)}
                       style={{
-                        width: 20,
-                        height: 20,
+                        width: 21,
+                        height: 21,
                         borderRadius: "6px",
-                        border: checked[item.id] ? "none" : "1.5px solid rgba(255,255,255,0.2)",
-                        background: checked[item.id] ? "#8B5CF6" : "transparent",
+                        border: checked[item.id] ? "none" : "1.5px solid rgba(255,255,255,0.22)",
+                        background: checked[item.id] ? color : "transparent",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         cursor: "pointer",
                         flexShrink: 0,
+                        boxShadow: checked[item.id] ? `0 0 10px ${color}66` : "none",
                         transition: "all 0.15s ease",
                       }}
                     >
                       {checked[item.id] && (
-                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "clPop 0.3s cubic-bezier(.22,1.4,.36,1) both" }}>
                           <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
@@ -580,22 +623,28 @@ export default function ChecklistClient({ userId }: { userId: string }) {
       </div>
 
       {/* ── Completion banner ── */}
-      {progress === 100 && totalItems > 0 && (
+      {done && (
         <div
           style={{
+            position: "relative",
+            overflow: "hidden",
             padding: "20px 24px",
-            background: "rgba(16,185,129,0.08)",
-            border: "1px solid rgba(16,185,129,0.25)",
-            borderRadius: "14px",
+            background: "linear-gradient(135deg, rgba(16,185,129,0.14), rgba(16,185,129,0.03) 70%)",
+            border: "1px solid rgba(16,185,129,0.3)",
+            borderRadius: "16px",
+            boxShadow: "0 0 40px rgba(16,185,129,0.12)",
             display: "flex",
             alignItems: "center",
-            gap: "14px",
+            gap: "16px",
+            animation: "clIn 0.5s cubic-bezier(.22,1,.36,1) both",
           }}
         >
-          <div style={{ color: "#10B981", fontSize: "24px" }}>✓</div>
+          <div style={{ width: "46px", height: "46px", borderRadius: "13px", background: "rgba(16,185,129,0.15)", border: "1px solid rgba(16,185,129,0.35)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#34D399" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ animation: "clPop 0.4s cubic-bezier(.22,1.4,.36,1) both" }}><polyline points="20 6 9 17 4 12" /></svg>
+          </div>
           <div>
-            <div style={{ color: "#10B981", fontWeight: 600, fontSize: "15px" }}>All steps completed!</div>
-            <div style={{ color: "#6B7280", fontSize: "13px" }}>You are ready. Trade with discipline.</div>
+            <div style={{ color: "#34D399", fontWeight: 800, fontSize: "16px", letterSpacing: "-0.01em" }}>All steps completed</div>
+            <div style={{ color: "#9CA3AF", fontSize: "13px", marginTop: "2px" }}>You&apos;re ready. Trade with discipline.</div>
           </div>
         </div>
       )}
