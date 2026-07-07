@@ -5,7 +5,7 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-panel";
+type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-feedback" | "admin-panel";
 
 interface Props {
   activePage: ActivePage;
@@ -54,7 +54,33 @@ const ADMIN_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/admin", label: "Admin Panel", key: "admin-panel" },
   { href: "/dashboard/admin/feed", label: "KI Feed", key: "admin-feed" },
   { href: "/dashboard/admin/newsletter", label: "Newsletter", key: "admin-newsletter" },
+  { href: "/dashboard/admin/feedback", label: "Feedback", key: "admin-feedback" },
 ];
+
+function FeedbackCountBadge({ count }: { count: number }) {
+  if (count <= 0) return null;
+  return (
+    <span
+      style={{
+        fontSize: 10,
+        background: "#8B5CF6",
+        color: "#fff",
+        borderRadius: 20,
+        minWidth: 16,
+        height: 16,
+        padding: "0 5px",
+        display: "inline-flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontWeight: 800,
+        lineHeight: 1,
+        boxShadow: "0 0 10px rgba(139,92,246,0.5)",
+      }}
+    >
+      {count > 99 ? "99+" : count}
+    </span>
+  );
+}
 
 export default function DashboardHeader({
   activePage,
@@ -66,6 +92,18 @@ export default function DashboardHeader({
   headerStyle,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [newFeedback, setNewFeedback] = useState(0);
+
+  // Load the "new" feedback count for the admin nav badge.
+  useEffect(() => {
+    if (!isAdmin) return;
+    let cancelled = false;
+    fetch("/api/admin/feedback/count")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => { if (!cancelled && d) setNewFeedback(d.new ?? 0); })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, [isAdmin]);
 
   const navRef = useRef<HTMLElement>(null);
   const itemRefs = useRef<(HTMLAnchorElement | null)[]>([]);
@@ -217,6 +255,7 @@ export default function DashboardHeader({
                       onMouseOut={(e) => { if (!isActive) (e.currentTarget as HTMLElement).style.color = "#78716C"; }}
                     >
                       ⚙ {label}
+                      {key === "admin-feedback" && <FeedbackCountBadge count={newFeedback} />}
                     </Link>
                   );
                 })}
@@ -321,6 +360,7 @@ export default function DashboardHeader({
                     }}
                   >
                     ⚙ {label}
+                    {key === "admin-feedback" && <FeedbackCountBadge count={newFeedback} />}
                   </Link>
                 );
               })}

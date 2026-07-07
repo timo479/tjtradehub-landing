@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { canAccessDashboard, getPlanTier } from "@/lib/trial";
 import ImpersonationBanner from "@/components/ImpersonationBanner";
 import FounderUpgradeModal from "@/components/FounderUpgradeModal";
+import AppDemoTour from "@/components/demo/AppDemoTour";
+import FeedbackBubble from "@/components/feedback/FeedbackBubble";
 
 export default async function DashboardLayout({
   children,
@@ -33,6 +35,11 @@ export default async function DashboardLayout({
       )}
       {children}
       {tier === "basic" && <FounderUpgradeModal />}
+      {/* Product-tour overlay — only activates on ?demo=1 (local recording). Stays
+          mounted across route changes so it can drive the whole app. */}
+      <AppDemoTour />
+      {/* In-app feedback bubble — only for logged-in users (dashboard layout). */}
+      <FeedbackBubble />
     </>
   );
 }
