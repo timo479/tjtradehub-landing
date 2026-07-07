@@ -262,30 +262,39 @@ export default function FeedbackBubble() {
                 onBlur={(e) => (e.currentTarget.style.borderColor = "rgba(255,255,255,0.09)")}
               />
 
+              {/* Live hint: how many more characters are needed. */}
+              {!error && message.trim().length > 0 && message.trim().length < MIN_LEN && (
+                <p style={{ color: "#9CA3AF", fontSize: 11.5, margin: "8px 0 0" }}>
+                  {MIN_LEN - message.trim().length} more character
+                  {MIN_LEN - message.trim().length === 1 ? "" : "s"} needed…
+                </p>
+              )}
+
               {error && (
                 <p style={{ color: "#f87171", fontSize: 11.5, margin: "8px 0 0" }}>{error}</p>
               )}
 
-              {/* Submit */}
+              {/* Submit — stays clickable so an invalid message always gets clear feedback
+                  (a disabled button silently swallows the click → "nothing happens"). */}
               <button
                 type="button"
                 onClick={submit}
-                disabled={!canSend}
+                disabled={sending}
                 style={{
                   width: "100%",
                   marginTop: 12,
                   padding: "11px 0",
                   borderRadius: 10,
                   border: "none",
-                  background: canSend ? VIOLET : "rgba(139,92,246,0.35)",
+                  background: canSend ? VIOLET : "rgba(139,92,246,0.55)",
                   color: "#fff",
                   fontSize: 13.5,
                   fontWeight: 700,
-                  cursor: canSend ? "pointer" : "not-allowed",
+                  cursor: sending ? "wait" : "pointer",
                   fontFamily: "Inter, sans-serif",
                   transition: "background 0.15s ease, filter 0.15s ease",
                 }}
-                onMouseOver={(e) => { if (canSend) e.currentTarget.style.filter = "brightness(1.1)"; }}
+                onMouseOver={(e) => { if (!sending) e.currentTarget.style.filter = "brightness(1.1)"; }}
                 onMouseOut={(e) => (e.currentTarget.style.filter = "none")}
               >
                 {sending ? "Sending…" : "Send Feedback"}
