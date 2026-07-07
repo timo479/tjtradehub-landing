@@ -293,7 +293,7 @@ function WKpi({ entries }: { entries: Trade[] }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "14px", height: "100%" }}>
       {/* Hero: Total P&L + win record */}
-      <div style={{ position: "relative", background: `linear-gradient(135deg, ${pos ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)"}, transparent 70%)`, border: `1px solid ${pos ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, borderRadius: "14px", padding: "16px 18px", overflow: "hidden" }}>
+      <div style={{ position: "relative", flexShrink: 0, background: `linear-gradient(135deg, ${pos ? "rgba(34,197,94,0.12)" : "rgba(239,68,68,0.12)"}, transparent 70%)`, border: `1px solid ${pos ? "rgba(34,197,94,0.25)" : "rgba(239,68,68,0.25)"}`, borderRadius: "14px", padding: "16px 18px", overflow: "hidden" }}>
         <p style={{ color: T.text3, fontSize: "10px", textTransform: "uppercase", letterSpacing: "0.08em", fontWeight: 700, marginBottom: "7px" }}>Total P&amp;L</p>
         <div style={{ display: "flex", alignItems: "baseline", gap: "8px", flexWrap: "wrap" }}>
           <span style={{ fontWeight: 800, fontSize: "30px", lineHeight: 1, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", color: pos ? "#22c55e" : "#ef4444" }}>{fmt(s.total)}</span>
