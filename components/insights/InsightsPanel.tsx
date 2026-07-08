@@ -71,7 +71,19 @@ export default function InsightsPanel({ result, isPro, isDark = true }: { result
     );
   }
 
-  if (result.insights.length === 0) return null;
+  // No significant pattern found. Basic → render nothing (no fake teaser).
+  // Pro/paying → always show the section so it never looks like a missing feature.
+  if (result.insights.length === 0) {
+    if (!isPro) return null;
+    return (
+      <div style={{ background: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 22px" }}>
+        <div style={{ marginBottom: 8 }}><InsightsTitle color={t.text} /></div>
+        <p style={{ color: t.muted, fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+          No strong patterns right now — your trading looks consistent. Keep logging and we&apos;ll surface leaks the moment they appear.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div style={{ background: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 22px" }}>

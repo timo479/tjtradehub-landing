@@ -11,6 +11,8 @@ import TikTokConversion from "@/components/TikTokConversion";
 import MetaConversion from "@/components/MetaConversion";
 import WelcomeWrapper from "@/components/WelcomeWrapper";
 import LotteryWidget from "@/components/lottery/LotteryWidget";
+import RecapCard from "@/components/dashboard/RecapCard";
+import { normalizeTrade, lossFlag } from "@/lib/insights";
 
 export const metadata = {
   title: "Dashboard – TJ TradeHub",
@@ -40,6 +42,18 @@ export default async function DashboardPage() {
   const welcomeShown = userRow?.welcome_shown ?? false;
 
   const allEntries = rawEntries ?? [];
+
+  // Weekly recap (Basic-only): losses in the last 7 days + how many were avoidable.
+  const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
+  const weekTrades = allEntries.flatMap((e) => {
+    // Supabase infers template_fields as an array; runtime is an object — cast to the fn's param type.
+    const n = normalizeTrade(e as Parameters<typeof normalizeTrade>[0]);
+    return n && n.dateMs >= weekAgoMs ? [n] : [];
+  });
+  const weekLosses = weekTrades.filter((t) => !t.isWin);
+  const recapSumLosses = weekLosses.reduce((s, t) => s + Math.abs(t.pnl), 0);
+  const recapFlagged = weekLosses.filter((t) => lossFlag(t) !== null).length;
+  const showRecap = !isPro && weekLosses.length >= 2;
 
   const getPnl = (e: typeof allEntries[0]): number | null => {
     for (const fv of e.trade_field_values ?? []) {
@@ -147,6 +161,11 @@ export default async function DashboardPage() {
               : "Free Basic plan – your journal is yours forever. Upgrade for MT5 Sync."}
           </p>
         </div>
+
+        {/* Weekly recap (Basic, after a losing week) */}
+        {showRecap && (
+          <RecapCard nTrades={weekTrades.length} nLosses={weekLosses.length} sumLosses={recapSumLosses} nFlagged={recapFlagged} />
+        )}
 
         {/* Founder Lottery */}
         <LotteryWidget />

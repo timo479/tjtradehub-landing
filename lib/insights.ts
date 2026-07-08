@@ -144,8 +144,15 @@ function stats(trades: NormalizedTrade[]): Stats {
 }
 
 const MIN_TOTAL = 15;   // data gate: below this, no insights for anyone
-const MIN_SEGMENT = 6;  // a segment (and its complement) needs this many trades
-const MIN_DELTA_PP = 12; // win-rate delta (percentage points) to be worth surfacing
+const MIN_SEGMENT = 5;  // a segment (and its complement) needs this many trades
+const MIN_DELTA_PP = 10; // win-rate delta (percentage points) to be worth surfacing
+
+/** Why a losing trade was avoidable — reused by the weekly recap card. */
+export function lossFlag(t: NormalizedTrade): "rule" | "tilt" | null {
+  if (t.ruleBroken === true) return "rule";
+  if (t.emotions.some(e => NEG_EMOTIONS.some(n => e.includes(n)))) return "tilt";
+  return null;
+}
 
 export interface Insight {
   id: string;
@@ -200,6 +207,9 @@ function fromGroup(
   const best = strongestGroup(groups);
   if (!best || Math.abs(best.deltaPP) < MIN_DELTA_PP) return null;
   const leak = best.deltaPP < 0;
+  // An "edge" must actually make money — a higher win rate on a net-losing
+  // segment (e.g. 10% vs 0%) is not an edge worth bragging about.
+  if (!leak && best.group.netPnl <= 0) return null;
   return {
     id: `${dimension}:${best.label}`,
     dimension,
@@ -221,11 +231,21 @@ function pnlLeak(
   groups: Map<string, NormalizedTrade[]>,
   leakHead: string,
 ): Insight | null {
+  // A leak must be MATERIAL: net-negative AND the segment's avg is meaningfully
+  // worse than the account's own average trade — scale-agnostic, so flat/tiny
+  // accounts don't surface "−$0 avg" noise.
+  const universe: NormalizedTrade[] = [];
+  for (const m of groups.values()) universe.push(...m);
+  const overall = stats(universe);
+  const meanAbs = universe.reduce((s, t) => s + Math.abs(t.pnl), 0) / (universe.length || 1);
+
   let worst: { label: string; g: Stats } | null = null;
   for (const [label, members] of groups) {
     if (members.length < MIN_SEGMENT) continue;
     const g = stats(members);
     if (g.netPnl >= 0) continue; // only real losses
+    if (g.avgPnl > -1) continue; // avg loss rounds to −$0 → nothing worth showing
+    if (overall.avgPnl - g.avgPnl < 0.25 * meanAbs) continue; // not materially worse than average
     if (!worst || g.netPnl < worst.g.netPnl) worst = { label, g };
   }
   if (!worst) return null;
