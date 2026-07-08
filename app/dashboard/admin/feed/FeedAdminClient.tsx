@@ -1,12 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-
-const IMPACT_COLOR: Record<string, string> = {
-  high: "#EF4444",
-  medium: "#F97316",
-  low: "#EAB308",
-};
+import { FeedDetailModal, IMPACT_COLOR, symLabel, timeAgo } from "@/components/feed/FeedDetailModal";
 
 const IMPACT_DOT: Record<string, string> = {
   high: "🔴",
@@ -18,6 +13,9 @@ const ALLOWED_SYMBOLS = [
   "EURUSD","GBPUSD","USDJPY","USDCHF","USDCAD","AUDUSD","NZDUSD",
   "XAUUSD","XAGUSD","USOIL","BTCUSD","ETHUSD","DXY","SPX","NAS100","US30",
 ];
+
+// Keep in sync with FEED_RETENTION_DAYS in app/api/cron/daily/route.ts.
+const RETENTION_DAYS = 7;
 
 interface Scenario { if: string; then: string; }
 
@@ -44,14 +42,11 @@ interface ApiResponse {
   limit: number;
 }
 
-function timeAgo(iso: string) {
-  const diff = Date.now() - new Date(iso).getTime();
-  const mins = Math.floor(diff / 60_000);
-  if (mins < 1) return "just now";
-  if (mins < 60) return `${mins}m ago`;
-  const hrs = Math.floor(mins / 60);
-  if (hrs < 24) return `${hrs}h ago`;
-  return `${Math.floor(hrs / 24)}d ago`;
+// How many days until the daily cron auto-deletes this post (null = published, kept forever).
+function daysUntilDelete(post: FeedPost): number | null {
+  if (post.status === "published") return null;
+  const ageDays = Math.floor((Date.now() - new Date(post.created_at).getTime()) / 86_400_000);
+  return Math.max(0, RETENTION_DAYS - ageDays);
 }
 
 export default function FeedAdminClient() {
@@ -62,12 +57,22 @@ export default function FeedAdminClient() {
   const [loading, setLoading] = useState(false);
   const [filterImpact, setFilterImpact] = useState("");
   const [filterSymbol, setFilterSymbol] = useState("");
+  const [searchInput, setSearchInput] = useState("");
   const [filterSearch, setFilterSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [previewPost, setPreviewPost] = useState<FeedPost | null>(null);
   const [editPost, setEditPost] = useState<FeedPost | null>(null);
   const [editForm, setEditForm] = useState<Partial<FeedPost>>({});
   const [saving, setSaving] = useState(false);
   const [counts, setCounts] = useState({ draft: 0, published: 0, rejected: 0 });
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [bulkBusy, setBulkBusy] = useState(false);
+
+  // Debounce the search box → filterSearch (which the fetch depends on).
+  useEffect(() => {
+    const t = setTimeout(() => { setFilterSearch(searchInput); setPage(1); }, 300);
+    return () => clearTimeout(t);
+  }, [searchInput]);
 
   const fetchCounts = useCallback(async () => {
     const tabs: Array<"draft" | "published" | "rejected"> = ["draft", "published", "rejected"];
@@ -91,16 +96,12 @@ export default function FeedAdminClient() {
     const params = new URLSearchParams({ status: activeTab, page: String(page), limit: "20" });
     if (filterImpact) params.set("impact", filterImpact);
     if (filterSymbol) params.set("symbol", filterSymbol);
+    if (filterSearch) params.set("search", filterSearch);
     try {
       const res = await fetch(`/api/admin/feed/drafts?${params}`);
       if (!res.ok) throw new Error("fetch failed");
       const data: ApiResponse = await res.json();
-      let items = data.items;
-      if (filterSearch) {
-        const q = filterSearch.toLowerCase();
-        items = items.filter(p => p.title.toLowerCase().includes(q) || p.body.toLowerCase().includes(q));
-      }
-      setPosts(items);
+      setPosts(data.items);
       setTotal(data.total);
     } catch {
       setPosts([]);
@@ -110,6 +111,10 @@ export default function FeedAdminClient() {
   }, [activeTab, page, filterImpact, filterSymbol, filterSearch]);
 
   useEffect(() => { fetchPosts(); fetchCounts(); }, [fetchPosts, fetchCounts]);
+
+  // Never carry a selection across a tab/filter/page change — the ids would
+  // point at posts that are no longer on screen.
+  useEffect(() => { setSelected(new Set()); }, [activeTab, page, filterImpact, filterSymbol, filterSearch]);
 
   async function patchPost(id: string, update: Record<string, unknown>) {
     const res = await fetch(`/api/admin/feed/${id}`, {
@@ -131,6 +136,33 @@ export default function FeedAdminClient() {
   async function handleDelete(id: string) {
     if (!confirm("Permanently delete this post?")) return;
     await fetch(`/api/admin/feed/${id}`, { method: "DELETE" });
+    fetchPosts(); fetchCounts();
+  }
+
+  // ── Bulk actions ──────────────────────────────────────────────────────────
+  function toggleSelect(id: string) {
+    setSelected(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+  function toggleSelectAll() {
+    setSelected(prev => prev.size === posts.length ? new Set() : new Set(posts.map(p => p.id)));
+  }
+  async function bulkStatus(status: "published" | "rejected") {
+    setBulkBusy(true);
+    await Promise.all([...selected].map(id => patchPost(id, { status })));
+    setSelected(new Set());
+    setBulkBusy(false);
+    fetchPosts(); fetchCounts();
+  }
+  async function bulkDelete() {
+    if (!confirm(`Permanently delete ${selected.size} post(s)?`)) return;
+    setBulkBusy(true);
+    await Promise.all([...selected].map(id => fetch(`/api/admin/feed/${id}`, { method: "DELETE" })));
+    setSelected(new Set());
+    setBulkBusy(false);
     fetchPosts(); fetchCounts();
   }
 
@@ -175,6 +207,8 @@ export default function FeedAdminClient() {
     transition: "all 0.15s",
   });
 
+  const allSelected = posts.length > 0 && selected.size === posts.length;
+
   return (
     <div>
       {/* Tabs */}
@@ -208,11 +242,43 @@ export default function FeedAdminClient() {
         </select>
         <input
           placeholder="Search title / body…"
-          value={filterSearch}
-          onChange={e => setFilterSearch(e.target.value)}
+          value={searchInput}
+          onChange={e => setSearchInput(e.target.value)}
           style={{ flex: 1, minWidth: "200px", padding: "8px 12px", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.1)", background: "#111", color: "#E5E7EB", fontSize: "14px" }}
         />
       </div>
+
+      {/* Select-all + bulk action bar */}
+      {posts.length > 0 && (
+        <div style={{ display: "flex", alignItems: "center", gap: "14px", marginBottom: "14px", minHeight: "34px" }}>
+          <label style={{ display: "flex", alignItems: "center", gap: "8px", cursor: "pointer", color: "#9CA3AF", fontSize: "13px", userSelect: "none" }}>
+            <input type="checkbox" checked={allSelected} onChange={toggleSelectAll} style={{ width: 16, height: 16, accentColor: "#8B5CF6", cursor: "pointer" }} />
+            {selected.size > 0 ? `${selected.size} selected` : "Select all"}
+          </label>
+
+          {selected.size > 0 && (
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {(activeTab === "draft" || activeTab === "rejected") && (
+                <button onClick={() => bulkStatus("published")} disabled={bulkBusy}
+                  style={bulkBtn("#10B981")}>Publish ({selected.size})</button>
+              )}
+              {activeTab === "draft" && (
+                <button onClick={() => bulkStatus("rejected")} disabled={bulkBusy}
+                  style={bulkBtn("#EF4444")}>Reject ({selected.size})</button>
+              )}
+              {activeTab === "published" && (
+                <button onClick={() => bulkStatus("rejected")} disabled={bulkBusy}
+                  style={bulkBtn("#EF4444")}>Unpublish ({selected.size})</button>
+              )}
+              <button onClick={bulkDelete} disabled={bulkBusy}
+                style={{ ...bulkBtn("transparent"), color: "#EF4444", border: "1px solid rgba(239,68,68,0.4)" }}>
+                Delete ({selected.size})
+              </button>
+              {bulkBusy && <span style={{ color: "#6B7280", fontSize: "13px", alignSelf: "center" }}>Working…</span>}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Posts */}
       {loading ? (
@@ -223,17 +289,28 @@ export default function FeedAdminClient() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {posts.map(post => (
+          {posts.map(post => {
+            const isSelected = selected.has(post.id);
+            const left = daysUntilDelete(post);
+            return (
             <div
               key={post.id}
               style={{
-                background: "rgba(255,255,255,0.03)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                background: isSelected ? "rgba(139,92,246,0.08)" : "rgba(255,255,255,0.03)",
+                border: `1px solid ${isSelected ? "rgba(139,92,246,0.4)" : "rgba(255,255,255,0.08)"}`,
                 borderRadius: "12px",
                 padding: "16px 20px",
+                transition: "background 0.15s, border-color 0.15s",
               }}
             >
               <div style={{ display: "flex", alignItems: "flex-start", gap: "12px" }}>
+                {/* Select checkbox */}
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleSelect(post.id)}
+                  style={{ width: 16, height: 16, accentColor: "#8B5CF6", cursor: "pointer", marginTop: "4px", flexShrink: 0 }}
+                />
                 {/* Impact dot */}
                 <span style={{ fontSize: "18px", flexShrink: 0, marginTop: "2px" }}>{IMPACT_DOT[post.impact]}</span>
                 <div style={{ flex: 1, minWidth: 0 }}>
@@ -245,53 +322,39 @@ export default function FeedAdminClient() {
                       <span key={s} style={{ fontSize: "11px", padding: "2px 8px", borderRadius: "20px", background: "rgba(139,92,246,0.15)", color: "#A78BFA", border: "1px solid rgba(139,92,246,0.3)" }}>{s}</span>
                     ))}
                     <span style={{ fontSize: "12px", color: "#6B7280" }}>{timeAgo(post.created_at)} · {post.source_name}</span>
+                    {left !== null && <DeleteBadge daysLeft={left} />}
                   </div>
                 </div>
                 {/* Actions */}
                 <div style={{ display: "flex", gap: "8px", flexShrink: 0, flexWrap: "wrap" }}>
                   <button
                     onClick={() => setExpandedId(expandedId === post.id ? null : post.id)}
-                    style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}
+                    style={ghostBtn}
                   >
                     {expandedId === post.id ? "Hide" : "Preview"}
                   </button>
                   <button
-                    onClick={() => openEdit(post)}
-                    style={{ padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.1)", background: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px" }}
+                    onClick={() => setPreviewPost(post)}
+                    style={{ ...ghostBtn, color: "#A78BFA", borderColor: "rgba(139,92,246,0.4)" }}
+                    title="Exactly how a subscriber sees it"
                   >
-                    Edit
+                    User view
                   </button>
+                  <button onClick={() => openEdit(post)} style={ghostBtn}>Edit</button>
                   {activeTab === "draft" && (
                     <>
-                      <button
-                        onClick={() => handlePublish(post.id)}
-                        style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#10B981", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
-                      >
-                        Publish ✓
-                      </button>
-                      <button
-                        onClick={() => handleReject(post.id)}
-                        style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#EF4444", color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600 }}
-                      >
-                        Reject ✗
-                      </button>
+                      <button onClick={() => handlePublish(post.id)} style={solidBtn("#10B981")}>Publish ✓</button>
+                      <button onClick={() => handleReject(post.id)} style={solidBtn("#EF4444")}>Reject ✗</button>
                     </>
                   )}
                   {activeTab === "published" && (
-                    <button
-                      onClick={() => handleReject(post.id)}
-                      style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#EF4444", color: "#fff", cursor: "pointer", fontSize: "13px" }}
-                    >
-                      Unpublish
-                    </button>
+                    <button onClick={() => handleReject(post.id)} style={solidBtn("#EF4444", false)}>Unpublish</button>
                   )}
                   {activeTab === "rejected" && (
-                    <button
-                      onClick={() => handlePublish(post.id)}
-                      style={{ padding: "6px 12px", borderRadius: "6px", border: "none", background: "#10B981", color: "#fff", cursor: "pointer", fontSize: "13px" }}
-                    >
-                      Re-publish
-                    </button>
+                    <>
+                      <button onClick={() => handlePublish(post.id)} style={solidBtn("#10B981", false)}>Re-publish</button>
+                      <button onClick={() => handleDelete(post.id)} style={{ ...ghostBtn, color: "#EF4444", borderColor: "rgba(239,68,68,0.3)" }}>Delete</button>
+                    </>
                   )}
                 </div>
               </div>
@@ -317,7 +380,7 @@ export default function FeedAdminClient() {
                 </div>
               )}
             </div>
-          ))}
+          );})}
         </div>
       )}
 
@@ -340,6 +403,14 @@ export default function FeedAdminClient() {
             Next →
           </button>
         </div>
+      )}
+
+      {/* User-view preview (1:1 what a subscriber sees) */}
+      {previewPost && (
+        <FeedDetailModal
+          post={{ ...previewPost, published_at: previewPost.published_at ?? previewPost.created_at }}
+          onClose={() => setPreviewPost(null)}
+        />
       )}
 
       {/* Edit Modal */}
@@ -516,6 +587,40 @@ export default function FeedAdminClient() {
       )}
     </div>
   );
+}
+
+// ── Small presentational helpers ──────────────────────────────────────────────
+
+function DeleteBadge({ daysLeft }: { daysLeft: number }) {
+  const color = daysLeft <= 2 ? "#EF4444" : daysLeft <= 4 ? "#F97316" : "#6B7280";
+  const label = daysLeft === 0 ? "auto-deletes today" : `auto-deletes in ${daysLeft}d`;
+  return (
+    <span style={{
+      fontSize: "11px", fontWeight: 600, padding: "2px 8px", borderRadius: "20px",
+      color, background: `${color}18`, border: `1px solid ${color}44`,
+    }}>
+      ⏳ {label}
+    </span>
+  );
+}
+
+const ghostBtn: React.CSSProperties = {
+  padding: "6px 12px", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.1)",
+  background: "transparent", color: "#9CA3AF", cursor: "pointer", fontSize: "13px",
+};
+
+function solidBtn(bg: string, bold = true): React.CSSProperties {
+  return {
+    padding: "6px 12px", borderRadius: "6px", border: "none", background: bg,
+    color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: bold ? 600 : 400,
+  };
+}
+
+function bulkBtn(bg: string): React.CSSProperties {
+  return {
+    padding: "7px 14px", borderRadius: "7px", border: "none", background: bg,
+    color: "#fff", cursor: "pointer", fontSize: "13px", fontWeight: 600,
+  };
 }
 
 const labelStyle: React.CSSProperties = {

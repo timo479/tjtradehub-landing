@@ -11,6 +11,8 @@ export async function GET(req: NextRequest) {
   const status = searchParams.get("status") ?? "all";
   const impact = searchParams.get("impact");
   const symbol = searchParams.get("symbol");
+  // Strip PostgREST filter meta-chars so a search term can't break the .or() syntax.
+  const search = (searchParams.get("search") ?? "").replace(/[%,()]/g, " ").trim();
   const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10));
   const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") ?? "20", 10)));
   const offset = (page - 1) * limit;
@@ -25,6 +27,10 @@ export async function GET(req: NextRequest) {
   }
   if (symbol) {
     query = query.contains("symbols", [symbol]);
+  }
+  if (search) {
+    // Full-table search across title + body (not just the current page).
+    query = query.or(`title.ilike.%${search}%,body.ilike.%${search}%`);
   }
 
   const { data, error, count } = await query
