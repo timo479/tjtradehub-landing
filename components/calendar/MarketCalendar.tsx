@@ -33,6 +33,28 @@ function daysUntil(dateStr: string) {
   if (diff === 0) return "Today"; if (diff === 1) return "Tomorrow"; return `in ${diff} days`;
 }
 
+// ─── Economic events (ForexFactory feed) ───────────────────────────────────────
+interface EconomicEvent {
+  id: string;
+  title: string;
+  country: string;
+  event_time: string; // ISO UTC
+  impact: "high" | "medium" | "low";
+  forecast: string | null;
+  previous: string | null;
+  feed_post_id: string | null;
+}
+const EVENT_IMPACT_COLOR: Record<string, string> = { high: "#ef4444", medium: "#f97316", low: "#eab308" };
+
+// Events are grouped/labelled in US Eastern to match the ForexFactory feed's day boundaries.
+const ET_DATE_FMT = new Intl.DateTimeFormat("en-CA", { timeZone: "America/New_York", year: "numeric", month: "2-digit", day: "2-digit" });
+const ET_TIME_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", hour: "2-digit", minute: "2-digit", hour12: false });
+const ET_DAY_FMT = new Intl.DateTimeFormat("en-US", { timeZone: "America/New_York", weekday: "short", month: "short", day: "numeric" });
+const etDateKey = (d: Date | string) => ET_DATE_FMT.format(typeof d === "string" ? new Date(d) : d); // YYYY-MM-DD
+const fmtEt = (iso: string) => ET_TIME_FMT.format(new Date(iso));
+const fmtEtDay = (iso: string) => ET_DAY_FMT.format(new Date(iso));
+const fmtLocalTime = (iso: string) => new Date(iso).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false });
+
 // FX sessions in UTC (approx). open<close = same day; open>close = wraps midnight.
 const SESSIONS = [
   { name: "Sydney", open: 22, close: 7, color: "#f59e0b" },
@@ -66,12 +88,14 @@ export default function MarketCalendar() {
   const [now, setNow] = useState<Date | null>(null);
   const [viewDate, setViewDate] = useState(() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), 1); });
   const [entries, setEntries] = useState<Entry[]>([]);
+  const [events, setEvents] = useState<EconomicEvent[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     fetch("/api/v2/entries").then(r => r.ok ? r.json() : []).then(d => setEntries(Array.isArray(d) ? d : [])).catch(() => {});
+    fetch("/api/economic-events").then(r => r.ok ? r.json() : { items: [] }).then(d => setEvents(Array.isArray(d?.items) ? d.items : [])).catch(() => {});
     return () => clearInterval(id);
   }, []);
 
@@ -98,6 +122,28 @@ export default function MarketCalendar() {
   }, [entries]);
 
   const maxAbs = useMemo(() => Math.max(50, ...Object.values(pnlByDate).map(d => Math.abs(d.pnl))), [pnlByDate]);
+
+  // Economic events grouped by their ET calendar day (YYYY-MM-DD).
+  const eventsByDate = useMemo(() => {
+    const map: Record<string, EconomicEvent[]> = {};
+    events.forEach(ev => {
+      const key = etDateKey(ev.event_time);
+      (map[key] ??= []).push(ev);
+    });
+    Object.values(map).forEach(list => list.sort((a, b) => a.event_time.localeCompare(b.event_time)));
+    return map;
+  }, [events]);
+
+  const etToday = now ? etDateKey(now) : null;
+  const todayEvents = etToday ? (eventsByDate[etToday] ?? []) : [];
+  const upcomingEvents = useMemo(() => {
+    if (!now) return [];
+    const nowMs = now.getTime();
+    return events
+      .filter(ev => new Date(ev.event_time).getTime() >= nowMs && etDateKey(ev.event_time) !== etToday)
+      .sort((a, b) => a.event_time.localeCompare(b.event_time))
+      .slice(0, 8);
+  }, [events, now, etToday]);
 
   // Month stats (trading days, days traded, holidays, net P&L)
   const monthStats = useMemo(() => {
@@ -130,7 +176,7 @@ export default function MarketCalendar() {
   const utcHour = now ? now.getUTCHours() + now.getUTCMinutes() / 60 : -1;
   const todayStr = now ? `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}` : null;
 
-  const selData = selected ? { holiday: getMarketHoliday(selected), trade: pnlByDate[selected] } : null;
+  const selData = selected ? { holiday: getMarketHoliday(selected), trade: pnlByDate[selected], events: eventsByDate[selected] ?? [] } : null;
 
   const stats = [
     { label: "Trading Days", value: String(monthStats.tradingDays), accent: "139,92,246", icon: ICONS.calendar, color: "#F9FAFB" },
@@ -233,6 +279,7 @@ export default function MarketCalendar() {
               const isToday = ds === todayStr;
               const isSel = ds === selected;
               const trade = pnlByDate[ds];
+              const dayEvents = eventsByDate[ds] ?? [];
 
               let bg = "rgba(255,255,255,0.015)", border = "rgba(255,255,255,0.05)", dayColor = "#6B7280";
               let glow = "none";
@@ -254,6 +301,16 @@ export default function MarketCalendar() {
                     animation: `mcPop 0.3s ease ${Math.min(i, 30) * 12}ms both`, position: "relative",
                   }}>
                   <span style={{ fontSize: "13px", fontWeight: isToday ? 800 : trade ? 700 : 500, color: isToday ? "#A78BFA" : dayColor, fontVariantNumeric: "tabular-nums" }}>{dayNum}</span>
+                  {dayEvents.length > 0 && (
+                    <div
+                      style={{ position: "absolute", top: "7px", right: "7px", display: "flex", gap: "3px" }}
+                      title={dayEvents.map(e => `${fmtEt(e.event_time)} ET · ${e.country} — ${e.title}`).join("\n")}
+                    >
+                      {dayEvents.slice(0, 3).map(e => (
+                        <span key={e.id} style={{ width: "5px", height: "5px", borderRadius: "50%", background: EVENT_IMPACT_COLOR[e.impact], boxShadow: `0 0 5px ${EVENT_IMPACT_COLOR[e.impact]}` }} />
+                      ))}
+                    </div>
+                  )}
                   {trade ? (
                     <div>
                       <div style={{ fontSize: "12px", fontWeight: 800, color: dayColor, fontVariantNumeric: "tabular-nums", lineHeight: 1 }}>{money(trade.pnl)}</div>
@@ -280,6 +337,18 @@ export default function MarketCalendar() {
               ) : !selData.holiday && (
                 <span style={{ color: "#4B5563", fontSize: "12px", marginLeft: "auto" }}>No trades logged this day</span>
               )}
+              {selData.events.length > 0 && (
+                <div style={{ width: "100%", display: "flex", flexDirection: "column", gap: "8px", marginTop: "4px", paddingTop: "12px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                  {selData.events.map(ev => (
+                    <div key={ev.id} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, background: EVENT_IMPACT_COLOR[ev.impact], boxShadow: `0 0 6px ${EVENT_IMPACT_COLOR[ev.impact]}` }} />
+                      <span style={{ color: "#6B7280", fontSize: "12px", fontVariantNumeric: "tabular-nums", flexShrink: 0, width: "104px" }}>{fmtEt(ev.event_time)} ET · {fmtLocalTime(ev.event_time)}</span>
+                      <span style={{ color: "#8B5CF6", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>{ev.country}</span>
+                      <span style={{ color: "#E5E7EB", fontSize: "13px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
@@ -301,6 +370,36 @@ export default function MarketCalendar() {
 
         {/* Sidebar */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+
+          {/* Economic Events */}
+          <div style={{ ...CARD, padding: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              {icon(ICONS.activity, "#9CA3AF", 15)}
+              <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "14px", margin: 0 }}>Economic Events</h3>
+              <span style={{ marginLeft: "auto", color: "#4B5563", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>High / Medium</span>
+            </div>
+            <p style={{ color: "#4B5563", fontSize: "11px", marginBottom: "16px" }}>Times in US Eastern · your local time</p>
+
+            {/* Today */}
+            <div style={{ color: "#6B7280", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Today</div>
+            {todayEvents.length === 0 ? (
+              <p style={{ color: "#4B5563", fontSize: "12px", marginBottom: "18px" }}>No high-impact events today.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "18px" }}>
+                {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} />)}
+              </div>
+            )}
+
+            {/* Upcoming */}
+            {upcomingEvents.length > 0 && (
+              <>
+                <div style={{ color: "#6B7280", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>Upcoming</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+                  {upcomingEvents.map(ev => <EventRow key={ev.id} ev={ev} showDay />)}
+                </div>
+              </>
+            )}
+          </div>
 
           {/* Live Market Sessions */}
           <div style={{ ...CARD, padding: "20px" }}>
@@ -393,3 +492,26 @@ const navBtn: React.CSSProperties = {
   background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: "10px",
   color: "#9CA3AF", cursor: "pointer", padding: "8px 16px", fontSize: "18px", lineHeight: 1, transition: "all .15s",
 };
+
+function EventRow({ ev, showDay = false }: { ev: EconomicEvent; showDay?: boolean }) {
+  const color = EVENT_IMPACT_COLOR[ev.impact];
+  return (
+    <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
+      <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, marginTop: "5px", background: color, boxShadow: `0 0 6px ${color}` }} />
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
+          <span style={{ color: "#E5E7EB", fontSize: "12px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{fmtEt(ev.event_time)} ET</span>
+          <span style={{ color: "#4B5563", fontSize: "11px", fontVariantNumeric: "tabular-nums" }}>· {fmtLocalTime(ev.event_time)} local</span>
+          <span style={{ color: "#A78BFA", fontSize: "10px", fontWeight: 700, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: "5px", padding: "1px 6px" }}>{ev.country}</span>
+          {showDay && <span style={{ marginLeft: "auto", color: "#4B5563", fontSize: "10px", fontWeight: 600 }}>{fmtEtDay(ev.event_time)}</span>}
+        </div>
+        <p style={{ color: "#D1D5DB", fontSize: "13px", fontWeight: 500, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</p>
+        {(ev.forecast || ev.previous) && (
+          <p style={{ color: "#6B7280", fontSize: "11px", margin: "2px 0 0", fontVariantNumeric: "tabular-nums" }}>
+            {ev.forecast ? `Forecast ${ev.forecast}` : ""}{ev.forecast && ev.previous ? " · " : ""}{ev.previous ? `Prev ${ev.previous}` : ""}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}

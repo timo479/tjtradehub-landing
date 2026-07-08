@@ -11,6 +11,7 @@ import crypto from "crypto";
 import { db } from "@/lib/db";
 import { undeployStaleAccounts } from "@/lib/metaapi-undeploy";
 import { createWeeklyNewsletter } from "@/lib/newsletter/createWeekly";
+import { syncEconomicCalendar } from "@/lib/economic-calendar";
 
 const FEED_RETENTION_DAYS = 7;
 
@@ -64,7 +65,17 @@ export async function GET(req: Request) {
     feedCleanup = { error: msg };
   }
 
-  // 3) Mondays only: generate newsletter
+  // 3) Always: sync the economic calendar (ForexFactory feed → economic_events)
+  let economicCalendar: { upserted: number; deleted: number } | { error: string };
+  try {
+    economicCalendar = await syncEconomicCalendar();
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[cron/daily] economic calendar sync failed:", msg);
+    economicCalendar = { error: msg };
+  }
+
+  // 4) Mondays only: generate newsletter
   // Monday in UTC. Cron fires at 06:00 UTC daily, so we get exactly one
   // newsletter run per week. ?forceMonday=1 lets you test the flow on any day.
   const url = new URL(req.url);
@@ -90,6 +101,7 @@ export async function GET(req: Request) {
     elapsedMs: Date.now() - startedAt,
     undeploy,
     feedCleanup,
+    economicCalendar,
     newsletter,
   });
 }
