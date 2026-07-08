@@ -159,7 +159,7 @@ function EquityHero({ trades }: { trades: Trade[] }) {
 // ─── Main Component ───────────────────────────────────────────────────────────
 type Filter = "all" | "today" | "week" | "month" | "review";
 
-export default function JournalNew({ journalTourCompleted = false, darkMode: darkModeProp, toggleTheme: toggleThemeProp, userName }: { journalTourCompleted?: boolean; darkMode?: boolean; toggleTheme?: () => void; userName?: string | null }) {
+export default function JournalNew({ journalTourCompleted = false, darkMode: darkModeProp, toggleTheme: toggleThemeProp, userName, isPro = false }: { journalTourCompleted?: boolean; darkMode?: boolean; toggleTheme?: () => void; userName?: string | null; isPro?: boolean }) {
   const [journals, setJournals] = useState<Journal[]>([]);
   const [allEntries, setAllEntries] = useState<Trade[]>([]);
   const [allTemplates, setAllTemplates] = useState<TemplateDef[]>([]);
@@ -740,7 +740,7 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Statistics View */}
       {view === "stats" && activeJournal && (
-        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} metaAccountBalance={metaAccountBalance} userName={userName} />
+        <JournalStats entries={journalTrades} journal={activeJournal} isDark={darkMode} metaAccountBalance={metaAccountBalance} userName={userName} isPro={isPro} />
       )}
 
       {/* Trades View */}

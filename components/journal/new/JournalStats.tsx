@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
+import { computeInsights } from "@/lib/insights";
+import InsightsPanel from "@/components/insights/InsightsPanel";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -17,7 +19,7 @@ interface Trade {
 }
 interface Journal { id: string; name: string; rules: Rule[]; risk_per_trade: number | null; starting_balance: number | null; time_from: string; time_to: string; }
 
-interface Props { entries: Trade[]; journal: Journal; isDark?: boolean; metaAccountBalance?: number | null; userName?: string | null; }
+interface Props { entries: Trade[]; journal: Journal; isDark?: boolean; metaAccountBalance?: number | null; userName?: string | null; isPro?: boolean; }
 
 type Period = "today" | "week" | "month" | "year" | "all" | "custom";
 
@@ -1273,8 +1275,9 @@ function HeroMiddle({ name }: { name?: string | null }) {
 }
 
 // ─── Main Component ───────────────────────────────────────────────────────────
-function JournalStatsInner({ entries, journal, metaAccountBalance, userName }: Props) {
+function JournalStatsInner({ entries, journal, metaAccountBalance, userName, isPro = false, isDark = true }: Props) {
   const T = useT();
+  const insightResult = useMemo(() => computeInsights(entries), [entries]);
   const [period, setPeriod] = useState<Period>("all");
   const [customFrom, setCustomFrom] = useState("");
   const [customTo, setCustomTo] = useState("");
@@ -1549,6 +1552,9 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName }: P
         </div>
       </div>
 
+      {/* Performance Insights (Pro-gated payoff) */}
+      <InsightsPanel result={insightResult} isPro={isPro} isDark={isDark} />
+
       {/* Widget Grid — fixed curated layout */}
       <div style={{ width: "100%" }}>
 
@@ -1637,10 +1643,10 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName }: P
   );
 }
 
-export default function JournalStats({ entries, journal, isDark = true, metaAccountBalance, userName }: Props) {
+export default function JournalStats({ entries, journal, isDark = true, metaAccountBalance, userName, isPro = false }: Props) {
   return (
     <ThemeCtx.Provider value={isDark}>
-      <JournalStatsInner entries={entries} journal={journal} metaAccountBalance={metaAccountBalance} userName={userName} />
+      <JournalStatsInner entries={entries} journal={journal} metaAccountBalance={metaAccountBalance} userName={userName} isPro={isPro} isDark={isDark} />
     </ThemeCtx.Provider>
   );
 }

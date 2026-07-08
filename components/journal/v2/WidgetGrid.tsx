@@ -1,6 +1,8 @@
 "use client";
 import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
+import { computeInsights } from "@/lib/insights";
+import InsightsPanel from "@/components/insights/InsightsPanel";
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const W_PAD = "20px 22px"; // widget padding — matches HTML reference
@@ -1110,7 +1112,8 @@ function Toggle({ on, onChange }: { on: boolean; onChange: () => void }) {
 
 const THEME_KEY = "tj-dashboard-theme";
 
-export default function WidgetGrid({ entries }: { entries: Entry[] }) {
+export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[]; isPro?: boolean }) {
+  const insightResult = useMemo(() => computeInsights(entries), [entries]);
   const [active, setActive] = useState<string[]>(() => WIDGETS.filter(w => w.defaultOn).map(w => w.id));
   const [editOpen, setEditOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
@@ -1209,6 +1212,11 @@ export default function WidgetGrid({ entries }: { entries: Entry[] }) {
           <p style={{ color: "#6B7280", fontSize: "14px", fontWeight: 500 }}>No trades yet</p>
           <p style={{ color: darkMode ? "#374151" : "#D1D5DB", fontSize: "13px", marginTop: "4px" }}>Statistics will appear once you add trades.</p>
         </GlowCard>
+      )}
+
+      {/* Performance Insights (Pro-gated payoff) */}
+      {entries.length > 0 && (
+        <InsightsPanel result={insightResult} isPro={isPro} isDark={darkMode} />
       )}
 
       {/* Row 1: Discipline Score (full width) */}

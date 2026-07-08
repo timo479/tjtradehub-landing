@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import WidgetGrid, { Entry } from "@/components/journal/v2/WidgetGrid";
 
-export default function DashboardStats() {
+export default function DashboardStats({ isPro = false }: { isPro?: boolean }) {
   const [entries, setEntries] = useState<Entry[]>([]);
   const [loading, setLoading] = useState(true);
   const [upgradeRequired, setUpgradeRequired] = useState(false);
@@ -40,5 +40,5 @@ export default function DashboardStats() {
     );
   }
 
-  return <WidgetGrid entries={entries} />;
+  return <WidgetGrid entries={entries} isPro={isPro} />;
 }

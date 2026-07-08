@@ -1,5 +1,5 @@
 import { auth } from "@/lib/auth";
-import { canAccessDashboard } from "@/lib/trial";
+import { canAccessDashboard, hasActiveSubscription } from "@/lib/trial";
 import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import JournalLayoutClient from "@/components/journal/new/JournalLayoutClient";
@@ -18,11 +18,18 @@ export default async function JournalPage() {
     .single();
   const journalTourCompleted = userRow?.journal_tour_completed ?? false;
 
+  const isAdmin = (session.user as { role?: string }).role === "admin";
+  const isPro = hasActiveSubscription({
+    subscription_status: session.user.subscriptionStatus,
+    current_period_end: session.user.currentPeriodEnd,
+  }) || isAdmin;
+
   return (
     <JournalLayoutClient
       name={session.user.name}
       email={session.user.email}
       subscriptionStatus={session.user.subscriptionStatus}
+      isPro={isPro}
       journalTourCompleted={journalTourCompleted}
     />
   );

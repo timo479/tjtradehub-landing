@@ -23,6 +23,7 @@ export default async function DashboardPage() {
   const { name, subscriptionStatus } = session.user;
   const isAdmin = (session.user as { role?: string }).role === "admin";
   const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
+  const isPro = isSubscribed || isAdmin; // admins see the unlocked view
 
   // Fetch entries from JournalV2
   const { data: rawEntries } = await db
@@ -160,7 +161,7 @@ export default async function DashboardPage() {
 
         {/* Statistiken Widget Grid */}
         <div className="mb-8" data-tour="dashboard-stats">
-          <DashboardStats />
+          <DashboardStats isPro={isPro} />
         </div>
 
         {/* Quick Actions */}

@@ -7,6 +7,7 @@ interface Props {
   name: string | null;
   email: string | null;
   subscriptionStatus?: string;
+  isPro?: boolean;
   journalTourCompleted: boolean;
 }
 
@@ -30,7 +31,7 @@ function MoonIcon() {
   );
 }
 
-export default function JournalLayoutClient({ name, email, subscriptionStatus, journalTourCompleted }: Props) {
+export default function JournalLayoutClient({ name, email, subscriptionStatus, isPro = false, journalTourCompleted }: Props) {
   const [darkMode, setDarkMode] = useState(true);
   const [mounted, setMounted] = useState(false);
 
@@ -91,7 +92,7 @@ export default function JournalLayoutClient({ name, email, subscriptionStatus, j
       />
 
       <main className="mx-auto px-6 py-10" style={{ maxWidth: "1200px" }}>
-        <JournalNew journalTourCompleted={journalTourCompleted} darkMode={darkMode} toggleTheme={toggleTheme} userName={name} />
+        <JournalNew journalTourCompleted={journalTourCompleted} darkMode={darkMode} toggleTheme={toggleTheme} userName={name} isPro={isPro} />
       </main>
     </div>
   );
