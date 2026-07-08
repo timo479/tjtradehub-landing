@@ -572,10 +572,23 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
         </div>
         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
           {ThemeToggle}
-          <button onClick={() => setShowCreateJournal(true)} style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #8B5CF6, #7c3aed)", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: "14px", boxShadow: "0 4px 16px rgba(139,92,246,0.35)" }}>
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
-            New Journal
-          </button>
+          {(() => {
+            const gated = !isPro && journals.length >= 1;
+            return (
+              <button
+                onClick={() => { if (gated) { window.location.href = "/billing"; } else { setShowCreateJournal(true); } }}
+                title={gated ? "Basic includes 1 journal — upgrade to Pro for unlimited" : undefined}
+                style={{ display: "flex", alignItems: "center", gap: "6px", padding: "10px 18px", borderRadius: "10px", border: "none", background: "linear-gradient(135deg, #8B5CF6, #7c3aed)", color: "#fff", fontWeight: 700, cursor: "pointer", fontSize: "14px", boxShadow: "0 4px 16px rgba(139,92,246,0.35)" }}
+              >
+                {gated ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>
+                ) : (
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>
+                )}
+                {gated ? "Unlock more journals" : "New Journal"}
+              </button>
+            );
+          })()}
         </div>
       </div>
 

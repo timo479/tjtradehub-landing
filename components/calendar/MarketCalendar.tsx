@@ -84,7 +84,7 @@ const ICONS = {
   trending: <><polyline points="22 7 13.5 15.5 8.5 10.5 2 17" /><polyline points="16 7 22 7 22 13" /></>,
 };
 
-export default function MarketCalendar() {
+export default function MarketCalendar({ isPro = false }: { isPro?: boolean }) {
   const [now, setNow] = useState<Date | null>(null);
   const [viewDate, setViewDate] = useState(() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), 1); });
   const [entries, setEntries] = useState<Entry[]>([]);
@@ -96,6 +96,8 @@ export default function MarketCalendar() {
     setNow(new Date());
     const id = setInterval(() => setNow(new Date()), 1000);
     fetch("/api/v2/entries").then(r => r.ok ? r.json() : []).then(d => setEntries(Array.isArray(d) ? d : [])).catch(() => {});
+    // Everyone loads events so Basic sees WHEN news lands (dots + times); the
+    // WHAT (title/details) is blurred for Basic in the panel/detail rows.
     fetch("/api/economic-events").then(r => r.ok ? r.json() : { items: [] }).then(d => setEvents(Array.isArray(d?.items) ? d.items : [])).catch(() => {});
     return () => clearInterval(id);
   }, []);
@@ -313,7 +315,7 @@ export default function MarketCalendar() {
                   {dayEvents.length > 0 && (
                     <div
                       style={{ position: "absolute", top: "7px", right: "7px", display: "flex", gap: "3px" }}
-                      title={dayEvents.map(e => `${fmtEt(e.event_time)} ET · ${e.country} — ${e.title}`).join("\n")}
+                      title={dayEvents.map(e => isPro ? `${fmtEt(e.event_time)} ET · ${e.country} — ${e.title}` : `${fmtEt(e.event_time)} ET · ${e.country} — ${e.impact} impact (Pro)`).join("\n")}
                     >
                       {dayEvents.slice(0, 3).map(e => (
                         <span key={e.id} style={{ width: "5px", height: "5px", borderRadius: "50%", background: EVENT_IMPACT_COLOR[e.impact], boxShadow: `0 0 5px ${EVENT_IMPACT_COLOR[e.impact]}` }} />
@@ -353,7 +355,7 @@ export default function MarketCalendar() {
                       <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, background: EVENT_IMPACT_COLOR[ev.impact], boxShadow: `0 0 6px ${EVENT_IMPACT_COLOR[ev.impact]}` }} />
                       <span style={{ color: "#6B7280", fontSize: "12px", fontVariantNumeric: "tabular-nums", flexShrink: 0, width: "104px" }}>{fmtEt(ev.event_time)} ET · {fmtLocalTime(ev.event_time)}</span>
                       <span style={{ color: "#8B5CF6", fontSize: "11px", fontWeight: 700, flexShrink: 0 }}>{ev.country}</span>
-                      <span style={{ color: "#E5E7EB", fontSize: "13px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</span>
+                      <span style={{ color: "#E5E7EB", fontSize: "13px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...(isPro ? {} : { filter: "blur(5px)", userSelect: "none" as const }) }}>{ev.title}</span>
                     </div>
                   ))}
                 </div>
@@ -382,11 +384,12 @@ export default function MarketCalendar() {
         {/* Sidebar */}
         <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-          {/* Economic Events */}
+          {/* Economic Events — Basic sees WHEN (times/impact), the WHAT (title/details) is blurred */}
           <div style={{ ...CARD, padding: "20px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               {icon(ICONS.activity, "#9CA3AF", 15)}
               <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "14px", margin: 0 }}>Economic Events</h3>
+              {!isPro && <span style={{ marginLeft: "auto", color: "#A78BFA", fontSize: "10px", fontWeight: 800, letterSpacing: "0.06em", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: "6px", padding: "2px 8px" }}>PRO</span>}
             </div>
             <p style={{ color: "#4B5563", fontSize: "11px", marginBottom: "12px" }}>Times in US Eastern · your local time</p>
 
@@ -419,7 +422,7 @@ export default function MarketCalendar() {
               <p style={{ color: "#4B5563", fontSize: "12px", marginBottom: "18px" }}>No events today.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "18px" }}>
-                {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} past={now ? new Date(ev.event_time).getTime() < now.getTime() : false} />)}
+                {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} locked={!isPro} past={now ? new Date(ev.event_time).getTime() < now.getTime() : false} />)}
               </div>
             )}
 
@@ -428,9 +431,19 @@ export default function MarketCalendar() {
               <>
                 <div style={{ color: "#6B7280", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)" }}>Upcoming</div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-                  {upcomingEvents.map(ev => <EventRow key={ev.id} ev={ev} showDay />)}
+                  {upcomingEvents.map(ev => <EventRow key={ev.id} ev={ev} locked={!isPro} showDay />)}
                 </div>
               </>
+            )}
+
+            {/* Basic upsell footer */}
+            {!isPro && (todayEvents.length > 0 || upcomingEvents.length > 0) && (
+              <a href="/billing" style={{ textDecoration: "none" }}>
+                <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px" }}>
+                  <span style={{ color: "#9CA3AF", fontSize: "12px" }}>See what each event is + how it moves your pairs</span>
+                  <span style={{ color: "#A78BFA", fontSize: "12px", fontWeight: 700, whiteSpace: "nowrap", flexShrink: 0 }}>Unlock →</span>
+                </div>
+              </a>
             )}
           </div>
 
@@ -526,22 +539,25 @@ const navBtn: React.CSSProperties = {
   color: "#9CA3AF", cursor: "pointer", padding: "8px 16px", fontSize: "18px", lineHeight: 1, transition: "all .15s",
 };
 
-function EventRow({ ev, showDay = false, past = false }: { ev: EconomicEvent; showDay?: boolean; past?: boolean }) {
+function EventRow({ ev, showDay = false, past = false, locked = false }: { ev: EconomicEvent; showDay?: boolean; past?: boolean; locked?: boolean }) {
   const color = EVENT_IMPACT_COLOR[ev.impact];
+  const blur: React.CSSProperties = locked ? { filter: "blur(5px)", userSelect: "none", pointerEvents: "none" } : {};
   return (
     <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", opacity: past ? 0.4 : 1, transition: "opacity 0.2s" }}>
       <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, marginTop: "5px", background: color, boxShadow: past ? "none" : `0 0 6px ${color}` }} />
       <div style={{ flex: 1, minWidth: 0 }}>
+        {/* Timing stays visible for Basic; only the "what" is blurred. */}
         <div style={{ display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
           <span style={{ color: "#E5E7EB", fontSize: "12px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{fmtEt(ev.event_time)} ET</span>
           <span style={{ color: "#4B5563", fontSize: "11px", fontVariantNumeric: "tabular-nums" }}>· {fmtLocalTime(ev.event_time)} local</span>
           <span style={{ color: "#A78BFA", fontSize: "10px", fontWeight: 700, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: "5px", padding: "1px 6px" }}>{ev.country}</span>
+          {locked && <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>}
           {past && <span style={{ color: "#4B5563", fontSize: "10px", fontWeight: 600 }}>· done</span>}
           {showDay && <span style={{ marginLeft: "auto", color: "#4B5563", fontSize: "10px", fontWeight: 600 }}>{fmtEtDay(ev.event_time)}</span>}
         </div>
-        <p style={{ color: "#D1D5DB", fontSize: "13px", fontWeight: 500, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</p>
+        <p style={{ color: "#D1D5DB", fontSize: "13px", fontWeight: 500, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", ...blur }}>{ev.title}</p>
         {(ev.forecast || ev.previous) && (
-          <p style={{ color: "#6B7280", fontSize: "11px", margin: "2px 0 0", fontVariantNumeric: "tabular-nums" }}>
+          <p style={{ color: "#6B7280", fontSize: "11px", margin: "2px 0 0", fontVariantNumeric: "tabular-nums", ...blur }}>
             {ev.forecast ? `Forecast ${ev.forecast}` : ""}{ev.forecast && ev.previous ? " · " : ""}{ev.previous ? `Prev ${ev.previous}` : ""}
           </p>
         )}

@@ -3,6 +3,11 @@ import React, { useEffect, useMemo, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
 import { computeInsights } from "@/lib/insights";
 import InsightsPanel from "@/components/insights/InsightsPanel";
+import LockedWidget from "@/components/common/LockedWidget";
+
+// Widgets a Basic user keeps free (raw record); rest is Pro-gated. Mirror of
+// STATS_FREE in JournalStats.tsx — keep both in sync.
+const DASH_FREE = new Set(["kpi-cards", "equity-curve", "calendar"]);
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const W_PAD = "20px 22px"; // widget padding — matches HTML reference
@@ -1165,7 +1170,9 @@ export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[
     return (
       <GlowCard key={id} style={{ padding: W_PAD }}>
         <SectionTitle icon={w.icon}>{w.name}</SectionTitle>
-        <w.component entries={entries} />
+        <LockedWidget locked={!isPro && !DASH_FREE.has(id)}>
+          <w.component entries={entries} />
+        </LockedWidget>
       </GlowCard>
     );
   };
@@ -1222,7 +1229,7 @@ export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[
       {/* Row 1: Discipline Score (full width) */}
       {entries.length > 0 && active.includes("discipline-score") && (
         <GlowCard style={{ padding: W_PAD }}>
-          {(() => { const w = WIDGETS.find(x => x.id === "discipline-score")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><WDisciplineScore entries={entries} /></>; })()}
+          {(() => { const w = WIDGETS.find(x => x.id === "discipline-score")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><LockedWidget locked={!isPro}><WDisciplineScore entries={entries} /></LockedWidget></>; })()}
         </GlowCard>
       )}
 
@@ -1257,7 +1264,7 @@ export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[
       {/* Row 5: Histogram (full width, only if active) */}
       {entries.length > 0 && active.includes("histogram") && (
         <GlowCard style={{ padding: W_PAD }}>
-          {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><WHistogram entries={entries} /></>; })()}
+          {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><LockedWidget locked={!isPro}><WHistogram entries={entries} /></LockedWidget></>; })()}
         </GlowCard>
       )}
 

@@ -3,6 +3,10 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getMarketHoliday } from "@/lib/market-holidays";
 import { computeInsights } from "@/lib/insights";
 import InsightsPanel from "@/components/insights/InsightsPanel";
+import LockedWidget from "@/components/common/LockedWidget";
+
+// Widgets a Basic user keeps free (the raw record); the rest is Pro-gated.
+const STATS_FREE = new Set(["kpi", "equity", "calendar"]);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -1479,6 +1483,7 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName, isP
               const eR = (Ri + Ro) / 2, ex = gc + eR * Math.cos(eRad), ey = gc + eR * Math.sin(eRad);
               const factors = disciplineData?.factors ?? [];
               return (
+                <LockedWidget locked={!isPro}>
                 <div style={{ display: "flex", alignItems: "center", gap: "22px", position: "relative", zIndex: 1, flex: bal ? "0 0 auto" : "1", justifyContent: bal ? "flex-end" : "center", borderLeft: bal ? `1px solid ${T.border2}` : "none", paddingLeft: bal ? "26px" : "0", flexWrap: "wrap" }}>
                   {/* Gauge */}
                   <div style={{ position: "relative", width: gs, height: gs, flexShrink: 0 }}>
@@ -1519,6 +1524,7 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName, isP
                     })}
                   </div>
                 </div>
+                </LockedWidget>
               );
             })()}
 
@@ -1578,7 +1584,9 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName, isP
                   <WidgetCard>
                     <SectionTitle icon={w.icon}>{w.name}</SectionTitle>
                     <div style={{ flex: 1, overflow: "auto", minHeight: 0, display: "flex", flexDirection: "column" }}>
-                      <w.component entries={filtered} journal={journal} />
+                      <LockedWidget locked={!isPro && !STATS_FREE.has(w.id)}>
+                        <w.component entries={filtered} journal={journal} />
+                      </LockedWidget>
                     </div>
                   </WidgetCard>
                 </div>

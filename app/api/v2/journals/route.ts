@@ -1,6 +1,6 @@
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { canAccessDashboard } from "@/lib/trial";
+import { canAccessDashboard, hasActiveSubscription } from "@/lib/trial";
 import { NextRequest, NextResponse } from "next/server";
 
 async function checkAccess(userId: string) {
@@ -67,6 +67,24 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const { name, instrument_type, time_from, time_to, risk_per_trade, max_trades_per_day, starting_balance, rules } = body;
   if (!name?.trim()) return NextResponse.json({ error: "Name required" }, { status: 400 });
+
+  // Basic plan: max 1 manual journal. Existing journals are never touched
+  // (grandfathering) — only creating a new one beyond the limit is blocked.
+  const { data: planRow } = await db
+    .from("users")
+    .select("subscription_status, current_period_end")
+    .eq("id", session.user.id)
+    .single();
+  if (!hasActiveSubscription(planRow ?? { subscription_status: "basic", current_period_end: null })) {
+    const { count } = await db
+      .from("journal_templates")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", session.user.id)
+      .neq("name", "MetaAPI Import");
+    if ((count ?? 0) >= 1) {
+      return NextResponse.json({ error: "Upgrade to Pro to create more journals", upgrade: true }, { status: 403 });
+    }
+  }
 
   const { data: template, error: tErr } = await db
     .from("journal_templates")
