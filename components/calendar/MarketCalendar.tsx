@@ -89,6 +89,7 @@ export default function MarketCalendar() {
   const [viewDate, setViewDate] = useState(() => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), 1); });
   const [entries, setEntries] = useState<Entry[]>([]);
   const [events, setEvents] = useState<EconomicEvent[]>([]);
+  const [eventFilter, setEventFilter] = useState<"all" | "usd" | "high">("all");
   const [selected, setSelected] = useState<string | null>(null);
 
   useEffect(() => {
@@ -123,27 +124,35 @@ export default function MarketCalendar() {
 
   const maxAbs = useMemo(() => Math.max(50, ...Object.values(pnlByDate).map(d => Math.abs(d.pnl))), [pnlByDate]);
 
+  // Apply the panel filter (All / USD-only / High-impact) everywhere — cells + panel
+  // stay consistent so a filtered view never shows a marker the list omits.
+  const filteredEvents = useMemo(() => {
+    if (eventFilter === "usd") return events.filter(e => e.country === "USD");
+    if (eventFilter === "high") return events.filter(e => e.impact === "high");
+    return events;
+  }, [events, eventFilter]);
+
   // Economic events grouped by their ET calendar day (YYYY-MM-DD).
   const eventsByDate = useMemo(() => {
     const map: Record<string, EconomicEvent[]> = {};
-    events.forEach(ev => {
+    filteredEvents.forEach(ev => {
       const key = etDateKey(ev.event_time);
       (map[key] ??= []).push(ev);
     });
     Object.values(map).forEach(list => list.sort((a, b) => a.event_time.localeCompare(b.event_time)));
     return map;
-  }, [events]);
+  }, [filteredEvents]);
 
   const etToday = now ? etDateKey(now) : null;
   const todayEvents = etToday ? (eventsByDate[etToday] ?? []) : [];
   const upcomingEvents = useMemo(() => {
     if (!now) return [];
     const nowMs = now.getTime();
-    return events
+    return filteredEvents
       .filter(ev => new Date(ev.event_time).getTime() >= nowMs && etDateKey(ev.event_time) !== etToday)
       .sort((a, b) => a.event_time.localeCompare(b.event_time))
       .slice(0, 8);
-  }, [events, now, etToday]);
+  }, [filteredEvents, now, etToday]);
 
   // Month stats (trading days, days traded, holidays, net P&L)
   const monthStats = useMemo(() => {
@@ -354,14 +363,16 @@ export default function MarketCalendar() {
 
           {/* Legend */}
           <div style={{ display: "flex", gap: "16px", marginTop: "16px", paddingTop: "16px", borderTop: "1px solid rgba(255,255,255,0.06)", flexWrap: "wrap" }}>
-            {[
+            {([
               { c: "rgba(34,197,94,0.7)", l: "Profit day" },
               { c: "rgba(239,68,68,0.7)", l: "Loss day" },
               { c: "rgba(251,146,60,0.1)", b: "rgba(251,146,60,0.4)", l: "Market closed" },
               { c: "rgba(139,92,246,0.1)", b: "#8B5CF6", l: "Today" },
-            ].map(x => (
+              { c: "#ef4444", l: "High-impact event", round: true },
+              { c: "#f97316", l: "Medium-impact event", round: true },
+            ] as Array<{ c: string; l: string; b?: string; round?: boolean }>).map(x => (
               <div key={x.l} style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ width: "11px", height: "11px", borderRadius: "3px", backgroundColor: x.c, border: `1px solid ${x.b ?? "rgba(255,255,255,0.1)"}` }} />
+                <div style={{ width: x.round ? "8px" : "11px", height: x.round ? "8px" : "11px", borderRadius: x.round ? "50%" : "3px", backgroundColor: x.c, border: `1px solid ${x.b ?? (x.round ? x.c : "rgba(255,255,255,0.1)")}`, boxShadow: x.round ? `0 0 5px ${x.c}` : "none" }} />
                 <span style={{ color: "#6B7280", fontSize: "11px" }}>{x.l}</span>
               </div>
             ))}
@@ -376,17 +387,39 @@ export default function MarketCalendar() {
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
               {icon(ICONS.activity, "#9CA3AF", 15)}
               <h3 style={{ color: "#F9FAFB", fontWeight: 700, fontSize: "14px", margin: 0 }}>Economic Events</h3>
-              <span style={{ marginLeft: "auto", color: "#4B5563", fontSize: "10px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>High / Medium</span>
             </div>
-            <p style={{ color: "#4B5563", fontSize: "11px", marginBottom: "16px" }}>Times in US Eastern · your local time</p>
+            <p style={{ color: "#4B5563", fontSize: "11px", marginBottom: "12px" }}>Times in US Eastern · your local time</p>
+
+            {/* Filter pills */}
+            <div style={{ display: "flex", gap: "6px", marginBottom: "18px" }}>
+              {([["all", "All"], ["usd", "USD"], ["high", "High only"]] as const).map(([val, label]) => {
+                const active = eventFilter === val;
+                return (
+                  <button
+                    key={val}
+                    onClick={() => setEventFilter(val)}
+                    style={{
+                      padding: "4px 11px", borderRadius: "7px", cursor: "pointer",
+                      fontSize: "11px", fontWeight: 700, letterSpacing: "0.03em",
+                      border: `1px solid ${active ? "rgba(139,92,246,0.5)" : "rgba(255,255,255,0.1)"}`,
+                      background: active ? "rgba(139,92,246,0.15)" : "rgba(255,255,255,0.03)",
+                      color: active ? "#C4B5FD" : "#6B7280",
+                      transition: "all 0.15s",
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
+            </div>
 
             {/* Today */}
             <div style={{ color: "#6B7280", fontSize: "10px", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "10px" }}>Today</div>
             {todayEvents.length === 0 ? (
-              <p style={{ color: "#4B5563", fontSize: "12px", marginBottom: "18px" }}>No high-impact events today.</p>
+              <p style={{ color: "#4B5563", fontSize: "12px", marginBottom: "18px" }}>No events today.</p>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginBottom: "18px" }}>
-                {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} />)}
+                {todayEvents.map(ev => <EventRow key={ev.id} ev={ev} past={now ? new Date(ev.event_time).getTime() < now.getTime() : false} />)}
               </div>
             )}
 
@@ -493,16 +526,17 @@ const navBtn: React.CSSProperties = {
   color: "#9CA3AF", cursor: "pointer", padding: "8px 16px", fontSize: "18px", lineHeight: 1, transition: "all .15s",
 };
 
-function EventRow({ ev, showDay = false }: { ev: EconomicEvent; showDay?: boolean }) {
+function EventRow({ ev, showDay = false, past = false }: { ev: EconomicEvent; showDay?: boolean; past?: boolean }) {
   const color = EVENT_IMPACT_COLOR[ev.impact];
   return (
-    <div style={{ display: "flex", gap: "10px", alignItems: "flex-start" }}>
-      <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, marginTop: "5px", background: color, boxShadow: `0 0 6px ${color}` }} />
+    <div style={{ display: "flex", gap: "10px", alignItems: "flex-start", opacity: past ? 0.4 : 1, transition: "opacity 0.2s" }}>
+      <span style={{ width: "7px", height: "7px", borderRadius: "50%", flexShrink: 0, marginTop: "5px", background: color, boxShadow: past ? "none" : `0 0 6px ${color}` }} />
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "7px", flexWrap: "wrap" }}>
           <span style={{ color: "#E5E7EB", fontSize: "12px", fontWeight: 700, fontVariantNumeric: "tabular-nums" }}>{fmtEt(ev.event_time)} ET</span>
           <span style={{ color: "#4B5563", fontSize: "11px", fontVariantNumeric: "tabular-nums" }}>· {fmtLocalTime(ev.event_time)} local</span>
           <span style={{ color: "#A78BFA", fontSize: "10px", fontWeight: 700, background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: "5px", padding: "1px 6px" }}>{ev.country}</span>
+          {past && <span style={{ color: "#4B5563", fontSize: "10px", fontWeight: 600 }}>· done</span>}
           {showDay && <span style={{ marginLeft: "auto", color: "#4B5563", fontSize: "10px", fontWeight: 600 }}>{fmtEtDay(ev.event_time)}</span>}
         </div>
         <p style={{ color: "#D1D5DB", fontSize: "13px", fontWeight: 500, margin: "3px 0 0", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{ev.title}</p>
