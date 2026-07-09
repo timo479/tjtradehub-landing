@@ -1,11 +1,12 @@
 "use client";
 import { useState, useRef, useEffect, useCallback } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-feedback" | "admin-panel";
+type ActivePage = "dashboard" | "journal" | "statistics" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-feedback" | "admin-panel";
 
 interface Props {
   activePage: ActivePage;
@@ -20,6 +21,7 @@ interface Props {
 const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean }[] = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/dashboard/journal", label: "Journal", key: "journal" },
+  { href: "/dashboard/journal?view=stats", label: "Statistics", key: "statistics" },
   { href: "/dashboard/calendar", label: "Calendar", key: "calendar" },
   { href: "/dashboard/charts", label: "Charts", key: "charts" },
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
@@ -168,7 +170,16 @@ export default function DashboardHeader({
   const [hoverIdx, setHoverIdx] = useState<number | null>(null);
   const [indicator, setIndicator] = useState({ left: 0, width: 0, opacity: 0 });
 
-  const activeIdx = NAV_LINKS.findIndex((l) => l.key === activePage);
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  // On the shared /dashboard/journal route, split the highlight between
+  // "Journal" (list/trades) and "Statistics" (?view=stats) via the URL.
+  const effectiveActivePage: ActivePage =
+    pathname === "/dashboard/journal"
+      ? (searchParams.get("view") === "stats" ? "statistics" : "journal")
+      : activePage;
+
+  const activeIdx = NAV_LINKS.findIndex((l) => l.key === effectiveActivePage);
 
   const updateIndicator = useCallback(() => {
     const idx = hoverIdx ?? activeIdx;
@@ -251,7 +262,7 @@ export default function DashboardHeader({
             />
 
             {NAV_LINKS.map(({ href, label, key, soon }, i) => {
-              const isActive = activePage === key;
+              const isActive = effectiveActivePage === key;
               return (
                 <Link
                   key={key}
@@ -351,7 +362,7 @@ export default function DashboardHeader({
                         Admin Tools
                       </div>
                       {ADMIN_LINKS.map(({ href, label, key, Icon }) => {
-                        const isActive = activePage === key;
+                        const isActive = effectiveActivePage === key;
                         return (
                           <Link
                             key={key}
@@ -478,7 +489,7 @@ export default function DashboardHeader({
                 Admin Tools
               </div>
               {ADMIN_LINKS.map(({ href, label, key, Icon }) => {
-                const isActive = activePage === key;
+                const isActive = effectiveActivePage === key;
                 return (
                   <Link
                     key={key}

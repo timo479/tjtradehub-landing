@@ -1,5 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import JournalCreateModal from "./JournalCreateModal";
 import TradeWizard from "./TradeWizard";
 import Mt5ReviewModal from "../v2/Mt5ReviewModal";
@@ -166,6 +167,9 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   const [loading, setLoading] = useState(true);
   const [activeJournal, setActiveJournal] = useState<Journal | null>(null);
   const [view, setView] = useState<"journals" | "trades" | "stats">("journals");
+  const [jMenuOpen, setJMenuOpen] = useState(false);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // Trade list state
   const [filter, setFilter] = useState<Filter>("all");
@@ -215,6 +219,18 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
   }, []);
 
   useEffect(() => { load(); }, [load]);
+
+  // Deep-link: the header "Statistics" entry (/dashboard/journal?view=stats)
+  // opens the last-used (or first) journal straight in its Statistics view.
+  // Trades stays the default when opening a journal from the list.
+  useEffect(() => {
+    if (loading || journals.length === 0) return;
+    if (searchParams.get("view") !== "stats" || view === "stats") return;
+    let target: Journal | null = null;
+    try { const last = localStorage.getItem("tj-journal-last"); target = journals.find(j => j.id === last) ?? null; } catch {}
+    target = target ?? activeJournal ?? journals[0];
+    if (target) { setActiveJournal(target); setView("stats"); }
+  }, [searchParams, loading, journals, view, activeJournal]);
 
   // Demo-Tour (?demo=1): auf Steuer-Events vom AppDemoTour-Overlay hören.
   // Entkoppelt — die Tour-UI lebt in JournalLayoutClient, hier nur die Setter.
@@ -268,8 +284,23 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
     return n;
   }));
 
-  const openJournal = (j: Journal) => {
-    setActiveJournal(j); setView("trades"); setFilter("all"); setSearch("");
+  const openJournal = (j: Journal, target: "trades" | "stats" = "trades") => {
+    setActiveJournal(j); setView(target); setFilter("all"); setSearch("");
+    try { localStorage.setItem("tj-journal-last", j.id); } catch {}
+    router.replace(`/dashboard/journal?view=${target}`, { scroll: false });
+  };
+
+  // Switch the active journal without leaving the current view (top-bar dropdown).
+  const switchJournal = (j: Journal) => {
+    setActiveJournal(j); setFilter("all"); setSearch("");
+    try { localStorage.setItem("tj-journal-last", j.id); } catch {}
+  };
+
+  // Change the Trades/Statistics tab and mirror it in the URL, so the header
+  // "Statistics" link is a real navigation and its highlight stays correct.
+  const goView = (v: "trades" | "stats") => {
+    setView(v);
+    router.replace(`/dashboard/journal?view=${v}`, { scroll: false });
   };
 
   const deleteJournal = async (j: Journal) => {
@@ -718,18 +749,45 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
       {/* Top Bar */}
       <div style={{ display: "flex", alignItems: "center", gap: "14px", flexWrap: "wrap" }}>
-        <button onClick={() => setView("journals")} style={{ padding: "7px 14px", borderRadius: "8px", border: `1px solid ${T.border2}`, backgroundColor: "transparent", color: T.text3, cursor: "pointer", fontSize: "13px" }}>← Journals</button>
-        <div>
-          <h1 style={{ color: T.text1, fontWeight: 700, fontSize: "20px" }}>{activeJournal?.name}</h1>
+        <button onClick={() => { setView("journals"); router.replace("/dashboard/journal", { scroll: false }); }} style={{ padding: "7px 14px", borderRadius: "8px", border: `1px solid ${T.border2}`, backgroundColor: "transparent", color: T.text3, cursor: "pointer", fontSize: "13px" }}>← Journals</button>
+        <div style={{ position: "relative" }}>
+          {journals.length > 1 ? (
+            <button onClick={() => setJMenuOpen(o => !o)} style={{ display: "flex", alignItems: "center", gap: "8px", background: "transparent", border: "none", padding: 0, cursor: "pointer", textAlign: "left" }}>
+              <h1 style={{ color: T.text1, fontWeight: 700, fontSize: "20px" }}>{activeJournal?.name}</h1>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={T.text4} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: jMenuOpen ? "rotate(180deg)" : "none", transition: "transform .18s", flexShrink: 0 }}><polyline points="6 9 12 15 18 9"/></svg>
+            </button>
+          ) : (
+            <h1 style={{ color: T.text1, fontWeight: 700, fontSize: "20px" }}>{activeJournal?.name}</h1>
+          )}
           <p style={{ color: T.text4, fontSize: "12px" }}>{journalTrades.length} trade{journalTrades.length !== 1 ? "s" : ""}</p>
+          {jMenuOpen && journals.length > 1 && (
+            <>
+              <div onClick={() => setJMenuOpen(false)} style={{ position: "fixed", inset: 0, zIndex: 40 }} />
+              <div style={{ position: "absolute", top: "36px", left: 0, minWidth: "230px", zIndex: 41, background: T.bgHeader, border: `1px solid ${T.border2}`, borderRadius: "12px", padding: "6px", boxShadow: "0 16px 40px rgba(0,0,0,0.55)" }}>
+                <div style={{ padding: "6px 10px 8px", fontSize: "10px", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", color: T.text4 }}>Switch journal</div>
+                {journals.map(j => {
+                  const sel = activeJournal?.id === j.id;
+                  return (
+                    <button key={j.id} onClick={() => { switchJournal(j); setJMenuOpen(false); }}
+                      style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "10px", width: "100%", padding: "9px 10px", borderRadius: "8px", border: "none", background: sel ? "rgba(139,92,246,0.14)" : "transparent", color: sel ? "#C4B5FD" : T.text3, fontSize: "13px", fontWeight: sel ? 600 : 500, cursor: "pointer", textAlign: "left" }}
+                      onMouseEnter={e => { if (!sel) (e.currentTarget as HTMLButtonElement).style.background = T.bgInput; }}
+                      onMouseLeave={e => { if (!sel) (e.currentTarget as HTMLButtonElement).style.background = "transparent"; }}>
+                      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{j.name}</span>
+                      {sel && <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#A78BFA" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}><polyline points="20 6 9 17 4 12"/></svg>}
+                    </button>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
         {/* View Tabs */}
         <div style={{ display: "flex", gap: "4px", backgroundColor: T.bgHeader, borderRadius: "10px", padding: "3px" }}>
-          <button onClick={() => setView("trades")}
+          <button onClick={() => goView("trades")}
             style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "trades" ? T.bgInput : "transparent", color: view === "trades" ? T.text1 : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "trades" ? 600 : 400 }}>
             Trades
           </button>
-          <button onClick={() => setView("stats")}
+          <button onClick={() => goView("stats")}
             style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "stats" ? T.bgInput : "transparent", color: view === "stats" ? "#A78BFA" : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "stats" ? 600 : 400, display: "flex", alignItems: "center", gap: "6px" }}>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
             Statistics
