@@ -117,7 +117,6 @@ export default function BillingPage() {
         className="bp-card-wrap relative z-10 w-full"
         style={{ maxWidth: "440px" }}
       >
-        <div className="bp-ring" aria-hidden />
         <div className="bp-card">
           <div className="flex items-center justify-between mb-6">
             <span className="font-semibold text-[15px]" style={{ color: "#F9FAFB" }}>
@@ -248,10 +247,9 @@ export default function BillingPage() {
         .bp-gradient-text { background: linear-gradient(100deg, #A78BFA 0%, #C4B5FD 30%, #FBBF24 65%, #A78BFA 100%); background-size: 200% auto; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: bpGradientText 5s linear infinite; }
         @keyframes bpGradientText { to { background-position: 200% center; } }
 
-        .bp-card-wrap { position: relative; }
-        .bp-ring { position: absolute; inset: -1.5px; border-radius: 26px; background: conic-gradient(from 0deg, #8B5CF6, #A78BFA, #FBBF24, #7C3AED, #8B5CF6); animation: bpSpin 8s linear infinite; opacity: 0.9; }
-        @keyframes bpSpin { to { transform: rotate(360deg); } }
-        .bp-card { position: relative; border-radius: 24px; padding: 30px 28px; background: rgba(13,14,20,0.88); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: 0 30px 80px -20px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.05); }
+        .bp-card-wrap { position: relative; border-radius: 25px; padding: 1.5px; background: linear-gradient(155deg, rgba(167,139,250,0.7) 0%, rgba(139,92,246,0.14) 42%, rgba(139,92,246,0.14) 70%, rgba(251,191,36,0.4) 100%); box-shadow: 0 30px 90px -26px rgba(139,92,246,0.5); animation: bpGlow 4.5s ease-in-out infinite; }
+        @keyframes bpGlow { 0%,100% { box-shadow: 0 30px 90px -26px rgba(139,92,246,0.4); } 50% { box-shadow: 0 34px 110px -24px rgba(139,92,246,0.62); } }
+        .bp-card { position: relative; border-radius: 23.5px; padding: 30px 28px; background: rgba(13,14,20,0.94); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.06); }
 
         .bp-earlybird { display: inline-flex; align-items: center; padding: 4px 11px; font-size: 11.5px; font-weight: 700; border-radius: 9999px; color: #FBBF24; background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); }
 
@@ -266,7 +264,7 @@ export default function BillingPage() {
         .bp-lifetime:hover { color: #FCD34D; text-shadow: 0 0 26px rgba(251,191,36,0.55); }
 
         @media (prefers-reduced-motion: reduce) {
-          .bp-aurora, .bp-dot, .bp-logo-float, .bp-badge-dot, .bp-gradient-text, .bp-ring, .bp-cta, .bp-cta-shimmer { animation: none !important; }
+          .bp-aurora, .bp-dot, .bp-logo-float, .bp-badge-dot, .bp-gradient-text, .bp-card-wrap, .bp-cta, .bp-cta-shimmer { animation: none !important; }
         }
       `}</style>
     </div>
