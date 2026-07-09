@@ -220,16 +220,23 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
 
   useEffect(() => { load(); }, [load]);
 
-  // Deep-link: the header "Statistics" entry (/dashboard/journal?view=stats)
-  // opens the last-used (or first) journal straight in its Statistics view.
-  // Trades stays the default when opening a journal from the list.
+  // URL ?view=stats|trades drives the opened view. From the list, open the
+  // last-used (or first) journal in that view (so the header "Statistics" entry
+  // lands straight in stats, and a refresh keeps you in the journal). When
+  // already inside a journal, just sync the tab to the URL.
   useEffect(() => {
     if (loading || journals.length === 0) return;
-    if (searchParams.get("view") !== "stats" || view === "stats") return;
-    let target: Journal | null = null;
-    try { const last = localStorage.getItem("tj-journal-last"); target = journals.find(j => j.id === last) ?? null; } catch {}
-    target = target ?? activeJournal ?? journals[0];
-    if (target) { setActiveJournal(target); setView("stats"); }
+    const v = searchParams.get("view");
+    if (v !== "stats" && v !== "trades") return;
+    if (view === v) return;
+    if (view === "journals") {
+      let target: Journal | null = null;
+      try { const last = localStorage.getItem("tj-journal-last"); target = journals.find(j => j.id === last) ?? null; } catch {}
+      target = target ?? activeJournal ?? journals[0];
+      if (target) { setActiveJournal(target); setView(v); }
+    } else {
+      setView(v);
+    }
   }, [searchParams, loading, journals, view, activeJournal]);
 
   // Demo-Tour (?demo=1): auf Steuer-Events vom AppDemoTour-Overlay hören.
@@ -781,15 +788,20 @@ export default function JournalNew({ journalTourCompleted = false, darkMode: dar
             </>
           )}
         </div>
-        {/* View Tabs */}
-        <div style={{ display: "flex", gap: "4px", backgroundColor: T.bgHeader, borderRadius: "10px", padding: "3px" }}>
+        {/* View Tabs — active tab glows (gradient + shadow); both same size w/ icon */}
+        <div style={{ display: "flex", gap: "4px", backgroundColor: T.bgHeader, borderRadius: "11px", padding: "4px", border: `1px solid ${T.border2}` }}>
           <button onClick={() => goView("trades")}
-            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "trades" ? T.bgInput : "transparent", color: view === "trades" ? T.text1 : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "trades" ? 600 : 400 }}>
+            style={{ padding: "8px 16px", borderRadius: "8px", border: "none", background: view === "trades" ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : "transparent", color: view === "trades" ? "#fff" : T.text3, cursor: "pointer", fontSize: "13.5px", fontWeight: view === "trades" ? 700 : 500, display: "flex", alignItems: "center", gap: "7px", boxShadow: view === "trades" ? "0 2px 14px rgba(139,92,246,0.55)" : "none", transition: "all .18s" }}
+            onMouseEnter={e => { if (view !== "trades") (e.currentTarget as HTMLButtonElement).style.color = T.text1; }}
+            onMouseLeave={e => { if (view !== "trades") (e.currentTarget as HTMLButtonElement).style.color = T.text3; }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
             Trades
           </button>
           <button onClick={() => goView("stats")}
-            style={{ padding: "6px 14px", borderRadius: "8px", border: "none", backgroundColor: view === "stats" ? T.bgInput : "transparent", color: view === "stats" ? "#A78BFA" : T.text4, cursor: "pointer", fontSize: "13px", fontWeight: view === "stats" ? 600 : 400, display: "flex", alignItems: "center", gap: "6px" }}>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
+            style={{ padding: "8px 16px", borderRadius: "8px", border: "none", background: view === "stats" ? "linear-gradient(135deg, #8B5CF6, #7C3AED)" : "transparent", color: view === "stats" ? "#fff" : T.text3, cursor: "pointer", fontSize: "13.5px", fontWeight: view === "stats" ? 700 : 500, display: "flex", alignItems: "center", gap: "7px", boxShadow: view === "stats" ? "0 2px 14px rgba(139,92,246,0.55)" : "none", transition: "all .18s" }}
+            onMouseEnter={e => { if (view !== "stats") (e.currentTarget as HTMLButtonElement).style.color = T.text1; }}
+            onMouseLeave={e => { if (view !== "stats") (e.currentTarget as HTMLButtonElement).style.color = T.text3; }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="6" y1="20" x2="6" y2="11"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="18" y1="20" x2="18" y2="14"/></svg>
             Statistics
           </button>
         </div>
