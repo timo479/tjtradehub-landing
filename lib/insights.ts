@@ -57,10 +57,12 @@ export function normalizeTrade(e: RawEntry): NormalizedTrade | null {
   const fm = fieldMap(e);
 
   // P&L — a field whose label looks like profit/loss (covers manual "P&L" and
-  // MetaAPI "P&L"). "commission"/"swap" are excluded so they can't be mistaken.
+  // MetaAPI "P&L"). Excludes "commission"/"swap" and, critically, "Take Profit"/
+  // "Target" — those contain "profit" but hold a PRICE level, not the realised
+  // result, and would otherwise be mis-read as P&L (they sort before "P&L").
   let pnl: number | null = null;
   for (const [label, f] of fm) {
-    if (/p&l|pnl|profit|gain|gewinn/.test(label) && !/commission|swap/.test(label)) {
+    if (/p&l|pnl|profit|gain|gewinn/.test(label) && !/commission|swap|take.?profit|target/.test(label)) {
       const n = parseNum(f.value);
       if (n != null) { pnl = n; break; }
     }

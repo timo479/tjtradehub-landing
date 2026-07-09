@@ -71,16 +71,47 @@ export default function InsightsPanel({ result, isPro, isDark = true }: { result
     );
   }
 
-  // No significant pattern found. Basic → render nothing (no fake teaser).
-  // Pro/paying → always show the section so it never looks like a missing feature.
+  // No significant pattern found yet.
   if (result.insights.length === 0) {
-    if (!isPro) return null;
+    // Pro/paying → reassurance card so the feature never looks missing.
+    if (isPro) {
+      return (
+        <div style={{ background: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 22px" }}>
+          <div style={{ marginBottom: 8 }}><InsightsTitle color={t.text} /></div>
+          <p style={{ color: t.muted, fontSize: 13, margin: 0, lineHeight: 1.6 }}>
+            No strong patterns right now — your trading looks consistent. Keep logging and we&apos;ll surface leaks the moment they appear.
+          </p>
+        </div>
+      );
+    }
+    // Basic → generic locked teaser so the upgrade hook is never absent, even
+    // when no specific pattern qualifies yet. We surface the CATEGORIES Pro
+    // analyses (not a fabricated finding) with the payoff blurred.
+    const teasers: { severity: Insight["severity"]; headline: string }[] = [
+      { severity: "edge", headline: "Your most profitable setup" },
+      { severity: "leak", headline: "Your most expensive mistake" },
+    ];
     return (
       <div style={{ background: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 22px" }}>
-        <div style={{ marginBottom: 8 }}><InsightsTitle color={t.text} /></div>
-        <p style={{ color: t.muted, fontSize: 13, margin: 0, lineHeight: 1.6 }}>
-          No strong patterns right now — your trading looks consistent. Keep logging and we&apos;ll surface leaks the moment they appear.
-        </p>
+        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
+          <InsightsTitle color={t.text} />
+          <ProBadge style={{ marginLeft: "auto" }} />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
+          {teasers.map((tz, i) => (
+            <div key={i} style={{ background: t.innerBg, border: `1px solid ${t.border}`, borderRadius: 12, padding: "14px 16px", display: "flex", gap: 12 }}>
+              <SeverityIcon severity={tz.severity} />
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ color: t.text, fontSize: 13.5, fontWeight: 600, lineHeight: 1.4, marginBottom: 8 }}>{tz.headline}</div>
+                <div style={{ marginBottom: 6 }}>
+                  <LockedValue><span style={{ color: "#C4B5FD", fontSize: 12, fontWeight: 700, background: "rgba(139,92,246,0.12)", borderRadius: 6, padding: "2px 9px" }}>Pro insight</span></LockedValue>
+                </div>
+                <LockedValue><span style={{ color: t.muted, fontSize: 12 }}>Unlock the exact numbers</span></LockedValue>
+              </div>
+            </div>
+          ))}
+        </div>
+        <UpgradeFooter muted={t.muted} message={<>We&apos;re already scanning <strong style={{ color: t.text }}>your</strong> trades for edges &amp; leaks. Unlock them with Pro.</>} />
       </div>
     );
   }
@@ -89,9 +120,7 @@ export default function InsightsPanel({ result, isPro, isDark = true }: { result
     <div style={{ background: t.cardBg, border: `1px solid ${t.border}`, borderRadius: 16, padding: "18px 22px" }}>
       <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
         <InsightsTitle color={t.text} />
-        {!isPro && (
-          <span style={{ marginLeft: "auto", color: "#A78BFA", fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: 6, padding: "2px 8px" }}>PRO</span>
-        )}
+        {!isPro && <ProBadge style={{ marginLeft: "auto" }} />}
       </div>
 
       <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: 12 }}>
@@ -121,17 +150,27 @@ export default function InsightsPanel({ result, isPro, isDark = true }: { result
       </div>
 
       {!isPro && (
-        <div style={{ marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
-          <span style={{ color: t.muted, fontSize: 12.5 }}>
-            These patterns are from <strong style={{ color: t.text }}>your</strong> trades. Unlock the answers with Pro.
-          </span>
-          <Link href="/billing" style={{ textDecoration: "none", flexShrink: 0 }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 10, background: `linear-gradient(135deg, ${ACCENT}, #7C3AED)`, color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 6px 20px rgba(139,92,246,0.3)" }}>
-              Unlock with Pro · $29/mo →
-            </span>
-          </Link>
-        </div>
+        <UpgradeFooter muted={t.muted} message={<>These patterns are from <strong style={{ color: t.text }}>your</strong> trades. Unlock the answers with Pro.</>} />
       )}
+    </div>
+  );
+}
+
+function ProBadge({ style }: { style?: React.CSSProperties }) {
+  return (
+    <span style={{ color: "#A78BFA", fontSize: 11, fontWeight: 800, letterSpacing: "0.06em", background: "rgba(139,92,246,0.12)", border: "1px solid rgba(139,92,246,0.28)", borderRadius: 6, padding: "2px 8px", ...style }}>PRO</span>
+  );
+}
+
+function UpgradeFooter({ muted, message }: { muted: string; message: React.ReactNode }) {
+  return (
+    <div style={{ marginTop: 16, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+      <span style={{ color: muted, fontSize: 12.5 }}>{message}</span>
+      <Link href="/billing" style={{ textDecoration: "none", flexShrink: 0 }}>
+        <span style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 10, background: `linear-gradient(135deg, ${ACCENT}, #7C3AED)`, color: "#fff", fontSize: 13, fontWeight: 700, boxShadow: "0 6px 20px rgba(139,92,246,0.3)" }}>
+          Unlock with Pro · $29/mo →
+        </span>
+      </Link>
     </div>
   );
 }
