@@ -5,9 +5,10 @@ import { computeInsights } from "@/lib/insights";
 import InsightsPanel from "@/components/insights/InsightsPanel";
 import LockedWidget from "@/components/common/LockedWidget";
 
-// Widgets a Basic user keeps free (raw record); rest is Pro-gated. Mirror of
-// STATS_FREE in JournalStats.tsx — keep both in sync.
-const DASH_FREE = new Set(["kpi-cards", "equity-curve", "calendar"]);
+// Pro-gated widgets — blurred for Basic; everything else is visible to all.
+// (+ Discipline Score & Performance Insights are gated at their own call sites.)
+// Mirror of STATS_LOCKED in JournalStats.tsx — keep both in sync.
+const DASH_LOCKED = new Set(["profit-factor", "discipline-score"]);
 
 // ─── Design Token ─────────────────────────────────────────────────────────────
 const W_PAD = "20px 22px"; // widget padding — matches HTML reference
@@ -1170,7 +1171,7 @@ export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[
     return (
       <GlowCard key={id} style={{ padding: W_PAD }}>
         <SectionTitle icon={w.icon}>{w.name}</SectionTitle>
-        <LockedWidget locked={!isPro && !DASH_FREE.has(id)}>
+        <LockedWidget locked={!isPro && DASH_LOCKED.has(id)}>
           <w.component entries={entries} />
         </LockedWidget>
       </GlowCard>
@@ -1264,7 +1265,7 @@ export default function WidgetGrid({ entries, isPro = false }: { entries: Entry[
       {/* Row 5: Histogram (full width, only if active) */}
       {entries.length > 0 && active.includes("histogram") && (
         <GlowCard style={{ padding: W_PAD }}>
-          {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><LockedWidget locked={!isPro}><WHistogram entries={entries} /></LockedWidget></>; })()}
+          {(() => { const w = WIDGETS.find(x => x.id === "histogram")!; return <><SectionTitle icon={w.icon}>{w.name}</SectionTitle><LockedWidget locked={false}><WHistogram entries={entries} /></LockedWidget></>; })()}
         </GlowCard>
       )}
 

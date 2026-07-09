@@ -5,8 +5,10 @@ import { computeInsights } from "@/lib/insights";
 import InsightsPanel from "@/components/insights/InsightsPanel";
 import LockedWidget from "@/components/common/LockedWidget";
 
-// Widgets a Basic user keeps free (the raw record); the rest is Pro-gated.
-const STATS_FREE = new Set(["kpi", "equity", "calendar"]);
+// Pro-gated widgets — blurred for Basic; everything else is visible to all.
+// (+ Discipline Score & Performance Insights are gated at their own call sites.)
+// Mirror of DASH_LOCKED in WidgetGrid.tsx — keep both in sync.
+const STATS_LOCKED = new Set(["risk-discipline", "rule-compliance", "emotions-breaks", "profit-factor"]);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 interface Rule { id: string; text: string; }
@@ -1584,7 +1586,7 @@ function JournalStatsInner({ entries, journal, metaAccountBalance, userName, isP
                   <WidgetCard>
                     <SectionTitle icon={w.icon}>{w.name}</SectionTitle>
                     <div style={{ flex: 1, overflow: "auto", minHeight: 0, display: "flex", flexDirection: "column" }}>
-                      <LockedWidget locked={!isPro && !STATS_FREE.has(w.id)}>
+                      <LockedWidget locked={!isPro && STATS_LOCKED.has(w.id)}>
                         <w.component entries={filtered} journal={journal} />
                       </LockedWidget>
                     </div>
