@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 
 // Shared feed presentation primitives — used by BOTH the live feed (FeedClient)
 // and the admin "Preview as user" modal (FeedAdminClient), so what an admin
@@ -64,8 +65,10 @@ export interface FeedModalPost {
 export function FeedDetailModal({ post, onClose }: { post: FeedModalPost; onClose: () => void }) {
   const color = IMPACT_COLOR[post.impact];
   const [expanded, setExpanded] = useState<number | null>(null);
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => { setMounted(true); }, []);
 
-  return (
+  const content = (
     <div
       style={{
         position: "fixed", inset: 0, background: "rgba(0,0,0,0.88)",
@@ -219,4 +222,6 @@ export function FeedDetailModal({ post, onClose }: { post: FeedModalPost; onClos
       `}</style>
     </div>
   );
+
+  return mounted ? createPortal(content, document.body) : null;
 }
