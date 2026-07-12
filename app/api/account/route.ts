@@ -85,25 +85,35 @@ export async function DELETE() {
     const entryIds = entries?.map((e) => e.id) ?? [];
     const strategyIds = strategies?.map((s) => s.id) ?? [];
 
-    // Delete nested first – best effort (catch individual errors so user always gets deleted)
+    // Delete nested first – best effort (log individual errors so the user still gets deleted)
     if (entryIds.length) {
-      await db.from("trade_field_values").delete().in("trade_id", entryIds).catch(() => null);
+      const fvErr = (await db.from("trade_field_values").delete().in("trade_id", entryIds)).error;
+      if (fvErr) console.warn("[account-delete] trade_field_values:", fvErr.message);
     }
     if (templateIds.length) {
-      await db.from("template_fields").delete().in("template_id", templateIds).catch(() => null);
-      await db.from("template_sections").delete().in("template_id", templateIds).catch(() => null);
+      const tfErr = (await db.from("template_fields").delete().in("template_id", templateIds)).error;
+      if (tfErr) console.warn("[account-delete] template_fields:", tfErr.message);
+      const tsErr = (await db.from("template_sections").delete().in("template_id", templateIds)).error;
+      if (tsErr) console.warn("[account-delete] template_sections:", tsErr.message);
     }
     if (strategyIds.length) {
-      await db.from("strategy_rules").delete().in("strategy_id", strategyIds).catch(() => null);
+      const srErr = (await db.from("strategy_rules").delete().in("strategy_id", strategyIds)).error;
+      if (srErr) console.warn("[account-delete] strategy_rules:", srErr.message);
     }
 
     // Delete top-level user data – best effort
-    await db.from("trade_entries").delete().eq("user_id", userId).catch(() => null);
-    await db.from("journal_templates").delete().eq("user_id", userId).catch(() => null);
-    await db.from("strategies").delete().eq("user_id", userId).catch(() => null);
-    await db.from("custom_fields").delete().eq("user_id", userId).catch(() => null);
-    await db.from("trades").delete().eq("user_id", userId).catch(() => null);
-    await db.from("journal_config").delete().eq("user_id", userId).catch(() => null);
+    const teErr = (await db.from("trade_entries").delete().eq("user_id", userId)).error;
+    if (teErr) console.warn("[account-delete] trade_entries:", teErr.message);
+    const jtErr = (await db.from("journal_templates").delete().eq("user_id", userId)).error;
+    if (jtErr) console.warn("[account-delete] journal_templates:", jtErr.message);
+    const stErr = (await db.from("strategies").delete().eq("user_id", userId)).error;
+    if (stErr) console.warn("[account-delete] strategies:", stErr.message);
+    const cfErr = (await db.from("custom_fields").delete().eq("user_id", userId)).error;
+    if (cfErr) console.warn("[account-delete] custom_fields:", cfErr.message);
+    const trErr = (await db.from("trades").delete().eq("user_id", userId)).error;
+    if (trErr) console.warn("[account-delete] trades:", trErr.message);
+    const jcErr = (await db.from("journal_config").delete().eq("user_id", userId)).error;
+    if (jcErr) console.warn("[account-delete] journal_config:", jcErr.message);
 
     // Finally delete the user
     const { error } = await db.from("users").delete().eq("id", userId);

@@ -12,12 +12,16 @@ export async function POST() {
 
   const { data: user } = await db
     .from("users")
-    .select("stripe_customer_id, email, subscription_status, current_period_end")
+    .select("stripe_customer_id, email, subscription_status, current_period_end, founder_number")
     .eq("id", session.user.id)
     .single();
 
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
+
+  if (user.subscription_status === "lifetime" || user.founder_number) {
+    return NextResponse.json({ error: "You already have lifetime access." }, { status: 400 });
   }
 
   if (user.subscription_status === "active" && user.current_period_end && new Date(user.current_period_end) > new Date()) {

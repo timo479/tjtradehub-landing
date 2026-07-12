@@ -348,7 +348,7 @@ export async function POST(request: NextRequest) {
           .from("users")
           .update({
             subscription_id: sub.id,
-            subscription_status: sub.status,
+            subscription_status: mapStripeStatus(sub.status),
             current_period_end: getPeriodEnd(sub),
           })
           .eq("stripe_customer_id", customerId);
