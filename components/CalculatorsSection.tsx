@@ -20,6 +20,7 @@ const TOOLS = [
     id: "drawdown",
     badge: "Recovery · Losing Streak · Compound",
     title: "Drawdown Tool",
+    pro: true,
     description:
       "See exactly how much gain you need to recover from any loss — and why risk management is critical. Includes a losing streak simulator and compound interest planner.",
     bullets: [
@@ -88,7 +89,9 @@ export default function CalculatorsSection() {
 
         {/* Tool cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {TOOLS.map((tool) => (
+          {TOOLS.map((tool) => {
+            const isProTool = "pro" in tool && tool.pro;
+            return (
             <div
               key={tool.id}
               className="flex flex-col rounded-2xl overflow-hidden calc-card"
@@ -145,12 +148,32 @@ export default function CalculatorsSection() {
               {/* Content */}
               <div className="flex flex-col gap-5 p-6 flex-1">
                 <div>
-                  <h3
-                    className="text-xl font-bold mb-3"
-                    style={{ color: "#F9FAFB" }}
-                  >
-                    {tool.title}
-                  </h3>
+                  <div className="flex items-center gap-2.5 mb-3">
+                    <h3
+                      className="text-xl font-bold"
+                      style={{ color: "#F9FAFB" }}
+                    >
+                      {tool.title}
+                    </h3>
+                    {isProTool && (
+                      <span
+                        className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full"
+                        style={{
+                          fontSize: "10px",
+                          fontWeight: 700,
+                          letterSpacing: "0.08em",
+                          background: "linear-gradient(135deg, #8B5CF6, #A855F7)",
+                          color: "#fff",
+                          boxShadow: "0 2px 10px -2px rgba(139,92,246,0.6)",
+                        }}
+                      >
+                        <svg width="8" height="8" viewBox="0 0 12 12" fill="none">
+                          <path d="M6 0L7.2 4.8L12 6L7.2 7.2L6 12L4.8 7.2L0 6L4.8 4.8L6 0Z" fill="#fff" />
+                        </svg>
+                        PRO
+                      </span>
+                    )}
+                  </div>
                   <p className="text-sm leading-relaxed" style={{ color: "#9CA3AF" }}>
                     {tool.description}
                   </p>
@@ -184,7 +207,7 @@ export default function CalculatorsSection() {
                       boxShadow: "0 4px 14px rgba(139,92,246,0.3)",
                     }}
                   >
-                    Try for free
+                    {isProTool ? "Unlock with Pro" : "Try for free"}
                     <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                       <path d="M3 7h8M8 4l3 3-3 3" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
@@ -192,12 +215,14 @@ export default function CalculatorsSection() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Bottom note */}
         <p className="text-center text-sm mt-10" style={{ color: "#4B5563" }}>
-          Both tools are included in every plan — no add-ons, no extra fees.
+          The Risk Calculator is free on every plan. The Drawdown Tool —
+          Drawdown Recovery &amp; Compound Planner — is part of Pro.
         </p>
 
       </div>

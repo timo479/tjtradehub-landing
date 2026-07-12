@@ -1,4 +1,5 @@
 import { auth } from "@/lib/auth";
+import { hasActiveSubscription } from "@/lib/trial";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import CalculatorClient from "./CalculatorClient";
 
@@ -8,6 +9,10 @@ export default async function CalculatorPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
   const isAdmin = (session!.user as { role?: string }).role === "admin";
+  const isPro = hasActiveSubscription({
+    subscription_status: subscriptionStatus,
+    current_period_end: session!.user.currentPeriodEnd,
+  }) || isAdmin;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.1) 0%, transparent 55%), #000" }}>
@@ -21,7 +26,7 @@ export default async function CalculatorPage() {
         headerStyle={{ borderBottom: "1px solid #1F2937", flexShrink: 0 }}
       />
 
-      <CalculatorClient />
+      <CalculatorClient isPro={isPro} />
     </div>
   );
 }
