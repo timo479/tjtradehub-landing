@@ -104,6 +104,69 @@ export async function sendFounderWelcomeEmail(args: {
   });
 }
 
+export async function sendTrustpilotInviteEmail(args: {
+  to: string;
+  name: string | null;
+  unsubscribeToken: string;
+}) {
+  const { to, name, unsubscribeToken } = args;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://www.tjtradehub.com";
+  const reviewUrl =
+    process.env.NEXT_PUBLIC_TRUSTPILOT_REVIEW_URL ??
+    "https://www.trustpilot.com/evaluate/tjtradehub.com";
+  const firstName = (name ?? "").split(" ")[0] || "there";
+  const unsubscribeUrl = `${appUrl}/unsubscribe?t=${unsubscribeToken}`;
+  const oneClickUrl = `${appUrl}/api/unsubscribe?t=${unsubscribeToken}`;
+
+  await resend.emails.send({
+    from: "TJ TradeHub <noreply@tjtradehub.com>",
+    to,
+    subject: "How's your TJ TradeHub experience so far?",
+    headers: {
+      // RFC 8058 one-click unsubscribe (Gmail/Yahoo bulk-sender requirement).
+      "List-Unsubscribe": `<${oneClickUrl}>`,
+      "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+    },
+    html: `<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /></head>
+<body style="margin:0;padding:0;background-color:#000;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#000;padding:48px 0;">
+    <tr><td align="center">
+      <table width="540" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;border:1px solid #1f1f1f;border-radius:14px;overflow:hidden;">
+        <tr><td align="center" style="padding:40px 48px 8px;">
+          <span style="font-size:22px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">TJ <span style="color:#a855f7;">TradeHub</span></span>
+        </td></tr>
+        <tr><td align="center" style="padding:8px 48px 0;">
+          <div style="font-size:34px;letter-spacing:6px;color:#00b67a;line-height:1;">★★★★★</div>
+        </td></tr>
+        <tr><td style="padding:24px 48px 8px;">
+          <h1 style="margin:0;font-size:22px;font-weight:700;color:#F9FAFB;letter-spacing:-0.3px;text-align:center;">Hey ${firstName}, how's it going?</h1>
+        </td></tr>
+        <tr><td style="padding:0 48px 28px;">
+          <p style="margin:0;font-size:15px;color:#9CA3AF;line-height:1.7;text-align:center;">
+            You've started logging your trades in TJ TradeHub — that's the hard part done. If it's helping (or if it isn't yet), a quick, honest review means the world to a small team and helps other traders find us. Takes about 2 minutes.
+          </p>
+        </td></tr>
+        <tr><td align="center" style="padding:0 48px 36px;">
+          <a href="${reviewUrl}" style="display:inline-block;background:linear-gradient(135deg,#a855f7,#7c3aed);color:#ffffff;text-decoration:none;font-size:15px;font-weight:800;padding:15px 36px;border-radius:10px;letter-spacing:0.02em;box-shadow:0 8px 24px rgba(139,92,246,0.35);">
+            Leave a review on Trustpilot →
+          </a>
+        </td></tr>
+        <tr><td style="background-color:#070707;border-top:1px solid #1c1c1c;padding:24px 48px;">
+          <p style="margin:0;font-size:12px;color:#52525b;text-align:center;line-height:1.8;">
+            TJ TradeHub · support@tjtradehub.com<br/>
+            <a href="${unsubscribeUrl}" style="color:#52525b;text-decoration:underline;">Unsubscribe</a>
+          </p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`,
+  });
+}
+
 export async function sendVerificationEmail(to: string, token: string) {
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
   const verifyUrl = `${appUrl}/api/verify-email?token=${token}`;

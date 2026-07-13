@@ -12,8 +12,12 @@ import { db } from "@/lib/db";
 import { undeployStaleAccounts } from "@/lib/metaapi-undeploy";
 import { createWeeklyNewsletter } from "@/lib/newsletter/createWeekly";
 import { syncEconomicCalendar } from "@/lib/economic-calendar";
+import { sendTrustpilotInviteEmail } from "@/lib/email";
 
 const FEED_RETENTION_DAYS = 7;
+// Cap Trustpilot invite emails per run so a first-run backfill drains over a
+// few days instead of blasting everyone at once (Resend + runtime headroom).
+const TRUSTPILOT_INVITE_LIMIT = 200;
 
 // Allow this route up to 5 minutes — newsletter generation alone takes ~30s
 // and we run undeploy retries before it. Vercel Hobby cron functions cap at 60s,
@@ -75,7 +79,81 @@ export async function GET(req: Request) {
     economicCalendar = { error: msg };
   }
 
-  // 4) Mondays only: generate newsletter
+  // 4) Always: Trustpilot review-invitation fallback.
+  // Server-side coverage for users who logged >= 1 trade but never triggered
+  // the client-side Invitation JS (never revisited the dashboard). Shares the
+  // `trustpilot_invited_at` flag with the client path, so no double invites.
+  let trustpilot:
+    | { sent: number; remaining: number; failed: number }
+    | { error: string };
+  try {
+    // Uninvited, verified, opted-in, non-banned candidates.
+    const { data: candidates, error: candErr } = await db
+      .from("users")
+      .select("id, email, name, unsubscribe_token")
+      .is("trustpilot_invited_at", null)
+      .eq("email_verified", true)
+      .eq("newsletter_opt_in", true)
+      .neq("is_banned", true);
+    if (candErr) throw new Error(candErr.message);
+
+    const candidateList = candidates ?? [];
+    let sent = 0;
+    let failed = 0;
+    let remaining = 0;
+
+    if (candidateList.length > 0) {
+      // Keep only those with >= 1 logged trade (trade_entries — same source the
+      // dashboard uses; MT5 sync writes here too).
+      const ids = candidateList.map((u) => u.id);
+      const { data: entryRows } = await db
+        .from("trade_entries")
+        .select("user_id")
+        .in("user_id", ids);
+      const withTrades = new Set((entryRows ?? []).map((r) => r.user_id));
+
+      const eligible = candidateList.filter(
+        (u) => u.email && u.unsubscribe_token && withTrades.has(u.id),
+      );
+      remaining = Math.max(0, eligible.length - TRUSTPILOT_INVITE_LIMIT);
+      const batch = eligible.slice(0, TRUSTPILOT_INVITE_LIMIT);
+      const invitedIds: string[] = [];
+
+      for (const u of batch) {
+        try {
+          await sendTrustpilotInviteEmail({
+            to: u.email as string,
+            name: u.name ?? null,
+            unsubscribeToken: u.unsubscribe_token as string,
+          });
+          invitedIds.push(u.id);
+          sent++;
+        } catch (err) {
+          failed++;
+          console.error(`[cron/daily] trustpilot invite failed for ${u.email}:`, err);
+        }
+      }
+
+      // Mark only successfully-emailed users, so failures retry next run.
+      if (invitedIds.length > 0) {
+        await db
+          .from("users")
+          .update({ trustpilot_invited_at: new Date().toISOString() })
+          .in("id", invitedIds);
+      }
+    }
+
+    trustpilot = { sent, remaining, failed };
+    if (remaining > 0) {
+      console.log(`[cron/daily] trustpilot: ${sent} invited, ${remaining} deferred to next run (per-run cap ${TRUSTPILOT_INVITE_LIMIT})`);
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[cron/daily] trustpilot invites failed:", msg);
+    trustpilot = { error: msg };
+  }
+
+  // 5) Mondays only: generate newsletter
   // Monday in UTC. Cron fires at 06:00 UTC daily, so we get exactly one
   // newsletter run per week. ?forceMonday=1 lets you test the flow on any day.
   const url = new URL(req.url);
@@ -102,6 +180,7 @@ export async function GET(req: Request) {
     undeploy,
     feedCleanup,
     economicCalendar,
+    trustpilot,
     newsletter,
   });
 }

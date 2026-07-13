@@ -12,6 +12,7 @@ import MetaConversion from "@/components/MetaConversion";
 import WelcomeWrapper from "@/components/WelcomeWrapper";
 import LotteryWidget from "@/components/lottery/LotteryWidget";
 import RecapCard from "@/components/dashboard/RecapCard";
+import TrustpilotInvite from "@/components/trustpilot/TrustpilotInvite";
 import { normalizeTrade, lossFlag } from "@/lib/insights";
 
 export const metadata = {
@@ -35,13 +36,19 @@ export default async function DashboardPage() {
 
   const { data: userRow } = await db
     .from("users")
-    .select("onboarding_completed, welcome_shown")
+    .select("onboarding_completed, welcome_shown, trustpilot_invited_at")
     .eq("id", session.user.id)
     .single();
   const onboardingCompleted = userRow?.onboarding_completed ?? false;
   const welcomeShown = userRow?.welcome_shown ?? false;
 
   const allEntries = rawEntries ?? [];
+
+  // Trustpilot review invitation (client-side fast path): fire once for users
+  // who have logged >= 1 trade and haven't been invited yet. The daily cron
+  // covers anyone who qualifies but doesn't revisit the dashboard.
+  const showTrustpilotInvite =
+    !userRow?.trustpilot_invited_at && allEntries.length >= 1;
 
   // Weekly recap (Basic-only): losses in the last 7 days + how many were avoidable.
   const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000;
@@ -123,6 +130,13 @@ export default async function DashboardPage() {
     <div className="min-h-screen" style={{ background: "radial-gradient(ellipse at 50% 0%, rgba(139,92,246,0.22) 0%, transparent 60%), #000" }}>
       <TikTokConversion />
       <MetaConversion />
+      {showTrustpilotInvite && (
+        <TrustpilotInvite
+          email={session.user.email ?? ""}
+          name={name ?? ""}
+          referenceId={session.user.id}
+        />
+      )}
       <WelcomeWrapper userName={name ?? "Trader"} show={!welcomeShown} />
       {/* Basic Plan Banner – upsell to MT5 Sync */}
       {!isSubscribed && (
