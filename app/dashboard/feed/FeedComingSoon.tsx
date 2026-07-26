@@ -106,9 +106,9 @@ export default function FeedComingSoon() {
           boxShadow: "0 0 24px rgba(139,92,246,0.18), inset 0 1px 0 rgba(255,255,255,0.08)",
         }}>
           <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#8B5CF6", display: "inline-block", animation: "pulsedot 2s infinite", boxShadow: "0 0 12px #8B5CF6" }} />
-          <span style={{ color: "#C4B5FD", fontSize: "12px", fontWeight: 700, letterSpacing: "0.12em" }}>COMING SOON</span>
+          <span style={{ color: "#C4B5FD", fontSize: "12px", fontWeight: 700, letterSpacing: "0.12em" }}>PRO FEATURE</span>
           <span style={{ width: 1, height: 14, background: "rgba(139,92,246,0.45)" }} />
-          <span style={{ color: "#7C3AED", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em" }}>Pro Plan</span>
+          <span style={{ color: "#7C3AED", fontSize: "12px", fontWeight: 600, letterSpacing: "0.06em" }}>Now Live</span>
         </div>
 
         {/* Title */}
@@ -155,6 +155,29 @@ export default function FeedComingSoon() {
               <span style={{ color: color, fontSize: "12px", fontWeight: 800, letterSpacing: "0.1em" }}>{label}</span>
             </div>
           ))}
+        </div>
+
+        {/* Upgrade CTA */}
+        <div style={{ marginTop: "44px", display: "flex", flexDirection: "column", alignItems: "center", gap: "14px" }}>
+          <a
+            href="/billing"
+            style={{
+              display: "inline-flex", alignItems: "center", gap: "10px",
+              padding: "15px 34px", borderRadius: "14px",
+              background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+              color: "#fff", fontSize: "16px", fontWeight: 800, letterSpacing: "0.01em",
+              textDecoration: "none",
+              boxShadow: "0 0 40px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(-2px)"; el.style.boxShadow = "0 0 56px rgba(139,92,246,0.55), inset 0 1px 0 rgba(255,255,255,0.15)"; }}
+            onMouseLeave={e => { const el = e.currentTarget as HTMLAnchorElement; el.style.transform = "translateY(0)"; el.style.boxShadow = "0 0 40px rgba(139,92,246,0.4), inset 0 1px 0 rgba(255,255,255,0.15)"; }}
+          >
+            Unlock with Pro — $29/mo →
+          </a>
+          <span style={{ color: "#6B7280", fontSize: "13px", fontWeight: 500 }}>
+            AI Market Insights is included in every Pro plan. Cancel anytime.
+          </span>
         </div>
       </div>
 

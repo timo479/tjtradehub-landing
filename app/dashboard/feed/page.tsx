@@ -27,11 +27,13 @@ export default async function FeedPage() {
   const isAdmin = (session.user as { role?: string }).role === "admin";
   // Demo account sees the live feed (for the product tour video) without being admin.
   const isDemo = session.user.email === "demo@tjtradehub.com";
-  const showFeed = isAdmin || isDemo;
   const isPaying = hasActiveSubscription({
     subscription_status: session.user.subscriptionStatus ?? "basic",
     current_period_end: session.user.currentPeriodEnd ?? null,
   });
+  // AI Market Insights is a Pro feature. Pro/lifetime (+ admin & demo) get the
+  // live feed; Basic gets the upgrade teaser.
+  const showFeed = isAdmin || isDemo || isPaying;
 
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000", position: "relative", overflow: "hidden" }}>

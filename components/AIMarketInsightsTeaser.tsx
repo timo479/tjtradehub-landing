@@ -291,7 +291,7 @@ export default function AIMarketInsightsTeaser() {
                 fontSize: "9px", fontWeight: 800, padding: "2px 7px", borderRadius: "5px",
                 background: "rgba(139,92,246,0.18)", border: "1px solid rgba(139,92,246,0.35)",
                 color: "#A78BFA", letterSpacing: "0.06em",
-              }}>COMING SOON</span>
+              }}>NOW LIVE</span>
             </div>
           </div>
 

@@ -18,7 +18,7 @@ interface Props {
   headerStyle?: React.CSSProperties;
 }
 
-const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean }[] = [
+const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/dashboard/journal", label: "Journal", key: "journal" },
   { href: "/dashboard/journal?view=stats", label: "Statistics", key: "statistics" },
@@ -27,12 +27,12 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage; soon?: boolean 
   { href: "/dashboard/calculator", label: "Calculator", key: "calculator" },
   { href: "/dashboard/checklist", label: "Checklist", key: "checklist" },
   { href: "/dashboard/lottery", label: "Lottery", key: "lottery" },
-  { href: "/dashboard/feed", label: "AI Market Insights", key: "feed", soon: true },
+  { href: "/dashboard/feed", label: "AI Market Insights", key: "feed" },
 ];
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
 
-function SoonBadge() {
+function SoonBadge({ label = "SOON" }: { label?: string }) {
   return (
     <span
       style={{
@@ -47,7 +47,7 @@ function SoonBadge() {
         animation: "soonPulse 2.4s ease-in-out infinite",
       }}
     >
-      SOON
+      {label}
     </span>
   );
 }
@@ -136,6 +136,11 @@ export default function DashboardHeader({
   const [adminOpen, setAdminOpen] = useState(false);
   const [newFeedback, setNewFeedback] = useState(0);
   const adminRef = useRef<HTMLDivElement>(null);
+
+  // Basic users see a "PRO" badge on the AI Market Insights link (upsell);
+  // Pro/lifetime/admin get the live feed and no badge.
+  const isPro = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
+  const showProBadge = !isPro && !isAdmin;
 
   // Close the admin dropdown on outside-click / Escape.
   useEffect(() => {
@@ -261,7 +266,7 @@ export default function DashboardHeader({
               }}
             />
 
-            {NAV_LINKS.map(({ href, label, key, soon }, i) => {
+            {NAV_LINKS.map(({ href, label, key }, i) => {
               const isActive = effectiveActivePage === key;
               return (
                 <Link
@@ -289,7 +294,7 @@ export default function DashboardHeader({
                 >
                   {label}
                   {key === "checklist" && !checklistEnabled && <SoonBadge />}
-                  {soon && <SoonBadge />}
+                  {key === "feed" && showProBadge && <SoonBadge label="PRO" />}
                 </Link>
               );
             })}
@@ -454,7 +459,7 @@ export default function DashboardHeader({
       {/* Mobile dropdown nav */}
       {open && (
         <div className="md:hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "16px", paddingTop: "8px" }}>
-          {NAV_LINKS.map(({ href, label, key, soon }) => {
+          {NAV_LINKS.map(({ href, label, key }) => {
             const isActive = activePage === key;
             return (
               <Link
@@ -478,7 +483,7 @@ export default function DashboardHeader({
               >
                 {label}
                 {key === "checklist" && !checklistEnabled && <SoonBadge />}
-                {soon && <SoonBadge />}
+                {key === "feed" && showProBadge && <SoonBadge label="PRO" />}
               </Link>
             );
           })}
