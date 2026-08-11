@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { rateLimit } from "@/lib/rate-limit";
 import { sendVerificationEmail } from "@/lib/email";
 import { awardLots, generateUniqueReferralCode, LOTS_PER_REFERRAL, LOTS_PER_SOURCE } from "@/lib/lottery";
+import { stampReferralFromCode } from "@/lib/affiliates";
 
 const registerSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -101,6 +102,24 @@ export async function POST(request: NextRequest) {
         { error: "Failed to create account" },
         { status: 500 }
       );
+    }
+
+    // Partner-Attribution (best-effort, blockiert die Registrierung nie).
+    // Der Cookie kommt vom Partner-Link /r/CODE und hält 60 Tage — dadurch wird
+    // auch ein gratis Basic-Signup gestempelt, der erst Monate später upgradet.
+    // Bewusst NICHT das `ref`-Feld oben: das ist das User-zu-User-Verlosungs-
+    // Referral (users.referral_code), ein anderes System.
+    try {
+      const viaCode = request.cookies.get("tj_via")?.value;
+      if (viaCode) {
+        await stampReferralFromCode({
+          userId: inserted.id,
+          code: viaCode,
+          source: "link",
+        });
+      }
+    } catch (affErr) {
+      console.error("Affiliate stamp error:", affErr);
     }
 
     // Award lottery lots (best-effort, never block registration)

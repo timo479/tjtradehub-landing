@@ -53,6 +53,7 @@ export async function POST() {
         quantity: 1,
       },
     ],
+    allow_promotion_codes: true,
     success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?upgraded=true`,
     cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/billing?cancelled=true`,
     metadata: { userId: session.user.id },

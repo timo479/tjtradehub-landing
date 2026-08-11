@@ -9,6 +9,12 @@ import { sendTikTokCompletePayment } from "@/lib/tiktok-events";
 import { claimFounderSlot } from "@/lib/founders";
 import { sendFounderWelcomeEmail } from "@/lib/email";
 import { generateUniqueReferralCode } from "@/lib/lottery";
+import {
+  clawbackCommission,
+  markReferralChurned,
+  recordCommission,
+  stampReferralFromCode,
+} from "@/lib/affiliates";
 
 // Mappt rohe Stripe-Subscription-Status auf die internen Werte, die unsere App-Logik
 // (hasActiveSubscription / canAccessDashboard) kennt. Ohne dieses Mapping landet ein
@@ -58,6 +64,30 @@ async function findUserForBilling(opts: {
       }
     } catch (e) {
       console.error("findUserForBilling: Stripe customer retrieve failed:", e, "customer:", opts.customerId);
+    }
+  }
+  return null;
+}
+
+// Liest den EINGELÖSTEN Promo-Code aus einem Stripe-Objekt (Session oder Invoice).
+// Zweiter Attributionspfad neben dem /r/CODE-Cookie: fängt Käufer, die den Code
+// direkt im Checkout eintippen, ohne je über den Partner-Link gekommen zu sein.
+// `promotion_code` kommt je nach Objekt als ID oder expandiert — beides behandeln.
+async function resolveRedeemedPromoCode(discounts: unknown): Promise<string | null> {
+  if (!Array.isArray(discounts)) return null;
+
+  for (const d of discounts as Array<{ promotion_code?: string | { code?: string } }>) {
+    const pc = d?.promotion_code;
+    if (!pc) continue;
+    if (typeof pc === "object") {
+      if (pc.code) return pc.code;
+      continue;
+    }
+    try {
+      const promo = await stripe.promotionCodes.retrieve(pc);
+      if (promo?.code) return promo.code;
+    } catch (e) {
+      console.error("resolveRedeemedPromoCode: retrieve failed:", e, "promo:", pc);
     }
   }
   return null;
@@ -219,6 +249,28 @@ export async function POST(request: NextRequest) {
 
         console.log(`Founder #${String(result.slot).padStart(3, "0")} claimed by ${userId}`);
 
+        // Partner-Provision auf den Lifetime-Kauf. Liquiditätsseitig unkritisch:
+        // die $149 sind vollständig eingegangen, bevor hier etwas gebucht wird.
+        // Erst stempeln (Guest-Checkout → der User existiert oft erst seit eben,
+        // hat also nie ein Register-Cookie gesehen), dann buchen.
+        try {
+          const promoCode = await resolveRedeemedPromoCode(
+            (session as unknown as { discounts?: unknown }).discounts
+          );
+          if (promoCode) {
+            await stampReferralFromCode({ userId: userId!, code: promoCode, source: "promo" });
+          }
+          await recordCommission({
+            userId: userId!,
+            stripeRef: session.id, // one-time payment → keine Invoice, Session ist der Anker
+            kind: "lifetime",
+            grossCents: session.amount_total ?? 0,
+            currency: session.currency ?? "usd",
+          });
+        } catch (affErr) {
+          console.error("Affiliate (founder) failed:", affErr, "session:", session.id);
+        }
+
         // Welcome email (best-effort — user can recover via /forgot-password)
         try {
           await sendFounderWelcomeEmail({
@@ -263,6 +315,32 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "DB update failed" }, { status: 500 });
       }
 
+      // Attribution über den eingelösten Promo-Code. Die Provision selbst wird
+      // NICHT hier gebucht, sondern in invoice.payment_succeeded — auch die erste
+      // Abo-Zahlung erzeugt eine Invoice. Würden wir beides buchen, zahlten wir
+      // den ersten Monat doppelt aus.
+      try {
+        const promoCode = await resolveRedeemedPromoCode(
+          (session as unknown as { discounts?: unknown }).discounts
+        );
+        if (promoCode) {
+          let userId = session.metadata?.userId ?? null;
+          if (!userId) {
+            const { data: u } = await db
+              .from("users")
+              .select("id")
+              .eq("stripe_customer_id", customerId)
+              .maybeSingle();
+            userId = u?.id ?? null;
+          }
+          if (userId) {
+            await stampReferralFromCode({ userId, code: promoCode, source: "promo" });
+          }
+        }
+      } catch (affErr) {
+        console.error("Affiliate (checkout) failed:", affErr, "session:", session.id);
+      }
+
       await sendTikTokCompletePayment({
         eventId: event.id,
         eventTime: event.created,
@@ -305,6 +383,10 @@ export async function POST(request: NextRequest) {
 
       // Skip lifetime users — never downgrade them (e.g. founder slot)
       if (user.subscription_status === "lifetime") break;
+
+      // Partner-Provision endet mit dem Abo. Genau das macht recurring
+      // liquiditätssicher: ab hier entstehen keine neuen Verbindlichkeiten.
+      await markReferralChurned(user.id);
 
       await cleanupMetaAccount(user);
       const { error: sdErr } = await db
@@ -359,6 +441,68 @@ export async function POST(request: NextRequest) {
       } catch (e) {
         console.error("Webhook payment_succeeded retrieve error:", e);
         return NextResponse.json({ error: "Stripe retrieve failed" }, { status: 500 });
+      }
+
+      // ── Partner-Provision ──────────────────────────────────────────────────
+      // Hier und NUR hier wird bei Abos gebucht: jede bezahlte Rechnung erzeugt
+      // genau eine Ledger-Zeile (idempotent über die Invoice-ID). Basis ist
+      // `amount_paid` — der tatsächlich eingegangene Betrag mit bereits
+      // abgezogenem Rabatt. Damit kann nie Provision auf Geld entstehen, das
+      // nie ankam, und der 20%-Follower-Rabatt reduziert die Provision automatisch mit.
+      //
+      // Die Attribution wird hier nochmal versucht, weil Stripe die Reihenfolge
+      // von checkout.session.completed und invoice.payment_succeeded NICHT
+      // garantiert — käme die Invoice zuerst, wäre der User sonst noch ungestempelt
+      // und die erste Provision ginge verloren.
+      try {
+        const affUser = await findUserForBilling({ subscriptionId, customerId });
+        if (affUser) {
+          const promoCode = await resolveRedeemedPromoCode(
+            (invoice as unknown as { discounts?: unknown }).discounts
+          );
+          if (promoCode) {
+            await stampReferralFromCode({ userId: affUser.id, code: promoCode, source: "promo" });
+          }
+          await recordCommission({
+            userId: affUser.id,
+            stripeRef: invoice.id!,
+            kind: "subscription",
+            grossCents: invoice.amount_paid ?? 0,
+            currency: invoice.currency ?? "usd",
+            paidAt: new Date(event.created * 1000),
+          });
+        }
+      } catch (affErr) {
+        console.error("Affiliate (invoice) failed:", affErr, "invoice:", invoice.id);
+      }
+      break;
+    }
+
+    case "charge.refunded": {
+      // Rückerstattung → Provision stornieren, solange sie noch nicht ausgezahlt
+      // ist. Der 14-Tage-Hold sorgt dafür, dass das fast immer der Fall ist.
+      const charge = event.data.object as Stripe.Charge;
+
+      const invoiceId = (charge as unknown as { invoice?: string | null }).invoice;
+      if (invoiceId) {
+        await clawbackCommission(invoiceId);
+        break;
+      }
+
+      // Kein Invoice-Bezug → einmaliger Kauf (Founder Lifetime). Dort ist die
+      // Checkout-Session der Ledger-Anker, die finden wir über den PaymentIntent.
+      const paymentIntent =
+        typeof charge.payment_intent === "string" ? charge.payment_intent : null;
+      if (!paymentIntent) break;
+
+      try {
+        const sessions = await stripe.checkout.sessions.list({
+          payment_intent: paymentIntent,
+          limit: 5,
+        });
+        for (const s of sessions.data) await clawbackCommission(s.id);
+      } catch (e) {
+        console.error("charge.refunded: session lookup failed:", e, "pi:", paymentIntent);
       }
       break;
     }
