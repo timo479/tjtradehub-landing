@@ -6,7 +6,7 @@ import Image from "next/image";
 import UserMenu from "@/components/UserMenu";
 import HelpButton from "@/components/HelpButton";
 
-type ActivePage = "dashboard" | "journal" | "statistics" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "admin-feed" | "admin-newsletter" | "admin-feedback" | "admin-panel";
+type ActivePage = "dashboard" | "journal" | "statistics" | "calendar" | "charts" | "calculator" | "checklist" | "lottery" | "feed" | "partner" | "admin-feed" | "admin-newsletter" | "admin-feedback" | "admin-panel";
 
 interface Props {
   activePage: ActivePage;
@@ -14,11 +14,13 @@ interface Props {
   email?: string | null;
   subscriptionStatus?: string;
   isAdmin?: boolean;
+  /** Nur Affiliate-Accounts sehen den "Partner"-Punkt. Kommt aus der Session. */
+  isPartner?: boolean;
   extraButtons?: React.ReactNode;
   headerStyle?: React.CSSProperties;
 }
 
-const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
+const BASE_NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard", label: "Dashboard", key: "dashboard" },
   { href: "/dashboard/journal", label: "Journal", key: "journal" },
   { href: "/dashboard/journal?view=stats", label: "Statistics", key: "statistics" },
@@ -29,6 +31,12 @@ const NAV_LINKS: { href: string; label: string; key: ActivePage }[] = [
   { href: "/dashboard/lottery", label: "Lottery", key: "lottery" },
   { href: "/dashboard/feed", label: "AI Market Insights", key: "feed" },
 ];
+
+const PARTNER_LINK: { href: string; label: string; key: ActivePage } = {
+  href: "/dashboard/partner",
+  label: "Partner",
+  key: "partner",
+};
 
 const checklistEnabled = process.env.NEXT_PUBLIC_CHECKLIST_ENABLED === "true";
 
@@ -129,6 +137,7 @@ export default function DashboardHeader({
   email,
   subscriptionStatus,
   isAdmin,
+  isPartner,
   extraButtons,
   headerStyle,
 }: Props) {
@@ -141,6 +150,10 @@ export default function DashboardHeader({
   // Pro/lifetime/admin get the live feed and no badge.
   const isPro = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
   const showProBadge = !isPro && !isAdmin;
+
+  // Partner-Punkt hängt bewusst HINTEN dran: so verschieben sich die Indizes der
+  // bestehenden Links nicht, an denen der animierte Unterstrich (itemRefs) hängt.
+  const navLinks = isPartner ? [...BASE_NAV_LINKS, PARTNER_LINK] : BASE_NAV_LINKS;
 
   // Close the admin dropdown on outside-click / Escape.
   useEffect(() => {
@@ -184,7 +197,7 @@ export default function DashboardHeader({
       ? (searchParams.get("view") === "stats" ? "statistics" : "journal")
       : activePage;
 
-  const activeIdx = NAV_LINKS.findIndex((l) => l.key === effectiveActivePage);
+  const activeIdx = navLinks.findIndex((l) => l.key === effectiveActivePage);
 
   const updateIndicator = useCallback(() => {
     const idx = hoverIdx ?? activeIdx;
@@ -266,7 +279,7 @@ export default function DashboardHeader({
               }}
             />
 
-            {NAV_LINKS.map(({ href, label, key }, i) => {
+            {navLinks.map(({ href, label, key }, i) => {
               const isActive = effectiveActivePage === key;
               return (
                 <Link
@@ -459,7 +472,7 @@ export default function DashboardHeader({
       {/* Mobile dropdown nav */}
       {open && (
         <div className="md:hidden" style={{ borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "16px", paddingTop: "8px" }}>
-          {NAV_LINKS.map(({ href, label, key }) => {
+          {navLinks.map(({ href, label, key }) => {
             const isActive = activePage === key;
             return (
               <Link

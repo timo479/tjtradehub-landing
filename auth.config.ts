@@ -20,6 +20,7 @@ export const authConfig: NextAuthConfig = {
         ).currentPeriodEnd;
         token.role = (user as { role: string }).role ?? "user";
         token.isImpersonating = (user as { isImpersonating?: boolean }).isImpersonating ?? false;
+        token.isPartner = (user as { isPartner?: boolean }).isPartner ?? false;
       }
       return token;
     },
@@ -32,6 +33,7 @@ export const authConfig: NextAuthConfig = {
         session.user.currentPeriodEnd = token.currentPeriodEnd as string | null;
         session.user.role = (token.role as string) ?? "user";
         session.user.isImpersonating = (token.isImpersonating as boolean) ?? false;
+        session.user.isPartner = (token.isPartner as boolean) ?? false;
       }
       return session;
     },

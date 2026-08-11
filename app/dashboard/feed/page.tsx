@@ -25,6 +25,7 @@ export default async function FeedPage() {
   if (!canAccess) redirect("/billing");
 
   const isAdmin = (session.user as { role?: string }).role === "admin";
+  const isPartner = (session.user as { isPartner?: boolean }).isPartner === true;
   // Demo account sees the live feed (for the product tour video) without being admin.
   const isDemo = session.user.email === "demo@tjtradehub.com";
   const isPaying = hasActiveSubscription({
@@ -43,6 +44,7 @@ export default async function FeedPage() {
       <DashboardHeader
         activePage="feed"
         isAdmin={isAdmin}
+        isPartner={isPartner}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

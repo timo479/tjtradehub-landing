@@ -9,6 +9,7 @@ export default async function CalculatorPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
   const isAdmin = (session!.user as { role?: string }).role === "admin";
+  const isPartner = (session!.user as { isPartner?: boolean }).isPartner === true;
   const isPro = hasActiveSubscription({
     subscription_status: subscriptionStatus,
     current_period_end: session!.user.currentPeriodEnd,
@@ -20,6 +21,7 @@ export default async function CalculatorPage() {
       <DashboardHeader
         activePage="calculator"
         isAdmin={isAdmin}
+        isPartner={isPartner}
         name={name}
         email={session!.user.email}
         subscriptionStatus={subscriptionStatus}

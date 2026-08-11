@@ -18,6 +18,7 @@ export default async function LotteryPage() {
     redirect("/billing");
   }
   const isAdmin = (session.user as { role?: string }).role === "admin";
+  const isPartner = (session.user as { isPartner?: boolean }).isPartner === true;
 
   return (
     <div
@@ -30,6 +31,7 @@ export default async function LotteryPage() {
       <DashboardHeader
         activePage="lottery"
         isAdmin={isAdmin}
+        isPartner={isPartner}
         name={session.user.name}
         email={session.user.email}
         subscriptionStatus={session.user.subscriptionStatus}

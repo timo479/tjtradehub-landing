@@ -25,6 +25,7 @@ export default async function DashboardPage() {
 
   const { name, subscriptionStatus } = session.user;
   const isAdmin = (session.user as { role?: string }).role === "admin";
+  const isPartner = (session.user as { isPartner?: boolean }).isPartner === true;
   const isSubscribed = subscriptionStatus === "active" || subscriptionStatus === "lifetime";
   const isPro = isSubscribed || isAdmin; // admins see the unlocked view
 
@@ -156,6 +157,7 @@ export default async function DashboardPage() {
       <DashboardHeader
         activePage="dashboard"
         isAdmin={isAdmin}
+        isPartner={isPartner}
         name={name}
         email={session.user.email}
         subscriptionStatus={subscriptionStatus}

@@ -8,6 +8,8 @@ declare module "next-auth" {
     currentPeriodEnd: string | null;
     role: string;
     isImpersonating?: boolean;
+    /** Hat dieser Account einen Affiliate-Datensatz → Partner-Menüpunkt zeigen. */
+    isPartner?: boolean;
   }
 
   interface Session {
@@ -33,5 +35,7 @@ declare module "next-auth/jwt" {
     currentPeriodEnd: string | null;
     role: string;
     isImpersonating?: boolean;
+    /** Hat dieser Account einen Affiliate-Datensatz → Partner-Menüpunkt zeigen. */
+    isPartner?: boolean;
   }
 }

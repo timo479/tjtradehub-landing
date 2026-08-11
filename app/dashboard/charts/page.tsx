@@ -9,6 +9,7 @@ export default async function ChartsPage() {
   const session = await auth();
   const { name, subscriptionStatus } = session!.user;
   const isAdmin = (session!.user as { role?: string }).role === "admin";
+  const isPartner = (session!.user as { isPartner?: boolean }).isPartner === true;
 
   const { data: userRow } = await db
     .from("users")
@@ -23,6 +24,7 @@ export default async function ChartsPage() {
       <DashboardHeader
         activePage="charts"
         isAdmin={isAdmin}
+        isPartner={isPartner}
         name={name}
         email={session!.user.email}
         subscriptionStatus={subscriptionStatus}

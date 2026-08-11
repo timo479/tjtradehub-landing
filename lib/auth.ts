@@ -9,6 +9,18 @@ import { awardLots, generateUniqueReferralCode, LOTS_PER_SOURCE } from "./lotter
 
 const JWT_REFRESH_INTERVAL = 5 * 60; // 5 Minuten in Sekunden
 
+// Steuert nur, ob der Partner-Menüpunkt im Dashboard erscheint. Bewusst im Token
+// statt als Abfrage im Header: der Header steckt in 12 Seiten, das wäre eine
+// zusätzliche Query pro Seitenaufruf. So ist es eine pro Login bzw. pro
+// 5-Minuten-Refresh — ein frisch angelegter Partner sieht den Button also
+// spätestens nach 5 Minuten, ohne sich neu anmelden zu müssen.
+// Der Menüpunkt ist reine Navigation, keine Berechtigung: /api/partner löst den
+// Partner ohnehin ausschließlich über die Session auf.
+async function isPartnerAccount(userId: string): Promise<boolean> {
+  const { data } = await db.from("affiliates").select("id").eq("user_id", userId).maybeSingle();
+  return !!data;
+}
+
 export const { handlers, signIn, signOut, auth } = NextAuth({
   ...authConfig,
   callbacks: {
@@ -69,6 +81,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         const { data: dbUser } = await db.from("users").select("name").eq("id", user.id!).single();
         if (dbUser) token.name = dbUser.name;
         await db.from("users").update({ last_login_at: new Date().toISOString() }).eq("id", user.id!);
+        token.isPartner = await isPartnerAccount(user.id!);
         return token;
       }
 
@@ -102,6 +115,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.trialEndsAt = freshUser.trial_ends_at;
         token.name = freshUser.name;
         token.role = freshUser.role ?? "user";
+        token.isPartner = await isPartnerAccount(token.id as string);
         token.refreshedAt = now;
       }
 
