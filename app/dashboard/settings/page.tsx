@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { redirect } from "next/navigation";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import SettingsClient from "./SettingsClient";
+import ChangePasswordCard from "./ChangePasswordCard";
 
 export const metadata = {
   title: "Settings – TJ TradeHub",
@@ -14,11 +15,15 @@ export default async function SettingsPage() {
 
   const { data: userRow } = await db
     .from("users")
-    .select("newsletter_opt_in")
+    .select("newsletter_opt_in, password_hash")
     .eq("id", session.user.id)
     .single();
 
   const newsletterOptIn = userRow?.newsletter_opt_in ?? false;
+  // Google-Anmeldungen haben password_hash = "" (lib/auth.ts) → dort wird ein
+  // Passwort erstmalig GESETZT, nicht geändert. Nur das Boolean geht an den
+  // Client, niemals der Hash selbst.
+  const hasPassword = !!userRow?.password_hash;
   const isAdmin = (session.user as { role?: string }).role === "admin";
   const isPartner = (session.user as { isPartner?: boolean }).isPartner === true;
 
@@ -42,6 +47,7 @@ export default async function SettingsPage() {
         </p>
 
         <SettingsClient initialNewsletterOptIn={newsletterOptIn} />
+        <ChangePasswordCard hasPassword={hasPassword} />
       </main>
     </div>
   );
