@@ -2,6 +2,7 @@
  * Daily cron — runs every day at 06:00 UTC (configured in vercel.json).
  *
  * Always: undeploys stale MetaAPI accounts (cost control).
+ * Always: unpublishes feed posts that have been live for more than 3 days.
  * Always: deletes unpublished feed posts (draft/rejected) older than 7 days.
  * Mondays: also generates the weekly newsletter, persists it, and emails admins.
  */
@@ -15,6 +16,10 @@ import { syncEconomicCalendar } from "@/lib/economic-calendar";
 import { sendTrustpilotInviteEmail } from "@/lib/email";
 
 const FEED_RETENTION_DAYS = 7;
+// Wie lange ein veröffentlichter Post im Feed sichtbar bleibt. Marktanalysen sind
+// nach drei Tagen überholt, und ohne diese Grenze wuchs der Feed unbegrenzt
+// (bei ~9 Posts/Tag standen bereits 44 gleichzeitig drin).
+const FEED_PUBLISH_DAYS = 3;
 // Cap Trustpilot invite emails per run so a first-run backfill drains over a
 // few days instead of blasting everyone at once (Resend + runtime headroom).
 const TRUSTPILOT_INVITE_LIMIT = 200;
@@ -49,7 +54,38 @@ export async function GET(req: Request) {
   // 1) Always: undeploy stale accounts
   const undeploy = await undeployStaleAccounts();
 
-  // 2) Always: purge unpublished feed posts older than the retention window.
+  // 2) Always: abgelaufene Posts aus dem Feed nehmen.
+  //
+  // Läuft BEWUSST vor dem Löschen unten: so wandert ein Post in einem einzigen
+  // Cron-Lauf von "abgelaufen" nach "gelöscht", falls er beide Fristen schon
+  // überschritten hat, statt einen Tag dazwischen liegen zu bleiben.
+  //
+  // Ziel-Status ist "rejected", nicht "draft": abgelaufene Posts würden sich
+  // sonst unter die ~140 echten Entwürfe mischen, und man könnte einen alten
+  // versehentlich erneut veröffentlichen. "rejected" heißt sonst
+  // "qualitativ abgelehnt" — hier bewusst zweitverwendet, weil ein eigener
+  // Status eine Migration am CHECK-Constraint bräuchte.
+  //
+  // Der Filter läuft über published_at (nicht created_at): entscheidend ist,
+  // wie lange der Post SICHTBAR war, nicht wann die KI ihn geschrieben hat.
+  let feedExpiry: { unpublished: number } | { error: string };
+  try {
+    const cutoff = new Date(startedAt - FEED_PUBLISH_DAYS * 24 * 60 * 60 * 1000).toISOString();
+    const { data, error } = await db
+      .from("feed_posts")
+      .update({ status: "rejected" })
+      .eq("status", "published")
+      .lt("published_at", cutoff)
+      .select("id");
+    if (error) throw new Error(error.message);
+    feedExpiry = { unpublished: data?.length ?? 0 };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[cron/daily] feed expiry failed:", msg);
+    feedExpiry = { error: msg };
+  }
+
+  // 3) Always: purge unpublished feed posts older than the retention window.
   // Filter on created_at (NOT published_at) — a rejected post keeps its old
   // published_at, so published_at would let re-rejected posts slip past.
   let feedCleanup: { deleted: number } | { error: string };
@@ -69,7 +105,7 @@ export async function GET(req: Request) {
     feedCleanup = { error: msg };
   }
 
-  // 3) Always: sync the economic calendar (ForexFactory feed → economic_events)
+  // 4) Always: sync the economic calendar (ForexFactory feed → economic_events)
   let economicCalendar: { upserted: number; deleted: number } | { error: string };
   try {
     economicCalendar = await syncEconomicCalendar();
@@ -79,7 +115,7 @@ export async function GET(req: Request) {
     economicCalendar = { error: msg };
   }
 
-  // 4) Always: Trustpilot review-invitation fallback.
+  // 5) Always: Trustpilot review-invitation fallback.
   // Server-side coverage for users who logged >= 1 trade but never triggered
   // the client-side Invitation JS (never revisited the dashboard). Shares the
   // `trustpilot_invited_at` flag with the client path, so no double invites.
@@ -153,7 +189,7 @@ export async function GET(req: Request) {
     trustpilot = { error: msg };
   }
 
-  // 5) Mondays only: generate newsletter
+  // 6) Mondays only: generate newsletter
   // Monday in UTC. Cron fires at 06:00 UTC daily, so we get exactly one
   // newsletter run per week. ?forceMonday=1 lets you test the flow on any day.
   const url = new URL(req.url);
@@ -178,6 +214,7 @@ export async function GET(req: Request) {
     ranAt: new Date(startedAt).toISOString(),
     elapsedMs: Date.now() - startedAt,
     undeploy,
+    feedExpiry,
     feedCleanup,
     economicCalendar,
     trustpilot,
