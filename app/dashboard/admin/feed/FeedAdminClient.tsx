@@ -49,8 +49,12 @@ function daysUntilDelete(post: FeedPost): number | null {
   return Math.max(0, RETENTION_DAYS - ageDays);
 }
 
-export default function FeedAdminClient() {
-  const [activeTab, setActiveTab] = useState<"draft" | "published" | "rejected">("draft");
+export default function FeedAdminClient({ autoPublish = false }: { autoPublish?: boolean }) {
+  // Bei Auto-Publish landet nichts mehr im Draft-Tab — dann direkt auf
+  // "published" starten, sonst sieht der Admin beim Öffnen eine leere Liste.
+  const [activeTab, setActiveTab] = useState<"draft" | "published" | "rejected">(
+    autoPublish ? "published" : "draft",
+  );
   const [posts, setPosts] = useState<FeedPost[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -211,6 +215,23 @@ export default function FeedAdminClient() {
 
   return (
     <div>
+      {autoPublish && (
+        <div
+          style={{
+            display: "flex", alignItems: "center", gap: "10px",
+            marginBottom: "20px", padding: "12px 16px", borderRadius: "10px",
+            border: "1px solid rgba(16,185,129,0.35)", background: "rgba(16,185,129,0.08)",
+          }}
+        >
+          <span style={{ width: 8, height: 8, borderRadius: 999, background: "#10B981", flexShrink: 0 }} />
+          <span style={{ color: "#D1FAE5", fontSize: "13px" }}>
+            <strong style={{ color: "#6EE7B7" }}>Auto-publish is ON</strong> — new posts from the n8n
+            pipeline go live immediately. Set <code>FEED_AUTO_PUBLISH=false</code> in Vercel to go
+            back to manual review. Published posts still expire after 3 days.
+          </span>
+        </div>
+      )}
+
       {/* Tabs */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "24px" }}>
         {(["draft","published","rejected"] as const).map(tab => (

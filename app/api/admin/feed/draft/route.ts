@@ -9,6 +9,15 @@ const ALLOWED_SYMBOLS = new Set([
 
 const ALLOWED_IMPACT = new Set(["high","medium","low"]);
 
+// Auto-Publish: eingehende n8n-Entwürfe gehen sofort live, statt auf ein
+// manuelles Review im Admin zu warten. Bewusst per Default AN — so wirkt es
+// direkt nach dem Deploy, ohne dass eine Env-Var in Vercel gesetzt sein muss.
+// FEED_AUTO_PUBLISH=false schaltet ohne Deploy zurück auf den Draft-Flow.
+// Der Daily-Cron nimmt veröffentlichte Posts nach 3 Tagen ohnehin wieder raus.
+function autoPublishEnabled(): boolean {
+  return process.env.FEED_AUTO_PUBLISH !== "false";
+}
+
 // Simple in-memory rate limit for n8n Bearer calls: max 60 req/min
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>();
 function checkRateLimit(key: string): boolean {
@@ -86,6 +95,7 @@ export async function POST(req: NextRequest) {
   }
 
   const src = body.source as { name: string; url: string };
+  const autoPublish = autoPublishEnabled();
 
   const { data, error } = await db
     .from("feed_posts")
@@ -98,10 +108,13 @@ export async function POST(req: NextRequest) {
       source_name: src.name,
       source_url: src.url,
       disclaimer: body.disclaimer as string,
-      status: "draft",
+      status: autoPublish ? "published" : "draft",
+      // published_at treibt sowohl die Feed-Sortierung als auch die 3-Tage-
+      // Ablauffrist im Daily-Cron — muss beim Auto-Publish mitgesetzt werden.
+      published_at: autoPublish ? new Date().toISOString() : null,
       ai_model: body.ai_model as string,
     })
-    .select("id, status, created_at")
+    .select("id, status, created_at, published_at")
     .single();
 
   if (error) {

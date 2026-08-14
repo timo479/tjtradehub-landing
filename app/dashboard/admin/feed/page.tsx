@@ -14,6 +14,9 @@ export default async function FeedAdminPage() {
   if (!session?.user) redirect("/login");
   if ((session.user as { role?: string }).role !== "admin") redirect("/dashboard");
 
+  // Muss mit der Logik in app/api/admin/feed/draft/route.ts übereinstimmen.
+  const autoPublish = process.env.FEED_AUTO_PUBLISH !== "false";
+
   return (
     <div style={{ minHeight: "100vh", backgroundColor: "#000" }}>
       <DashboardHeader
@@ -29,10 +32,12 @@ export default async function FeedAdminPage() {
             KI Feed
           </h1>
           <p style={{ color: "#6B7280", fontSize: "14px", margin: 0 }}>
-            Review and publish AI-generated market insights from the n8n pipeline.
+            {autoPublish
+              ? "AI-generated market insights from the n8n pipeline publish automatically. Edit or pull any post here."
+              : "Review and publish AI-generated market insights from the n8n pipeline."}
           </p>
         </div>
-        <FeedAdminClient />
+        <FeedAdminClient autoPublish={autoPublish} />
       </main>
     </div>
   );
